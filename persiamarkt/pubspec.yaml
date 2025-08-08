@@ -1,0 +1,56 @@
+name: persia_markt
+description: A mobile application for Persian products and stores in Germany.
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.0.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+
+  # CORE
+  cupertino_icons: ^1.0.2
+  google_fonts: ^6.2.1
+  provider: ^6.1.2 # همچنان برای تزریق Cubit ها استفاده می‌شود
+
+  # STATE MANAGEMENT
+  flutter_bloc: ^8.1.5
+  equatable: ^2.0.5
+
+  # ROUTING
+  go_router: ^14.1.0
+
+  # NETWORKING & DATA
+  http: ^1.2.1
+  shared_preferences: ^2.2.3
+
+  # LOCATION
+  geolocator: ^12.0.0
+  geocoding: ^3.0.0
+  flutter_map: ^7.0.0
+  latlong2: ^0.9.1
+
+  # UTILS
+  get_it: ^7.7.0 # Service Locator برای Dependency Injection
+
+  # UI & UX
+  shimmer: ^3.0.0 # برای افکت لودینگ حرفه‌ای
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^3.0.0
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/images/appLogo.png
+    - assets/images/supermarket.png
+    - assets/images/banner1.png
+    - assets/images/banner2.png
+    - assets/images/banner3.png
+    - assets/images/banner4.png
