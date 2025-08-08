@@ -34,36 +34,9 @@ class Product extends Equatable {
     required this.variant,
   });
 
-  // Props برای مقایسه توسط Equatable
   @override
   List<Object?> get props => [productID, name, categoryID, price, storeID];
   
-  // متد copyWith برای بروزرسانی immutable
-  Product copyWith({
-    String? productID,
-    String? name,
-    // ... بقیه فیلدها
-  }) {
-    return Product(
-      productID: productID ?? this.productID,
-      name: name ?? this.name,
-      // ...
-      categoryID: this.categoryID,
-      price: this.price,
-      description: this.description,
-      imageURL: this.imageURL,
-      storeID: this.storeID,
-      isPostalAvailable: this.isPostalAvailable,
-      stock: this.stock,
-      discount: this.discount,
-      unit: this.unit,
-      tags: this.tags,
-      nameEn: this.nameEn,
-      variant: this.variant,
-    );
-  }
-
-  // متد fromJson بدون تغییر باقی می‌ماند
   factory Product.fromJson(Map<String, dynamic> json) {
     return Product(
       productID: json['productID'] as String,

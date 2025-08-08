@@ -12,14 +12,15 @@ dependencies:
   flutter_localizations:
     sdk: flutter
 
-  # CORE
+  # CORE UTILITIES
   cupertino_icons: ^1.0.2
   google_fonts: ^6.2.1
-  provider: ^6.1.2 # همچنان برای تزریق Cubit ها استفاده می‌شود
+  equatable: ^2.0.5 # For value equality in models and states
+  get_it: ^7.7.0 # Service Locator for Dependency Injection
+  fpdart: ^1.1.0 # For functional programming constructs like Either (Result type)
 
   # STATE MANAGEMENT
   flutter_bloc: ^8.1.5
-  equatable: ^2.0.5
 
   # ROUTING
   go_router: ^14.1.0
@@ -28,22 +29,24 @@ dependencies:
   http: ^1.2.1
   shared_preferences: ^2.2.3
 
-  # LOCATION
+  # LOCATION & MAPS
   geolocator: ^12.0.0
   geocoding: ^3.0.0
   flutter_map: ^7.0.0
   latlong2: ^0.9.1
 
-  # UTILS
-  get_it: ^7.7.0 # Service Locator برای Dependency Injection
-
   # UI & UX
-  shimmer: ^3.0.0 # برای افکت لودینگ حرفه‌ای
+  shimmer: ^3.0.0 # For professional loading effects
+  scrollable_positioned_list: ^0.3.8 # For precise list scrolling
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^3.0.0
+  
+  # TESTING LIBRARIES
+  bloc_test: ^9.1.7      # For testing Cubit/Bloc
+  mocktail: ^1.0.3       # For creating mock classes
 
 flutter:
   uses-material-design: true

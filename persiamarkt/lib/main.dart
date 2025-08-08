@@ -5,16 +5,17 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:persia_markt/core/config/app_router.dart';
 import 'package:persia_markt/core/config/service_locator.dart';
-import 'package:persia_markt/features/search/presentation/cubit/search_cubit.dart';
-import 'package:persia_markt/features/home/presentation/cubit/market_data_cubit.dart';
+import 'package:persia_markt/features/home/presentation/bloc/market_data_bloc.dart';
 import 'package:persia_markt/features/home/presentation/cubit/location_cubit.dart';
 import 'package:persia_markt/features/profile/presentation/cubit/favorites_cubit.dart';
+import 'package:persia_markt/features/search/presentation/cubit/search_cubit.dart';
+import 'package:persia_markt/features/home/presentation/bloc/market_data_event.dart';
 
 void main() async {
-  // اطمینان از راه‌اندازی کامل Flutter قبل از اجرای برنامه
+  // Ensure Flutter binding is initialized for async operations before runApp
   WidgetsFlutterBinding.ensureInitialized();
   
-  // راه‌اندازی سرویس‌ها و Cubit‌ها با GetIt
+  // Setup service locator for dependency injection
   await setupServiceLocator();
   
   runApp(const MyApp());
@@ -25,11 +26,11 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // استفاده از MultiBlocProvider برای فراهم کردن تمام Cubit‌ها برای کل برنامه
+    // MultiBlocProvider makes Blocs/Cubits available to the entire widget tree
     return MultiBlocProvider(
       providers: [
         BlocProvider(
-          create: (_) => sl<MarketDataCubit>()..fetchMarketData(),
+          create: (_) => sl<MarketDataBloc>()..add(FetchMarketDataEvent()),
         ),
         BlocProvider(
           create: (_) => sl<LocationCubit>()..fetchLocation(),
@@ -45,10 +46,10 @@ class MyApp extends StatelessWidget {
         title: 'PersiaMarkt',
         debugShowCheckedModeBanner: false,
         
-        // استفاده از GoRouter برای مسیریابی
+        // Use GoRouter for advanced and centralized navigation
         routerConfig: AppRouter.router,
         
-        // تنظیمات زبان و منطقه
+        // Localization settings for Persian language
         localizationsDelegates: const [
           GlobalMaterialLocalizations.delegate,
           GlobalWidgetsLocalizations.delegate,
@@ -60,57 +61,42 @@ class MyApp extends StatelessWidget {
         ],
         locale: const Locale('fa', 'IR'),
         
-        // تم روشن برنامه
-        theme: ThemeData(
-          useMaterial3: true,
-          primarySwatch: Colors.orange,
-          colorScheme: ColorScheme.fromSwatch(
-            primarySwatch: Colors.orange,
-            accentColor: Colors.orangeAccent,
-            brightness: Brightness.light,
-          ),
-          scaffoldBackgroundColor: Colors.grey.shade50,
-          appBarTheme: const AppBarTheme(
-            backgroundColor: Colors.white,
-            elevation: 0,
-            iconTheme: IconThemeData(color: Colors.black),
-            titleTextStyle: TextStyle(color: Colors.black, fontSize: 20, fontWeight: FontWeight.bold),
-          ),
-          textTheme: GoogleFonts.interTextTheme(),
-          brightness: Brightness.light,
+        // Application Themes
+        theme: _buildTheme(Brightness.light),
+        darkTheme: _buildTheme(Brightness.dark),
+        themeMode: ThemeMode.system,
+      ),
+    );
+  }
+
+  /// A helper method to build theme data for both light and dark modes
+  /// to avoid code duplication.
+  ThemeData _buildTheme(Brightness brightness) {
+    var baseTheme = ThemeData(
+      useMaterial3: true,
+      brightness: brightness,
+      colorScheme: ColorScheme.fromSeed(
+        seedColor: Colors.orange,
+        brightness: brightness,
+      ),
+    );
+
+    return baseTheme.copyWith(
+      scaffoldBackgroundColor: brightness == Brightness.light ? Colors.grey.shade50 : const Color(0xFF121212),
+      appBarTheme: AppBarTheme(
+        backgroundColor: brightness == Brightness.light ? Colors.white : Colors.black,
+        elevation: 0,
+        iconTheme: IconThemeData(color: brightness == Brightness.light ? Colors.black : Colors.white),
+        titleTextStyle: GoogleFonts.lalezar(
+          color: brightness == Brightness.light ? Colors.black87 : Colors.white, 
+          fontSize: 22,
         ),
-        
-        // تم تاریک برنامه
-        darkTheme: ThemeData(
-          useMaterial3: true,
-          primarySwatch: Colors.orange,
-          colorScheme: ColorScheme.fromSwatch(
-            primarySwatch: Colors.orange,
-            accentColor: Colors.orangeAccent,
-            brightness: Brightness.dark,
-          ).copyWith(
-            surface: Colors.grey.shade800,
-            onSurface: Colors.white,
-            background: Colors.grey.shade900,
-            onBackground: Colors.white,
-          ),
-          scaffoldBackgroundColor: Colors.grey.shade900,
-          appBarTheme: const AppBarTheme(
-            backgroundColor: Colors.black,
-            elevation: 0,
-            iconTheme: IconThemeData(color: Colors.white),
-            titleTextStyle: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),
-          ),
-          textTheme: GoogleFonts.interTextTheme(
-            ThemeData.dark().textTheme.apply(
-                  bodyColor: Colors.white,
-                  displayColor: Colors.white,
-                ),
-          ),
-          brightness: Brightness.dark,
-        ),
-        themeMode: ThemeMode.system, // انتخاب تم بر اساس تنظیمات سیستم
+      ),
+      textTheme: GoogleFonts.vazirmatnTextTheme(baseTheme.textTheme).apply(
+        bodyColor: brightness == Brightness.light ? Colors.black87 : Colors.white,
+        displayColor: brightness == Brightness.light ? Colors.black87 : Colors.white,
       ),
     );
   }
 }
+zz

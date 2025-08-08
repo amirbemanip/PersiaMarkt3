@@ -1,6 +1,7 @@
 // lib/core/widgets/error_view.dart
 import 'package:flutter/material.dart';
 
+/// A reusable widget to display an error message with an optional retry button.
 class AppErrorView extends StatelessWidget {
   final String message;
   final VoidCallback? onRetry;
@@ -20,8 +21,8 @@ class AppErrorView extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Icon(
-              Icons.error_outline,
-              color: Colors.red.shade400,
+              Icons.cloud_off_rounded,
+              color: Colors.red.shade300,
               size: 60,
             ),
             const SizedBox(height: 16),
@@ -42,10 +43,6 @@ class AppErrorView extends StatelessWidget {
                 onPressed: onRetry,
                 icon: const Icon(Icons.refresh),
                 label: const Text('تلاش مجدد'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.orange.shade700,
-                  foregroundColor: Colors.white,
-                ),
               ),
             ],
           ],

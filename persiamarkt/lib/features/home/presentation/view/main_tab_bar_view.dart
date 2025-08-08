@@ -1,57 +1,38 @@
 // lib/features/home/presentation/view/main_tab_bar_view.dart
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:persia_markt/features/home/presentation/view/home_view.dart';
-import 'package:persia_markt/features/map/map_view.dart';
-import 'package:persia_markt/features/profile/presentation/view/favorites_view.dart';
-import 'package:persia_markt/features/profile/presentation/view/profile_view.dart';
 
-class MainTabBarView extends StatefulWidget {
-  const MainTabBarView({Key? key}) : super(key: key);
+class MainTabBarView extends StatelessWidget {
+  final StatefulNavigationShell navigationShell;
 
-  @override
-  State<MainTabBarView> createState() => _MainTabBarViewState();
-}
-
-class _MainTabBarViewState extends State<MainTabBarView> {
-  // لیست صفحات اصلی برنامه
-  final List<Widget> _pages = [
-    const HomeView(),
-    const MapView(),
-    const FavoritesView(), // جایگزین CartView
-    const ProfileView(),
-  ];
-
-  int _currentIndex = 0;
-
-  void _onTabTapped(int index) {
-    setState(() {
-      _currentIndex = index;
-    });
-  }
+  const MainTabBarView({
+    super.key,
+    required this.navigationShell,
+  });
 
   @override
   Widget build(BuildContext context) {
     return Directionality(
       textDirection: TextDirection.rtl,
       child: Scaffold(
-        // استفاده از IndexedStack برای حفظ وضعیت صفحات هنگام جابجایی بین تب‌ها
-        body: IndexedStack(
-          index: _currentIndex,
-          children: _pages,
-        ),
+        body: navigationShell,
         bottomNavigationBar: BottomNavigationBar(
-          onTap: _onTabTapped,
-          currentIndex: _currentIndex,
-          selectedItemColor: Colors.orange.shade700,
-          unselectedItemColor: Colors.grey,
-          showUnselectedLabels: true,
+          currentIndex: navigationShell.currentIndex,
+          onTap: (index) {
+            // این بخش منطق مربوط به جابجایی بین تب‌ها و ریست شدن صفحه اصلی را مدیریت می‌کند
+            navigationShell.goBranch(
+              index,
+              initialLocation: index == navigationShell.currentIndex,
+            );
+          },
           type: BottomNavigationBarType.fixed,
+          selectedItemColor: Theme.of(context).colorScheme.primary,
+          unselectedItemColor: Colors.grey,
           items: const [
-            BottomNavigationBarItem(icon: Icon(Icons.home), label: 'خانه'),
-            BottomNavigationBarItem(icon: Icon(Icons.map), label: 'نقشه'),
-            BottomNavigationBarItem(icon: Icon(Icons.favorite), label: 'موردعلاقه‌ها'),
-            BottomNavigationBarItem(icon: Icon(Icons.person), label: 'پروفایل'),
+            BottomNavigationBarItem(icon: Icon(Icons.home_outlined), activeIcon: Icon(Icons.home), label: 'خانه'),
+            BottomNavigationBarItem(icon: Icon(Icons.map_outlined), activeIcon: Icon(Icons.map), label: 'نقشه'),
+            BottomNavigationBarItem(icon: Icon(Icons.favorite_border), activeIcon: Icon(Icons.favorite), label: 'موردعلاقه‌ها'),
+            BottomNavigationBarItem(icon: Icon(Icons.person_outline), activeIcon: Icon(Icons.person), label: 'پروفایل'),
           ],
         ),
       ),

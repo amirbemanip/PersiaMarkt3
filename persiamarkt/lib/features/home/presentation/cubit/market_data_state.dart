@@ -1,4 +1,3 @@
-// lib/features/home/presentation/cubit/market_data_state.dart
 import 'package:equatable/equatable.dart';
 import 'package:persia_markt/core/models/market_data.dart';
 

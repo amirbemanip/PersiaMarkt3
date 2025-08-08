@@ -1,30 +1,35 @@
 // lib/core/config/service_locator.dart
 import 'package:get_it/get_it.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:http/http.dart' as http;
 import 'package:persia_markt/core/services/api_service.dart';
 import 'package:persia_markt/core/services/location_service.dart';
-import 'package:persia_markt/features/search/presentation/cubit/search_cubit.dart';
-import 'package:persia_markt/features/home/presentation/cubit/market_data_cubit.dart';
+import 'package:persia_markt/features/home/data/repositories/market_repository_impl.dart';
+import 'package:persia_markt/features/home/domain/repositories/market_repository.dart';
+import 'package:persia_markt/features/home/presentation/bloc/market_data_bloc.dart';
 import 'package:persia_markt/features/home/presentation/cubit/location_cubit.dart';
 import 'package:persia_markt/features/profile/presentation/cubit/favorites_cubit.dart';
+import 'package:persia_markt/features/search/presentation/cubit/search_cubit.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
-// نمونه GetIt
 final sl = GetIt.instance;
 
 Future<void> setupServiceLocator() async {
-  // ## External ##
-  // ثبت SharedPreferences به صورت singleton و asynchronous
+  // External
   final sharedPreferences = await SharedPreferences.getInstance();
   sl.registerLazySingleton(() => sharedPreferences);
+  sl.registerLazySingleton(() => http.Client());
 
-  // ## Core ##
-  // ثبت سرویس‌های اصلی برنامه
-  sl.registerLazySingleton(() => ApiService());
+  // Services
+  sl.registerLazySingleton(() => ApiService(client: sl()));
   sl.registerLazySingleton(() => LocationService());
 
-  // ## Cubits ##
-  // Cubit‌ها به صورت factory ثبت می‌شوند، یعنی با هر بار درخواست یک نمونه جدید ساخته می‌شود
-  sl.registerFactory(() => MarketDataCubit(apiService: sl()));
+  // Repositories
+  sl.registerLazySingleton<MarketRepository>(() => MarketRepositoryImpl(apiService: sl()));
+
+  // Blocs / Cubits
+  // خط زیر اضافه شد تا مشکل حل شود
+  sl.registerFactory(() => MarketDataBloc(marketRepository: sl()));
+  
   sl.registerFactory(() => LocationCubit(locationService: sl()));
   sl.registerFactory(() => FavoritesCubit(sharedPreferences: sl()));
   sl.registerFactory(() => SearchCubit());
