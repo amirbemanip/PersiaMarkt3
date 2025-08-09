@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:persia_markt/features/category/view/category_detail_view.dart';
 import 'package:persia_markt/features/home/presentation/view/home_view.dart';
-// اصلاح شد: 'packagepackage:' به 'package:' تغییر یافت.
 import 'package:persia_markt/features/home/presentation/view/main_tab_bar_view.dart';
 import 'package:persia_markt/features/map/view/map_view.dart';
 import 'package:persia_markt/features/profile/presentation/view/favorites_view.dart';
@@ -64,15 +63,15 @@ class AppRouter {
               GoRoute(
                 path: '/map',
                 builder: (context, state) {
-                  // پارامترهای lat و lng را از URL می‌خوانیم
                   final lat = state.uri.queryParameters['lat'];
                   final lng = state.uri.queryParameters['lng'];
-                  return MapView(lat: lat, lng: lng);
+                  final focus = state.uri.queryParameters['focus'];  // اضافه شده
+                  return MapView(lat: lat, lng: lng, focus: focus);
                 },
               ),
             ],
           ),
-          // ... بقیه branch ها بدون تغییر
+          // Branch برای تب "علاقه‌مندی‌ها"
           StatefulShellBranch(
             navigatorKey: _shellNavigatorFavoritesKey,
             routes: [
@@ -82,6 +81,7 @@ class AppRouter {
               ),
             ],
           ),
+          // Branch برای تب "پروفایل"
           StatefulShellBranch(
             navigatorKey: _shellNavigatorProfileKey,
             routes: [

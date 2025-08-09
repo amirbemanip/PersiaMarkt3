@@ -2,8 +2,8 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:go_router/go_router.dart'; // برای استفاده از context.pop()
-import 'package:persia_markt/core/models/product.dart'; // اضافه شده
+import 'package:go_router/go_router.dart';
+import 'package:persia_markt/core/models/product.dart';
 import 'package:persia_markt/core/widgets/product_list_item_view.dart';
 import 'package:persia_markt/core/widgets/store_list_item_view.dart';
 import 'package:persia_markt/features/home/presentation/bloc/market_data_bloc.dart';
@@ -62,21 +62,8 @@ class _SearchViewState extends State<SearchView> with SingleTickerProviderStateM
       textDirection: TextDirection.rtl,
       child: Scaffold(
         appBar: AppBar(
-          // ======================= تغییر اصلی اینجاست =======================
-          // به جای دکمه بازگشت خودکار، یک دکمه متنی "انصراف" قرار می‌دهیم
-          leading: TextButton(
-            onPressed: () {
-              // context.pop() کاربر را به صفحه قبلی (صفحه اصلی) برمی‌گرداند
-              context.pop();
-            },
-            child: const Text(
-              'انصراف',
-              style: TextStyle(fontSize: 16),
-            ),
-          ),
-          // برای اینکه دکمه پیش‌فرض بازگشت نمایش داده نشود
           automaticallyImplyLeading: false,
-          // ================================================================
+          titleSpacing: 0,
           title: TextField(
             controller: _searchController,
             autofocus: true,
@@ -95,10 +82,26 @@ class _SearchViewState extends State<SearchView> with SingleTickerProviderStateM
             ),
             onChanged: _onSearchChanged,
           ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                if (context.canPop()) {
+                  context.pop();
+                } else {
+                  context.go('/'); // مسیر صفحه اصلی
+                }
+              },
+              child: const Text(
+                'انصراف',
+                style: TextStyle(
+                  fontSize: 16,
+                ),
+              ),
+            ),
+          ],
         ),
         body: BlocBuilder<SearchCubit, SearchState>(
           builder: (context, searchState) {
-            // ... بقیه کد بدون تغییر باقی می‌ماند
             if (searchState is SearchInitial) {
               return const Center(child: Text('لطفاً عبارت مورد نظر را وارد کنید.'));
             }

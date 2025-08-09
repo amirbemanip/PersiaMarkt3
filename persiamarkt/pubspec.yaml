@@ -15,9 +15,9 @@ dependencies:
   # CORE UTILITIES
   cupertino_icons: ^1.0.2
   google_fonts: ^6.2.1
-  equatable: ^2.0.5 # For value equality in models and states
-  get_it: ^7.7.0 # Service Locator for Dependency Injection
-  fpdart: ^1.1.0 # For functional programming constructs like Either (Result type)
+  equatable: ^2.0.5
+  get_it: ^7.7.0
+  fpdart: ^1.1.0
 
   # STATE MANAGEMENT
   flutter_bloc: ^8.1.5
@@ -36,8 +36,8 @@ dependencies:
   latlong2: ^0.9.1
 
   # UI & UX
-  shimmer: ^3.0.0 # For professional loading effects
-  scrollable_positioned_list: ^0.3.8 # For precise list scrolling
+  shimmer: ^3.0.0
+  scrollable_positioned_list: ^0.3.8
 
 dev_dependencies:
   flutter_test:
@@ -45,8 +45,8 @@ dev_dependencies:
   flutter_lints: ^3.0.0
   
   # TESTING LIBRARIES
-  bloc_test: ^9.1.7      # For testing Cubit/Bloc
-  mocktail: ^1.0.3       # For creating mock classes
+  bloc_test: ^9.1.7
+  mocktail: ^1.0.3
 
 flutter:
   uses-material-design: true

@@ -34,6 +34,26 @@ class Product extends Equatable {
     required this.variant,
   });
 
+  /// ساخت یک Product خالی برای استفاده در orElse
+  factory Product.empty() {
+    return Product(
+      productID: '',
+      name: '',
+      categoryID: '',
+      price: 0.0,
+      description: '',
+      imageURL: '',
+      storeID: '',
+      isPostalAvailable: false,
+      stock: 0,
+      discount: 0.0,
+      unit: '',
+      tags: const [],
+      nameEn: '',
+      variant: '',
+    );
+  }
+
   @override
   List<Object?> get props => [productID, name, categoryID, price, storeID];
   

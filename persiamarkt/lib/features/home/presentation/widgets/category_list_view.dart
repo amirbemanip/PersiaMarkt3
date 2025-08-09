@@ -14,21 +14,39 @@ class CategoryListView extends StatelessWidget {
       child: ListView.builder(
         scrollDirection: Axis.horizontal,
         itemCount: categories.length,
-        padding: const EdgeInsets.symmetric(horizontal: 12),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4), // کمی پدینگ عمودی برای نمایش کامل سایه
         itemBuilder: (context, index) {
           final category = categories[index];
           return GestureDetector(
-            // اصلاح شده: با کلیک به صفحه جزئیات دسته‌بندی می‌رود
             onTap: () => context.go('/category/${category.categoryID}'),
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 4.0),
+              padding: const EdgeInsets.symmetric(horizontal: 8.0),
               child: Column(
                 children: [
-                  CircleAvatar(
-                    radius: 40,
-                    backgroundImage: const AssetImage('assets/images/supermarket.png'),
-                    backgroundColor: Colors.orange.shade100,
+                  // ======================= تغییر اصلی اینجاست =======================
+                  // CircleAvatar با یک Container جایگزین شد تا بتوانیم سایه اضافه کنیم
+                  Container(
+                    width: 80,  // قطر دایره
+                    height: 80, // قطر دایره
+                    decoration: BoxDecoration(
+                      color: Colors.orange.shade100,
+                      shape: BoxShape.circle,
+                      image: const DecorationImage(
+                        image: AssetImage('assets/images/supermarket.png'),
+                        fit: BoxFit.cover,
+                      ),
+                      boxShadow: [
+                        // تعریف سایه ظریف
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.1), // رنگ سایه بسیار ملایم
+                          blurRadius: 8.0,  // میزان نرمی سایه
+                          spreadRadius: 2.0, // میزان گستردگی
+                          offset: const Offset(0, 4), // کمی به سمت پایین
+                        ),
+                      ],
+                    ),
                   ),
+                  // ================================================================
                   const SizedBox(height: 8),
                   Text(
                     category.name,

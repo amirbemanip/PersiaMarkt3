@@ -59,4 +59,24 @@ class Store extends Equatable {
       currency: json['currency'] as String,
     );
   }
+
+  factory Store.empty() {
+    return Store(
+      storeID: '',
+      name: '',
+      address: '',
+      city: '',
+      phone: '',
+      location: const Location(lat: 0.0, lng: 0.0),
+      rating: 0.0,
+      deliveryOptions: const [],
+      deliveryFeePerKm: 0.0,
+      storeImage: '',
+      nameEn: '',
+      cityEn: '',
+      storeType: '',
+      operatingHours: const {},
+      currency: '',
+    );
+  }
 }

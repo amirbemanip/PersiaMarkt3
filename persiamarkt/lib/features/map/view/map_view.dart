@@ -10,45 +10,57 @@ import 'package:persia_markt/features/home/presentation/bloc/market_data_state.d
 import 'package:persia_markt/features/home/presentation/cubit/location_cubit.dart';
 import 'package:persia_markt/features/home/presentation/cubit/location_state.dart';
 
-// ۱. تبدیل به StatefulWidget برای مدیریت بهتر حالت
 class MapView extends StatefulWidget {
   final String? lat;
   final String? lng;
-  const MapView({super.key, this.lat, this.lng});
+  final String? focus; // شناسه فروشگاه برای فوکوس
+
+  const MapView({super.key, this.lat, this.lng, this.focus});
 
   @override
   State<MapView> createState() => _MapViewState();
 }
 
 class _MapViewState extends State<MapView> {
-  // ۲. کنترلر نقشه به عنوان یک متغیر در State تعریف می‌شود
   late final MapController _mapController;
+  bool _hasFocused = false; // برای جلوگیری از چند بار حرکت دوربین
 
   @override
   void initState() {
     super.initState();
-    // ۳. کنترلر فقط یک بار در اینجا ساخته می‌شود و در طول عمر ویجت باقی می‌ماند
     _mapController = MapController();
   }
 
   @override
   void dispose() {
-    _mapController.dispose(); // ۴. کنترلر در زمان خروج از صفحه از بین می‌رود
+    _mapController.dispose();
     super.dispose();
+  }
+
+  void _tryFocusStore(List<Store> stores) {
+    if (_hasFocused) return; // اگر قبلا فوکوس شده، کاری نکن
+    if (widget.focus != null && widget.focus!.isNotEmpty) {
+      final store = stores.firstWhere(
+        (s) => s.storeID == widget.focus,
+        orElse: () => Store.empty(),
+      );
+      if (store.storeID.isNotEmpty) {
+        _mapController.move(LatLng(store.location.lat, store.location.lng), 17.0);
+        _hasFocused = true;
+      }
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    LatLng initialCenter = const LatLng(51.1657, 10.4515); // مرکز آلمان
+    LatLng initialCenter = const LatLng(51.1657, 10.4515);
     double initialZoom = 6.0;
 
     if (widget.lat != null && widget.lng != null) {
       try {
         initialCenter = LatLng(double.parse(widget.lat!), double.parse(widget.lng!));
         initialZoom = 15.0;
-      } catch (e) {
-        // Handle parsing error if any
-      }
+      } catch (_) {}
     }
 
     return Scaffold(
@@ -58,19 +70,25 @@ class _MapViewState extends State<MapView> {
           if (marketState is! MarketDataLoaded) {
             return const Center(child: CircularProgressIndicator());
           }
+
           final stores = marketState.marketData.stores;
-          
+
+          // فوکوس روی فروشگاه فقط یک بار بعد از رندر کامل انجام می‌شود
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            _tryFocusStore(stores);
+          });
+
           return FlutterMap(
-            mapController: _mapController, // ۵. استفاده از کنترلر تعریف شده در State
+            mapController: _mapController,
             options: MapOptions(
               initialCenter: initialCenter,
               initialZoom: initialZoom,
             ),
             children: [
               TileLayer(
-                urlTemplate: "https://{s}.tile.openstreetmap.org/{z}/{y}.png",
+                urlTemplate: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+                subdomains: const ['a', 'b', 'c'],
               ),
-              // لایه‌های مارکرها
               _buildStoreMarkers(context, stores),
               _buildUserLocationMarker(context),
             ],
@@ -81,11 +99,9 @@ class _MapViewState extends State<MapView> {
         onPressed: () {
           final locationState = context.read<LocationCubit>().state;
           if (locationState is LocationLoaded) {
-            // انیمیشن плавی برای حرکت به موقعیت کاربر
-            _mapController.moveAndRotate(
+            _mapController.move(
               LatLng(locationState.position.latitude, locationState.position.longitude),
               15.0,
-              0.0
             );
           }
         },
@@ -95,7 +111,6 @@ class _MapViewState extends State<MapView> {
     );
   }
 
-  /// متد کمکی برای ساخت مارکرهای فروشگاه
   MarkerLayer _buildStoreMarkers(BuildContext context, List<Store> stores) {
     return MarkerLayer(
       markers: stores.map((store) {
@@ -129,12 +144,10 @@ class _MapViewState extends State<MapView> {
     );
   }
 
-  /// متد کمکی برای ساخت مارکر موقعیت کاربر
   Widget _buildUserLocationMarker(BuildContext context) {
     return BlocConsumer<LocationCubit, LocationState>(
-      // Listener برای حرکت اولیه به موقعیت کاربر
       listener: (context, locationState) {
-        if (locationState is LocationLoaded && widget.lat == null) {
+        if (locationState is LocationLoaded && widget.lat == null && widget.lng == null && widget.focus == null) {
           _mapController.move(
             LatLng(locationState.position.latitude, locationState.position.longitude),
             13.0,

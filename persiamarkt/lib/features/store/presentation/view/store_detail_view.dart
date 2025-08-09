@@ -3,16 +3,11 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-// import های اصلاح شده
 import 'package:persia_markt/core/models/category_item.dart';
 import 'package:persia_markt/core/models/product.dart';
 import 'package:persia_markt/core/models/store.dart';
-import 'package:persia_markt/core/widgets/error_view.dart';
-import 'package:persia_markt/core/widgets/product_list_item_view.dart';
 import 'package:persia_markt/features/home/presentation/bloc/market_data_bloc.dart';
 import 'package:persia_markt/features/home/presentation/bloc/market_data_state.dart';
-import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
-// import 'package:persia_markt/features/map/view/map_view.dart'; // این خط در این فایل استفاده نمی‌شود و در کد اصلی شما حذف شده است
 
 class StoreDetailView extends StatefulWidget {
   final String storeId;
@@ -29,15 +24,24 @@ class StoreDetailView extends StatefulWidget {
 }
 
 class _StoreDetailViewState extends State<StoreDetailView> {
-  // از GlobalKey برای اسکرول به دسته‌بندی‌ها استفاده می‌کنیم
   final Map<String, GlobalKey> _categoryKeys = {};
+  final ScrollController _pageScrollController = ScrollController();
 
   @override
   void initState() {
     super.initState();
-    if (widget.initialProductId != null) {
-      WidgetsBinding.instance.addPostFrameCallback((_) => _scrollToInitialProduct());
-    }
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _pageScrollController.jumpTo(0.0);
+      if (widget.initialProductId != null) {
+        _scrollToInitialProduct();
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _pageScrollController.dispose();
+    super.dispose();
   }
 
   void _scrollToCategory(String categoryId) {
@@ -45,8 +49,9 @@ class _StoreDetailViewState extends State<StoreDetailView> {
     if (key != null && key.currentContext != null) {
       Scrollable.ensureVisible(
         key.currentContext!,
-        duration: const Duration(milliseconds: 500),
+        duration: const Duration(milliseconds: 400),
         curve: Curves.easeInOut,
+        alignment: 0.1, // قرارگیری کمی پایین‌تر از هدر
       );
     }
   }
@@ -54,11 +59,11 @@ class _StoreDetailViewState extends State<StoreDetailView> {
   void _scrollToInitialProduct() {
     final marketState = context.read<MarketDataBloc>().state;
     if (marketState is MarketDataLoaded) {
-      final product = marketState.marketData.products.firstWhere((p) => p.productID == widget.initialProductId);
-      // با کمی تاخیر اسکرول می‌کنیم تا همه ویجت‌ها ساخته شده باشند
-      Future.delayed(const Duration(milliseconds: 100), () {
+      final product = marketState.marketData.products
+          .firstWhere((p) => p.productID == widget.initialProductId, orElse: () => Product.empty());
+      if (product.productID.isNotEmpty) {
         _scrollToCategory(product.categoryID);
-      });
+      }
     }
   }
 
@@ -103,7 +108,7 @@ class _StoreDetailViewState extends State<StoreDetailView> {
               .where((c) => storeProducts.any((p) => p.categoryID == c.categoryID))
               .toList();
 
-          // مقداردهی کلیدها برای هر دسته‌بندی
+          // ساخت key برای هر دسته‌بندی در صورت عدم وجود
           for (var category in categoriesInStore) {
             _categoryKeys.putIfAbsent(category.categoryID, () => GlobalKey());
           }
@@ -111,13 +116,12 @@ class _StoreDetailViewState extends State<StoreDetailView> {
           return Directionality(
             textDirection: TextDirection.rtl,
             child: Scaffold(
-              // اصلاح شده: استفاده از CustomScrollView برای اسکرول یکپارچه
               body: CustomScrollView(
+                controller: _pageScrollController,
                 slivers: [
                   _buildSliverAppBar(context, store),
                   _buildStoreDetailsSliver(context, store),
                   _buildCategoryHeader(context, categoriesInStore),
-                  // لیست محصولات به صورت مجموعه‌ای از Sliver ها به اینجا منتقل شد
                   ..._buildProductSlivers(categoriesInStore, storeProducts, store),
                 ],
               ),
@@ -132,7 +136,6 @@ class _StoreDetailViewState extends State<StoreDetailView> {
   SliverAppBar _buildSliverAppBar(BuildContext context, Store store) {
     return SliverAppBar(
       expandedHeight: 220.0,
-      floating: false,
       pinned: true,
       flexibleSpace: FlexibleSpaceBar(
         title: Text(store.name, style: const TextStyle(fontSize: 16.0)),
@@ -166,7 +169,7 @@ class _StoreDetailViewState extends State<StoreDetailView> {
                   icon: Icon(Icons.map_outlined, color: Theme.of(context).colorScheme.primary),
                   tooltip: 'نمایش در نقشه',
                   onPressed: () {
-                    context.go('/map?lat=${store.location.lat}&lng=${store.location.lng}');
+                    context.go('/map?lat=${store.location.lat}&lng=${store.location.lng}&focus=${store.storeID}');
                   },
                 ),
               ],
@@ -200,9 +203,7 @@ class _StoreDetailViewState extends State<StoreDetailView> {
             itemBuilder: (context, index) => Padding(
               padding: const EdgeInsets.symmetric(horizontal: 4.0, vertical: 10),
               child: ElevatedButton(
-                onPressed: () {
-                  _scrollToCategory(categories[index].categoryID);
-                },
+                onPressed: () => _scrollToCategory(categories[index].categoryID),
                 child: Text(categories[index].name),
               ),
             ),
@@ -212,10 +213,8 @@ class _StoreDetailViewState extends State<StoreDetailView> {
     );
   }
 
-  /// این متد جدید، لیست محصولات را به صورت مجموعه‌ای از Sliverها برمی‌گرداند
   List<Widget> _buildProductSlivers(
       List<CategoryItem> categories, List<Product> allProducts, Store store) {
-    // از map برای تبدیل هر دسته‌بندی به یک SliverList استفاده می‌کنیم
     return categories.map((category) {
       final productsInCategory = allProducts
           .where((p) => p.categoryID == category.categoryID)
@@ -223,18 +222,25 @@ class _StoreDetailViewState extends State<StoreDetailView> {
 
       return SliverList(
         delegate: SliverChildListDelegate([
-          // هدر دسته‌بندی
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 24, 16, 8),
-            // اضافه کردن کلید به هر هدر برای قابلیت اسکرول
-            child: Text(category.name, key: _categoryKeys[category.categoryID], style: Theme.of(context).textTheme.headlineSmall),
+            child: Text(
+              category.name,
+              key: _categoryKeys[category.categoryID],
+              style: Theme.of(context).textTheme.headlineSmall,
+            ),
           ),
           const Divider(indent: 16, endIndent: 16, height: 1),
-          // لیست محصولات این دسته‌بندی
-          ...productsInCategory.map((product) => ProductListItemView(
-                product: product,
-                store: store,
-                onImageTap: () => _showImageDialog(context, product.imageURL),
+          ...productsInCategory.map((product) => ListTile(
+                leading: GestureDetector(
+                  onTap: () => _showImageDialog(context, product.imageURL),
+                  child: Image.network(product.imageURL,
+                      width: 50, height: 50, fit: BoxFit.cover,
+                      errorBuilder: (_, __, ___) =>
+                          const Icon(Icons.broken_image)),
+                ),
+                title: Text(product.name),
+                subtitle: Text('${product.price} تومان'),
               )),
         ]),
       );
@@ -242,30 +248,26 @@ class _StoreDetailViewState extends State<StoreDetailView> {
   }
 }
 
-// کلاس کمکی برای هدر چسبان
 class _SliverAppBarDelegate extends SliverPersistentHeaderDelegate {
+  final double minHeight;
+  final double maxHeight;
+  final Widget child;
   _SliverAppBarDelegate({
     required this.minHeight,
     required this.maxHeight,
     required this.child,
   });
-  final double minHeight;
-  final double maxHeight;
-  final Widget child;
   @override
   double get minExtent => minHeight;
   @override
   double get maxExtent => maxHeight;
   @override
-  Widget build(
-      BuildContext context, double shrinkOffset, bool overlapsContent) {
+  Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) {
     return SizedBox.expand(child: child);
   }
-
   @override
-  bool shouldRebuild(_SliverAppBarDelegate oldDelegate) {
-    return maxHeight != oldDelegate.maxHeight ||
-        minHeight != oldDelegate.minHeight ||
-        child != oldDelegate.child;
-  }
+  bool shouldRebuild(_SliverAppBarDelegate old) =>
+      maxHeight != old.maxHeight ||
+      minHeight != old.minHeight ||
+      child != old.child;
 }
