@@ -1,4 +1,3 @@
-// lib/core/widgets/store_list_item_view.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:geolocator/geolocator.dart';
@@ -6,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:persia_markt/core/models/store.dart';
 import 'package:persia_markt/features/home/presentation/cubit/location_cubit.dart';
 import 'package:persia_markt/features/home/presentation/cubit/location_state.dart';
+import 'package:persia_markt/l10n/app_localizations.dart'; // ۱. Import برای ترجمه
 
 class StoreListItemView extends StatelessWidget {
   final Store store;
@@ -13,6 +13,8 @@ class StoreListItemView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!; // ۲. نمونه l10n
+
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 6, horizontal: 16),
       decoration: BoxDecoration(
@@ -20,7 +22,7 @@ class StoreListItemView extends StatelessWidget {
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.08), // سایه ملایم
+            color: Colors.black.withOpacity(0.08),
             blurRadius: 10,
             spreadRadius: 1,
             offset: const Offset(0, 4),
@@ -66,7 +68,8 @@ class StoreListItemView extends StatelessWidget {
                 children: [
                   const Icon(Icons.star, color: Colors.amber, size: 16),
                   const SizedBox(width: 4),
-                  Text(store.rating.toString()),
+                  // ۳. متن امتیاز با l10n ترکیب شد
+                  Text('${store.rating} ${l10n.storeRating}'),
                 ],
               ),
               const SizedBox(height: 4),
@@ -76,10 +79,11 @@ class StoreListItemView extends StatelessWidget {
                     final distance = Geolocator.distanceBetween(
                       locationState.position.latitude,
                       locationState.position.longitude,
-                      store.latitude,  // اصلاح شد
-                      store.longitude, // اصلاح شد
+                      store.latitude,
+                      store.longitude,
                     );
-                    final distanceText = '${(distance / 1000).toStringAsFixed(1)} کیلومتر';
+                    // ۴. متن فاصله و واحد "کیلومتر" ترجمه شد
+                    final distanceText = '${(distance / 1000).toStringAsFixed(1)} ${l10n.km}';
                     return Text(
                       distanceText,
                       style: const TextStyle(fontSize: 12, color: Colors.grey),

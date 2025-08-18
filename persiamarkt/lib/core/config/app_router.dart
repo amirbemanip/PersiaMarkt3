@@ -1,5 +1,7 @@
-import 'dart:async'; // <-- Import needed for StreamSubscription
-import 'package:flutter/material.dart';
+// مسیر: lib/core/config/app_router.dart
+
+import 'dart:async';
+import 'package:flutter/material.dart'; // <<< مشکل اصلی اینجا بود و برطرف شد
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:persia_markt/core/config/service_locator.dart';
@@ -14,7 +16,9 @@ import 'package:persia_markt/features/map/view/map_view.dart';
 import 'package:persia_markt/features/profile/presentation/view/favorites_view.dart';
 import 'package:persia_markt/features/profile/presentation/view/profile_view.dart';
 import 'package:persia_markt/features/search/presentation/view/search_view.dart';
+import 'package:persia_markt/features/seller_panel/view/seller_panel_view.dart';
 import 'package:persia_markt/features/store/presentation/view/store_detail_view.dart';
+import 'app_routes.dart';
 
 final _rootNavigatorKey = GlobalKey<NavigatorState>();
 final _shellNavigatorHomeKey = GlobalKey<NavigatorState>(debugLabel: 'shellHome');
@@ -24,29 +28,22 @@ final _shellNavigatorProfileKey = GlobalKey<NavigatorState>(debugLabel: 'shellPr
 
 class AppRouter {
   static final router = GoRouter(
-    initialLocation: '/',
+    initialLocation: AppRoutes.home,
     navigatorKey: _rootNavigatorKey,
-    // Listen to AuthCubit state changes to automatically redirect users
     refreshListenable: GoRouterRefreshStream(sl<AuthCubit>().stream),
     redirect: (BuildContext context, GoRouterState state) {
       final authState = context.read<AuthCubit>().state;
       final isLoggedIn = authState is Authenticated;
       
-      final onAuthRoutes = state.matchedLocation == '/login' || state.matchedLocation == '/register';
+      final authRelatedRoutes = [AppRoutes.login, AppRoutes.register, AppRoutes.sellerPanel];
+      final onAuthRoutes = authRelatedRoutes.contains(state.matchedLocation);
 
-      // If user is not logged in and tries to access a protected route (e.g., /profile)
       if (!isLoggedIn && !onAuthRoutes) {
-        // Redirect them to the login page
-        return '/login';
+        return AppRoutes.login;
       }
-
-      // If user is logged in and tries to access login/register page
       if (isLoggedIn && onAuthRoutes) {
-        // Redirect them to the home page
-        return '/';
+        return AppRoutes.home;
       }
-
-      // No redirect needed
       return null;
     },
     routes: [
@@ -55,97 +52,152 @@ class AppRouter {
           return MainTabBarView(navigationShell: navigationShell);
         },
         branches: [
-          StatefulShellBranch(
+          _buildBranch(
             navigatorKey: _shellNavigatorHomeKey,
             routes: [
               GoRoute(
-                path: '/',
-                builder: (context, state) => const HomeView(),
+                path: AppRoutes.home,
+                pageBuilder: (context, state) => _buildPageWithTransition(
+                  key: state.pageKey,
+                  child: const HomeView(),
+                ),
                 routes: [
                   GoRoute(
-                    path: 'store/:storeId',
-                    builder: (context, state) {
+                    path: AppRoutes.storeDetail,
+                    pageBuilder: (context, state) {
                       final storeId = state.pathParameters['storeId']!;
                       final initialProductId = state.uri.queryParameters['productId'];
-                      return StoreDetailView(
-                        storeId: storeId,
-                        initialProductId: initialProductId,
+                      return _buildPageWithTransition(
+                        key: state.pageKey,
+                        child: StoreDetailView(
+                          storeId: storeId,
+                          initialProductId: initialProductId,
+                        ),
                       );
                     },
                   ),
                   GoRoute(
-                    path: 'category/:categoryId',
-                    builder: (context, state) {
+                    path: AppRoutes.categoryDetail,
+                    pageBuilder: (context, state) {
                       final categoryId = state.pathParameters['categoryId']!;
-                      return CategoryDetailView(categoryId: categoryId);
+                      return _buildPageWithTransition(
+                        key: state.pageKey,
+                        child: CategoryDetailView(categoryId: categoryId),
+                      );
                     },
                   ),
                 ],
               ),
             ],
           ),
-          StatefulShellBranch(
+          _buildBranch(
             navigatorKey: _shellNavigatorMapKey,
             routes: [
               GoRoute(
-                path: '/map',
-                builder: (context, state) {
+                path: AppRoutes.map,
+                pageBuilder: (context, state) {
                   final lat = state.uri.queryParameters['lat'];
                   final lng = state.uri.queryParameters['lng'];
                   final focus = state.uri.queryParameters['focus'];
-                  return MapView(lat: lat, lng: lng, focus: focus);
+                  return _buildPageWithTransition(
+                    key: state.pageKey,
+                    child: MapView(lat: lat, lng: lng, focus: focus),
+                  );
                 },
               ),
             ],
           ),
-          StatefulShellBranch(
+          _buildBranch(
             navigatorKey: _shellNavigatorFavoritesKey,
             routes: [
               GoRoute(
-                path: '/favorites',
-                builder: (context, state) => const FavoritesView(),
+                path: AppRoutes.favorites,
+                pageBuilder: (context, state) => _buildPageWithTransition(
+                  key: state.pageKey,
+                  child: const FavoritesView(),
+                ),
               ),
             ],
           ),
-          StatefulShellBranch(
+          _buildBranch(
             navigatorKey: _shellNavigatorProfileKey,
             routes: [
               GoRoute(
-                path: '/profile',
-                builder: (context, state) => const ProfileView(),
+                path: AppRoutes.profile,
+                pageBuilder: (context, state) => _buildPageWithTransition(
+                  key: state.pageKey,
+                  child: const ProfileView(),
+                ),
               ),
             ],
           ),
         ],
       ),
       GoRoute(
-        path: '/search',
+        path: AppRoutes.search,
         parentNavigatorKey: _rootNavigatorKey,
-        builder: (context, state) => const SearchView(),
+        pageBuilder: (context, state) => _buildPageWithTransition(
+          key: state.pageKey,
+          child: const SearchView(),
+        ),
       ),
       GoRoute(
-        path: '/login',
+        path: AppRoutes.login,
         parentNavigatorKey: _rootNavigatorKey,
-        builder: (context, state) => const LoginView(),
+        pageBuilder: (context, state) => _buildPageWithTransition(
+          key: state.pageKey,
+          child: const LoginView(),
+        ),
       ),
       GoRoute(
-        path: '/register',
+        path: AppRoutes.register,
         parentNavigatorKey: _rootNavigatorKey,
-        builder: (context, state) => const RegisterView(),
+        pageBuilder: (context, state) => _buildPageWithTransition(
+          key: state.pageKey,
+          child: const RegisterView(),
+        ),
+      ),
+      GoRoute(
+        path: AppRoutes.sellerPanel,
+        parentNavigatorKey: _rootNavigatorKey,
+        pageBuilder: (context, state) => const MaterialPage(
+          fullscreenDialog: true,
+          child: SellerPanelView(),
+        ),
       ),
     ],
   );
+
+  static StatefulShellBranch _buildBranch({
+    required GlobalKey<NavigatorState> navigatorKey,
+    required List<RouteBase> routes,
+  }) {
+    return StatefulShellBranch(
+      navigatorKey: navigatorKey,
+      routes: routes,
+    );
+  }
+
+  static CustomTransitionPage _buildPageWithTransition<T>({
+    required LocalKey key,
+    required Widget child,
+  }) {
+    return CustomTransitionPage<T>(
+      key: key,
+      child: child,
+      transitionsBuilder: (context, animation, secondaryAnimation, child) {
+        return FadeTransition(opacity: animation, child: child);
+      },
+    );
+  }
 }
 
-// Helper class to make GoRouter listen to BLoC/Cubit stream changes
 class GoRouterRefreshStream extends ChangeNotifier {
   GoRouterRefreshStream(Stream<dynamic> stream) {
     notifyListeners();
     _subscription = stream.asBroadcastStream().listen((_) => notifyListeners());
   }
-  // FIXED: Changed the type from Stream to StreamSubscription
   late final StreamSubscription<dynamic> _subscription;
-
   @override
   void dispose() {
     _subscription.cancel();

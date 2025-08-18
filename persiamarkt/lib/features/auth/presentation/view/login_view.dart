@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:persia_markt/core/config/app_routes.dart';
+import 'package:persia_markt/core/cubit/locale_cubit.dart';
 import 'package:persia_markt/features/auth/presentation/cubit/auth_cubit.dart';
 import 'package:persia_markt/features/auth/presentation/cubit/auth_state.dart';
+import 'package:persia_markt/l10n/app_localizations.dart';
 
 class LoginView extends StatefulWidget {
   const LoginView({super.key});
@@ -15,7 +18,7 @@ class _LoginViewState extends State<LoginView> {
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
-  bool _isLoadingUi = false; // فقط برای transition اولیه، State اصلی از Bloc می‌آید
+  bool _isLoadingUi = false;
   bool _obscureText = true;
 
   @override
@@ -33,7 +36,6 @@ class _LoginViewState extends State<LoginView> {
 
   Future<void> _login() async {
     if (_formKey.currentState?.validate() ?? false) {
-      // به‌جای Delay، اکشن لاگینِ AuthCubit را صدا می‌زنیم
       context.read<AuthCubit>().loginUser(
             email: _emailController.text.trim(),
             password: _passwordController.text,
@@ -42,16 +44,53 @@ class _LoginViewState extends State<LoginView> {
     }
   }
 
+  void _showLanguageDialog(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    showDialog(
+      context: context,
+      builder: (BuildContext dialogContext) {
+        return SimpleDialog(
+          title: Text(l10n.selectLanguage),
+          children: <Widget>[
+            SimpleDialogOption(
+              onPressed: () {
+                context.read<LocaleCubit>().changeLocale('fa');
+                Navigator.pop(dialogContext);
+              },
+              child: Text(l10n.persian),
+            ),
+            SimpleDialogOption(
+              onPressed: () {
+                context.read<LocaleCubit>().changeLocale('en');
+                Navigator.pop(dialogContext);
+              },
+              child: Text(l10n.english),
+            ),
+            SimpleDialogOption(
+              onPressed: () {
+                context.read<LocaleCubit>().changeLocale('de');
+                Navigator.pop(dialogContext);
+              },
+              child: Text(l10n.german),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
+    final isRtl = l10n.localeName == 'fa';
+
     return Scaffold(
       body: SafeArea(
         child: BlocConsumer<AuthCubit, AuthState>(
           listener: (context, state) {
             if (state is Authenticated) {
-              // موفقیت → خانه
-              context.go('/');
+              context.go(AppRoutes.home);
             } else if (state is AuthError) {
               setState(() => _isLoadingUi = false);
               ScaffoldMessenger.of(context).showSnackBar(
@@ -64,88 +103,103 @@ class _LoginViewState extends State<LoginView> {
           builder: (context, state) {
             final isLoading = state is AuthLoading || _isLoadingUi;
 
-            return Center(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.all(24.0),
-                child: Form(
-                  key: _formKey,
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      Image.asset('assets/images/appLogo.png', height: 80),
-                      const SizedBox(height: 16),
-                      Text(
-                        'ورود به حساب کاربری',
-                        textAlign: TextAlign.center,
-                        style: theme.textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.bold),
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        'خوشحالیم که دوباره شما را می‌بینیم!',
-                        textAlign: TextAlign.center,
-                        style: theme.textTheme.titleMedium?.copyWith(color: Colors.grey),
-                      ),
-                      const SizedBox(height: 32),
-
-                      _buildTextFormField(
-                        controller: _emailController,
-                        labelText: 'ایمیل',
-                        icon: Icons.email_outlined,
-                        keyboardType: TextInputType.emailAddress,
-                        validator: (value) {
-                          if (value == null || value.trim().isEmpty) {
-                            return 'ایمیل را وارد کنید';
-                          }
-                          final v = value.trim();
-                          if (!v.contains('@') || !v.contains('.')) {
-                            return 'ایمیل نامعتبر است';
-                          }
-                          return null;
-                        },
-                      ),
-                      const SizedBox(height: 16),
-
-                      _buildTextFormField(
-                        controller: _passwordController,
-                        labelText: 'رمز عبور',
-                        icon: Icons.lock_outline,
-                        obscureText: _obscureText,
-                        suffixIcon: IconButton(
-                          icon: Icon(_obscureText ? Icons.visibility_off : Icons.visibility),
-                          onPressed: _togglePasswordVisibility,
-                        ),
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'رمز عبور را وارد کنید';
-                          }
-                          if (value.length < 6) {
-                            return 'حداقل ۶ کاراکتر';
-                          }
-                          return null;
-                        },
-                      ),
-                      const SizedBox(height: 24),
-
-                      isLoading
-                          ? const Center(child: CircularProgressIndicator())
-                          : ElevatedButton(
-                              onPressed: _login,
-                              style: ElevatedButton.styleFrom(
-                                padding: const EdgeInsets.symmetric(vertical: 14),
-                              ),
-                              child: const Text('ورود'),
+            return Stack(
+              children: [
+                Center(
+                  child: SingleChildScrollView(
+                    padding: const EdgeInsets.all(24.0),
+                    child: Form(
+                      key: _formKey,
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          const SizedBox(height: 50), // فاصله برای دکمه‌های بالا
+                          Image.asset('assets/images/appLogo.png', height: 80),
+                          const SizedBox(height: 16),
+                          Text(
+                            l10n.loginToYourAccount,
+                            textAlign: TextAlign.center,
+                            style: theme.textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.bold),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            l10n.gladToSeeYouAgain,
+                            textAlign: TextAlign.center,
+                            style: theme.textTheme.titleMedium?.copyWith(color: Colors.grey),
+                          ),
+                          const SizedBox(height: 32),
+                          _buildTextFormField(
+                            controller: _emailController,
+                            labelText: l10n.email,
+                            icon: Icons.email_outlined,
+                            keyboardType: TextInputType.emailAddress,
+                            validator: (value) {
+                              if (value == null || value.trim().isEmpty) return l10n.enterYourEmail;
+                              if (!value.contains('@') || !value.contains('.')) return l10n.invalidEmail;
+                              return null;
+                            },
+                          ),
+                          const SizedBox(height: 16),
+                          _buildTextFormField(
+                            controller: _passwordController,
+                            labelText: l10n.password,
+                            icon: Icons.lock_outline,
+                            obscureText: _obscureText,
+                            suffixIcon: IconButton(
+                              icon: Icon(_obscureText ? Icons.visibility_off : Icons.visibility),
+                              onPressed: _togglePasswordVisibility,
                             ),
-                      const SizedBox(height: 12),
-
-                      TextButton(
-                        onPressed: () => context.go('/register'),
-                        child: const Text('حساب ندارید؟ ثبت‌نام'),
+                            validator: (value) {
+                              if (value == null || value.isEmpty) return l10n.enterYourPassword;
+                              if (value.length < 6) return l10n.passwordTooShort;
+                              return null;
+                            },
+                          ),
+                          const SizedBox(height: 24),
+                          isLoading
+                              ? const Center(child: CircularProgressIndicator())
+                              : ElevatedButton(
+                                  onPressed: _login,
+                                  style: ElevatedButton.styleFrom(
+                                    padding: const EdgeInsets.symmetric(vertical: 14),
+                                  ),
+                                  child: Text(l10n.login),
+                                ),
+                          const SizedBox(height: 12),
+                          TextButton(
+                            onPressed: () => context.go(AppRoutes.register),
+                            child: Text(l10n.noAccount),
+                          ),
+                        ],
                       ),
-                    ],
+                    ),
                   ),
                 ),
-              ),
+                // دکمه‌های ورود فروشنده و تغییر زبان در بالای صفحه
+                Positioned(
+                  top: 16,
+                  left: isRtl ? null : 16,
+                  right: isRtl ? 16 : null,
+                  child: TextButton.icon(
+                    icon: const Icon(Icons.storefront_outlined, size: 20),
+                    label: Text(l10n.sellerLogin),
+                    onPressed: () => context.go(AppRoutes.sellerPanel),
+                    style: _buttonStyle(theme),
+                  ),
+                ),
+                Positioned(
+                  top: 16,
+                  right: isRtl ? null : 16,
+                  left: isRtl ? 16 : null,
+                  child: TextButton.icon(
+                    icon: const Icon(Icons.language, size: 20),
+                    label: Text(l10n.language),
+                    onPressed: () => _showLanguageDialog(context),
+                    style: _buttonStyle(theme),
+                  ),
+                ),
+              ],
             );
           },
         ),
@@ -153,7 +207,17 @@ class _LoginViewState extends State<LoginView> {
     );
   }
 
-  // همون متد کمکی قبلی برای TextFormField — بدون حذف هیچ‌چیز
+  ButtonStyle _buttonStyle(ThemeData theme) {
+    return TextButton.styleFrom(
+      foregroundColor: theme.colorScheme.primary,
+      backgroundColor: theme.colorScheme.surface.withOpacity(0.9),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(20),
+      ),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+    );
+  }
+
   Widget _buildTextFormField({
     required TextEditingController controller,
     required String labelText,

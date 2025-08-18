@@ -1,0 +1,175 @@
+// ignore: unused_import
+import 'package:intl/intl.dart' as intl;
+import 'app_localizations.dart';
+
+// ignore_for_file: type=lint
+
+/// The translations for English (`en`).
+class AppLocalizationsEn extends AppLocalizations {
+  AppLocalizationsEn([String locale = 'en']) : super(locale);
+
+  @override
+  String get persiaMarkt => 'PersiaMarkt';
+
+  @override
+  String get home => 'Home';
+
+  @override
+  String get map => 'Map';
+
+  @override
+  String get favorites => 'Favorites';
+
+  @override
+  String get profile => 'Profile';
+
+  @override
+  String get searchHint => 'Search for bread, milk, stores...';
+
+  @override
+  String get yourLocation => 'Your Location';
+
+  @override
+  String get gettingLocation => 'Getting location...';
+
+  @override
+  String get locationUnknown => 'Location unknown';
+
+  @override
+  String get specialOffers => 'Special Offers';
+
+  @override
+  String get affordableProducts => 'Affordable Products';
+
+  @override
+  String get stores => 'Stores';
+
+  @override
+  String get myProfile => 'My Profile';
+
+  @override
+  String get logout => 'Logout';
+
+  @override
+  String get logoutFromAccount => 'Logout from account';
+
+  @override
+  String get logoutConfirmation => 'Are you sure you want to log out?';
+
+  @override
+  String get cancel => 'Cancel';
+
+  @override
+  String get loginToSeeProfile => 'Please log in to view your profile.';
+
+  @override
+  String get guestUser => 'Guest User';
+
+  @override
+  String get unknownEmail => 'Unknown Email';
+
+  @override
+  String get accountSettings => 'Account Settings';
+
+  @override
+  String get orderHistory => 'Order History';
+
+  @override
+  String get changeLanguage => 'Change Language';
+
+  @override
+  String get selectLanguage => 'Select Language';
+
+  @override
+  String get persian => 'Persian';
+
+  @override
+  String get english => 'English';
+
+  @override
+  String get german => 'German';
+
+  @override
+  String get categories => 'Categories';
+
+  @override
+  String get viewAll => 'View All';
+
+  @override
+  String get allProducts => 'All Products';
+
+  @override
+  String get availableStores => 'Available Stores';
+
+  @override
+  String get noProductsInCategory => 'No products found in this category.';
+
+  @override
+  String get viewStore => 'View Store';
+
+  @override
+  String get noDataAvailable => 'Unfortunately, there are no stores or products to display at the moment.';
+
+  @override
+  String get connectingToServer => 'Connecting to server...';
+
+  @override
+  String get initialLoadingMessage => 'Initial loading may take a moment. Please be patient.';
+
+  @override
+  String get locationError => 'Error converting location';
+
+  @override
+  String get km => 'km';
+
+  @override
+  String get myLocation => 'My Location';
+
+  @override
+  String get yourCartIsEmpty => 'Your shopping cart is empty';
+
+  @override
+  String get yourShoppingCart => 'Your Shopping Cart';
+
+  @override
+  String get storeRating => 'Store Rating';
+
+  @override
+  String get loginToYourAccount => 'Login to your Account';
+
+  @override
+  String get gladToSeeYouAgain => 'Glad to see you again!';
+
+  @override
+  String get email => 'Email';
+
+  @override
+  String get enterYourEmail => 'Please enter your email';
+
+  @override
+  String get invalidEmail => 'Invalid email format';
+
+  @override
+  String get password => 'Password';
+
+  @override
+  String get enterYourPassword => 'Please enter your password';
+
+  @override
+  String get passwordTooShort => 'At least 6 characters';
+
+  @override
+  String get login => 'Login';
+
+  @override
+  String get noAccount => 'No account? Sign up';
+
+  @override
+  String get sellerLogin => 'Seller Login';
+
+  @override
+  String get sellerPanel => 'Seller Panel';
+
+  @override
+  String get language => 'Language';
+}

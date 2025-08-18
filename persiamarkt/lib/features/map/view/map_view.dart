@@ -1,4 +1,3 @@
-// lib/features/map/view/map_view.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_map/flutter_map.dart';
@@ -8,6 +7,7 @@ import 'package:persia_markt/features/home/presentation/bloc/market_data_bloc.da
 import 'package:persia_markt/features/home/presentation/bloc/market_data_state.dart';
 import 'package:persia_markt/features/home/presentation/cubit/location_cubit.dart';
 import 'package:persia_markt/features/home/presentation/cubit/location_state.dart';
+import 'package:persia_markt/l10n/app_localizations.dart'; // ۱. Import برای ترجمه
 
 class MapView extends StatefulWidget {
   final String? lat;
@@ -52,6 +52,7 @@ class _MapViewState extends State<MapView> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!; // ۲. نمونه l10n
     LatLng initialCenter = const LatLng(51.1657, 10.4515);
     double initialZoom = 6.0;
 
@@ -65,7 +66,10 @@ class _MapViewState extends State<MapView> {
     }
 
     return Scaffold(
-      appBar: AppBar(title: const Text('نقشه فروشگاه‌ها')),
+      appBar: AppBar(
+        // ۳. عنوان AppBar ترجمه شد
+        title: Text(l10n.map),
+      ),
       body: BlocBuilder<MarketDataBloc, MarketDataState>(
         builder: (context, marketState) {
           if (marketState is! MarketDataLoaded) {
@@ -106,7 +110,8 @@ class _MapViewState extends State<MapView> {
             );
           }
         },
-        label: const Text('موقعیت من'),
+        // ۴. لیبل دکمه ترجمه شد
+        label: Text(l10n.myLocation),
         icon: const Icon(Icons.my_location),
       ),
     );
@@ -119,14 +124,13 @@ class _MapViewState extends State<MapView> {
           point: LatLng(s.latitude, s.longitude),
           width: 40,
           height: 40,
-          // ❗️تغییر مهم: در نسخه‌های جدید flutter_map باید از child استفاده شود (نه builder)
           child: Tooltip(
             message: s.name,
             child: GestureDetector(
               onTap: () {
                 _mapController.move(LatLng(s.latitude, s.longitude), 17.0);
               },
-              child: const Icon(Icons.location_on, size: 36),
+              child: const Icon(Icons.location_on, size: 36, color: Colors.orange),
             ),
           ),
         );
@@ -144,8 +148,7 @@ class _MapViewState extends State<MapView> {
           point: LatLng(loc.position.latitude, loc.position.longitude),
           width: 36,
           height: 36,
-          // ❗️اینجا هم child جایگزین builder شده
-          child: const Icon(Icons.my_location, size: 28),
+          child: const Icon(Icons.my_location, size: 28, color: Colors.blue),
         ),
       ],
     );

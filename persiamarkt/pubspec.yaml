@@ -18,6 +18,7 @@ dependencies:
   equatable: ^2.0.5
   get_it: ^7.7.0
   fpdart: ^1.1.0
+  intl: ^0.20.2 
 
   # STATE MANAGEMENT
   flutter_bloc: ^8.1.5
@@ -39,6 +40,8 @@ dependencies:
   shimmer: ^3.0.0
   scrollable_positioned_list: ^0.3.8
   jwt_decoder: ^2.0.1
+  flutter_staggered_animations: ^1.1.1 
+  webview_flutter: ^4.8.0 # <<< این خط جدید اضافه شده است
 
 dev_dependencies:
   flutter_test:
@@ -50,7 +53,10 @@ dev_dependencies:
   mocktail: ^1.0.3
 
 flutter:
+  generate: true 
+
   uses-material-design: true
+  
   assets:
     - assets/images/appLogo.png
     - assets/images/supermarket.png

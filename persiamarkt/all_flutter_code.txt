@@ -30,8 +30,8 @@ void registerPlugins([final Registrar? pluginRegistrar]) {
 مسیر: D:\PersiaMarkt 3\persiamarkt\lib\main.dart
 ====================
 
-import 'package:flutter/material.dart'; // <-- FIXED
-import 'package:flutter_bloc/flutter_bloc.dart'; // <-- FIXED
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:persia_markt/core/config/app_router.dart';
@@ -56,21 +56,11 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiBlocProvider(
       providers: [
-        BlocProvider(
-          create: (_) => sl<MarketDataBloc>()..add(FetchMarketDataEvent()),
-        ),
-        BlocProvider(
-          create: (_) => sl<LocationCubit>()..fetchLocation(),
-        ),
-        BlocProvider(
-          create: (_) => sl<FavoritesCubit>()..loadLikedProducts(),
-        ),
-        BlocProvider(
-          create: (_) => sl<SearchCubit>(),
-        ),
-        BlocProvider(
-          create: (_) => sl<AuthCubit>(),
-        ),
+        BlocProvider(create: (_) => sl<MarketDataBloc>()..add(FetchMarketDataEvent())),
+        BlocProvider(create: (_) => sl<LocationCubit>()..fetchLocation()),
+        BlocProvider(create: (_) => sl<FavoritesCubit>()..loadLikedProducts()),
+        BlocProvider(create: (_) => sl<SearchCubit>()),
+        BlocProvider(create: (_) => sl<AuthCubit>()),
       ],
       child: MaterialApp.router(
         title: 'PersiaMarkt',
@@ -94,32 +84,30 @@ class MyApp extends StatelessWidget {
   }
 
   ThemeData _buildTheme(Brightness brightness) {
+    final isLight = brightness == Brightness.light;
+
+    // از background مستقیماً استفاده نمی‌کنیم تا اخطار deprecate نگیریم.
+    final surfaceColor = isLight ? Colors.white : const Color(0xFF1E1E1E);
+    final scaffoldColor = isLight ? const Color(0xFFF5F5F5) : const Color(0xFF121212);
+
     final colorScheme = ColorScheme.fromSeed(
       seedColor: const Color(0xFFF57C00),
       brightness: brightness,
       primary: const Color(0xFFF57C00),
       secondary: const Color(0xFFFF9800),
-      background: brightness == Brightness.light
-          ? const Color(0xFFF5F5F5)
-          : const Color(0xFF121212),
-      surface: brightness == Brightness.light
-          ? Colors.white
-          : const Color(0xFF1E1E1E),
-      onSurface:
-          brightness == Brightness.light ? Colors.black87 : Colors.white,
-      outline: brightness == Brightness.light
-          ? Colors.grey.shade300
-          : Colors.grey.shade700,
+      surface: surfaceColor,
+      onSurface: isLight ? Colors.black87 : Colors.white,
+      outline: isLight ? Colors.grey.shade300 : Colors.grey.shade700,
     );
 
-    var baseTheme = ThemeData(
+    final baseTheme = ThemeData(
       useMaterial3: true,
       brightness: brightness,
       colorScheme: colorScheme,
     );
 
     return baseTheme.copyWith(
-      scaffoldBackgroundColor: colorScheme.background,
+      scaffoldBackgroundColor: scaffoldColor,
       appBarTheme: AppBarTheme(
         backgroundColor: colorScheme.surface,
         elevation: 0,
@@ -130,23 +118,24 @@ class MyApp extends StatelessWidget {
         ),
       ),
       textTheme: GoogleFonts.vazirmatnTextTheme(baseTheme.textTheme).copyWith(
-        headlineMedium: GoogleFonts.vazirmatn(
-            fontWeight: FontWeight.bold, color: colorScheme.onSurface),
-        titleLarge: GoogleFonts.vazirmatn(
-            fontWeight: FontWeight.bold, color: colorScheme.onSurface),
-        bodyMedium:
-            GoogleFonts.vazirmatn(fontSize: 15, color: colorScheme.onSurface),
+        headlineMedium:
+            GoogleFonts.vazirmatn(fontWeight: FontWeight.bold, color: colorScheme.onSurface),
+        titleLarge:
+            GoogleFonts.vazirmatn(fontWeight: FontWeight.bold, color: colorScheme.onSurface),
+        bodyMedium: GoogleFonts.vazirmatn(fontSize: 15, color: colorScheme.onSurface),
         labelLarge: GoogleFonts.vazirmatn(fontWeight: FontWeight.bold),
       ).apply(
         bodyColor: colorScheme.onSurface,
         displayColor: colorScheme.onSurface,
       ),
+      // ❗️CardThemeData به‌جای CardTheme
       cardTheme: CardThemeData(
         elevation: 0,
         shape: RoundedRectangleBorder(
           borderRadius: const BorderRadius.all(Radius.circular(16)),
           side: BorderSide(
-            color: colorScheme.outline.withOpacity(0.5),
+            // ❗️withValues(alpha: 0.5) به‌جای withOpacity(0.5)
+            color: colorScheme.outline.withValues(alpha: 0.5),
             width: 1,
           ),
         ),
@@ -159,8 +148,7 @@ class MyApp extends StatelessWidget {
           ),
           backgroundColor: colorScheme.primary,
           foregroundColor: colorScheme.onPrimary,
-          padding:
-              const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
         ),
       ),
       inputDecorationTheme: InputDecorationTheme(
@@ -833,7 +821,6 @@ class LocationService {
 مسیر: D:\PersiaMarkt 3\persiamarkt\lib\core\widgets\error_view.dart
 ====================
 
-// lib/core/widgets/error_view.dart
 import 'package:flutter/material.dart';
 
 /// A reusable widget to display an error message with an optional retry button.
@@ -886,6 +873,7 @@ class AppErrorView extends StatelessWidget {
     );
   }
 }
+
 
 ====================
 فایل: loading_shimmer.dart
@@ -1451,7 +1439,10 @@ class AuthError extends AuthState {
 ====================
 
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:persia_markt/features/auth/presentation/cubit/auth_cubit.dart';
+import 'package:persia_markt/features/auth/presentation/cubit/auth_state.dart';
 
 class LoginView extends StatefulWidget {
   const LoginView({super.key});
@@ -1464,7 +1455,7 @@ class _LoginViewState extends State<LoginView> {
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
-  bool _isLoading = false;
+  bool _isLoadingUi = false; // فقط برای transition اولیه، State اصلی از Bloc می‌آید
   bool _obscureText = true;
 
   @override
@@ -1482,18 +1473,12 @@ class _LoginViewState extends State<LoginView> {
 
   Future<void> _login() async {
     if (_formKey.currentState?.validate() ?? false) {
-      setState(() => _isLoading = true);
-      // TODO: Implement login logic with AuthService
-      await Future.delayed(const Duration(seconds: 2)); // Simulate network call
-      print('Logging in with:');
-      print('Email: ${_emailController.text}');
-      print('Password: ${_passwordController.text}');
-      setState(() => _isLoading = false);
-
-      // On success, navigate to home page or profile
-      if (mounted) {
-        context.go('/'); // Navigate to home for now
-      }
+      // به‌جای Delay، اکشن لاگینِ AuthCubit را صدا می‌زنیم
+      context.read<AuthCubit>().loginUser(
+            email: _emailController.text.trim(),
+            password: _passwordController.text,
+          );
+      setState(() => _isLoadingUi = true);
     }
   }
 
@@ -1502,90 +1487,121 @@ class _LoginViewState extends State<LoginView> {
     final theme = Theme.of(context);
     return Scaffold(
       body: SafeArea(
-        child: Center(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.all(24.0),
-            child: Form(
-              key: _formKey,
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  Image.asset('assets/images/appLogo.png', height: 80),
-                  const SizedBox(height: 16),
-                  Text(
-                    'ورود به حساب کاربری',
-                    textAlign: TextAlign.center,
-                    style: theme.textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.bold),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    'خوشحالیم که دوباره شما را می‌بینیم!',
-                    textAlign: TextAlign.center,
-                    style: theme.textTheme.titleMedium?.copyWith(color: Colors.grey),
-                  ),
-                  const SizedBox(height: 32),
-                  _buildTextFormField(
-                    controller: _emailController,
-                    labelText: 'ایمیل',
-                    icon: Icons.email_outlined,
-                    keyboardType: TextInputType.emailAddress,
-                    validator: (value) {
-                      if (value?.isEmpty ?? true) return 'لطفاً ایمیل خود را وارد کنید';
-                      if (!RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(value!)) return 'ایمیل معتبر نیست';
-                      return null;
-                    },
-                  ),
-                  const SizedBox(height: 16),
-                  _buildTextFormField(
-                    controller: _passwordController,
-                    labelText: 'رمز عبور',
-                    icon: Icons.lock_outline,
-                    obscureText: _obscureText,
-                    suffixIcon: IconButton(
-                      icon: Icon(_obscureText ? Icons.visibility_off_outlined : Icons.visibility_outlined),
-                      onPressed: _togglePasswordVisibility,
-                    ),
-                    validator: (value) => (value?.isEmpty ?? true) ? 'لطفاً رمز عبور را وارد کنید' : null,
-                  ),
-                  const SizedBox(height: 24),
-                  _isLoading
-                      ? const Center(child: CircularProgressIndicator())
-                      : ElevatedButton(
-                          onPressed: _login,
-                          style: ElevatedButton.styleFrom(
-                            padding: const EdgeInsets.symmetric(vertical: 16),
-                          ),
-                          child: const Text('ورود'),
-                        ),
-                  const SizedBox(height: 16),
-                  Row(
+        child: BlocConsumer<AuthCubit, AuthState>(
+          listener: (context, state) {
+            if (state is Authenticated) {
+              // موفقیت → خانه
+              context.go('/');
+            } else if (state is AuthError) {
+              setState(() => _isLoadingUi = false);
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text(state.message)),
+              );
+            } else if (state is Unauthenticated || state is AuthInitial) {
+              setState(() => _isLoadingUi = false);
+            }
+          },
+          builder: (context, state) {
+            final isLoading = state is AuthLoading || _isLoadingUi;
+
+            return Center(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.all(24.0),
+                child: Form(
+                  key: _formKey,
+                  child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      const Text('حساب کاربری ندارید؟'),
+                      Image.asset('assets/images/appLogo.png', height: 80),
+                      const SizedBox(height: 16),
+                      Text(
+                        'ورود به حساب کاربری',
+                        textAlign: TextAlign.center,
+                        style: theme.textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.bold),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        'خوشحالیم که دوباره شما را می‌بینیم!',
+                        textAlign: TextAlign.center,
+                        style: theme.textTheme.titleMedium?.copyWith(color: Colors.grey),
+                      ),
+                      const SizedBox(height: 32),
+
+                      _buildTextFormField(
+                        controller: _emailController,
+                        labelText: 'ایمیل',
+                        icon: Icons.email_outlined,
+                        keyboardType: TextInputType.emailAddress,
+                        validator: (value) {
+                          if (value == null || value.trim().isEmpty) {
+                            return 'ایمیل را وارد کنید';
+                          }
+                          final v = value.trim();
+                          if (!v.contains('@') || !v.contains('.')) {
+                            return 'ایمیل نامعتبر است';
+                          }
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 16),
+
+                      _buildTextFormField(
+                        controller: _passwordController,
+                        labelText: 'رمز عبور',
+                        icon: Icons.lock_outline,
+                        obscureText: _obscureText,
+                        suffixIcon: IconButton(
+                          icon: Icon(_obscureText ? Icons.visibility_off : Icons.visibility),
+                          onPressed: _togglePasswordVisibility,
+                        ),
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'رمز عبور را وارد کنید';
+                          }
+                          if (value.length < 6) {
+                            return 'حداقل ۶ کاراکتر';
+                          }
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 24),
+
+                      isLoading
+                          ? const Center(child: CircularProgressIndicator())
+                          : ElevatedButton(
+                              onPressed: _login,
+                              style: ElevatedButton.styleFrom(
+                                padding: const EdgeInsets.symmetric(vertical: 14),
+                              ),
+                              child: const Text('ورود'),
+                            ),
+                      const SizedBox(height: 12),
+
                       TextButton(
                         onPressed: () => context.go('/register'),
-                        child: const Text('ثبت نام کنید'),
+                        child: const Text('حساب ندارید؟ ثبت‌نام'),
                       ),
                     ],
                   ),
-                ],
+                ),
               ),
-            ),
-          ),
+            );
+          },
         ),
       ),
     );
   }
 
-  TextFormField _buildTextFormField({
+  // همون متد کمکی قبلی برای TextFormField — بدون حذف هیچ‌چیز
+  Widget _buildTextFormField({
     required TextEditingController controller,
     required String labelText,
     required IconData icon,
-    String? Function(String?)? validator,
+    Widget? suffixIcon,
     TextInputType? keyboardType,
     bool obscureText = false,
-    Widget? suffixIcon,
+    String? Function(String?)? validator,
   }) {
     return TextFormField(
       controller: controller,
@@ -2846,20 +2862,15 @@ class StoresByCitySection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Group stores by city, safely handling nullable city names.
     final Map<String, List<Store>> storesByCity = {};
     for (var store in stores) {
-      // FIXED: Only process stores that have a non-null and non-empty city.
       if (store.city != null && store.city!.isNotEmpty) {
         storesByCity.putIfAbsent(store.city!, () => []).add(store);
       }
     }
 
-    if (storesByCity.isEmpty) {
-      return const SizedBox.shrink(); // Don't show anything if no stores have cities.
-    }
+    if (storesByCity.isEmpty) return const SizedBox.shrink();
 
-    // Create a list of widgets from the grouped map
     return ListView.builder(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
@@ -2874,8 +2885,8 @@ class StoresByCitySection extends StatelessWidget {
               padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
               child: Text(city, style: Theme.of(context).textTheme.headlineSmall),
             ),
-            // FIXED: Removed unnecessary .toList() from the spread operator.
-            ...cityStores.map((store) => StoreListItemView(store: store)),
+            // حتماً اسپرد استفاده شود
+            ...cityStores.map((store) => StoreListItemView(store: store)).toList(),
           ],
         );
       },
@@ -2893,7 +2904,6 @@ class StoresByCitySection extends StatelessWidget {
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_map/flutter_map.dart';
-import 'package:go_router/go_router.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:persia_markt/core/models/store.dart';
 import 'package:persia_markt/features/home/presentation/bloc/market_data_bloc.dart';
@@ -2948,10 +2958,12 @@ class _MapViewState extends State<MapView> {
     double initialZoom = 6.0;
 
     if (widget.lat != null && widget.lng != null) {
-      try {
-        initialCenter = LatLng(double.parse(widget.lat!), double.parse(widget.lng!));
+      final lat = double.tryParse(widget.lat!);
+      final lng = double.tryParse(widget.lng!);
+      if (lat != null && lng != null) {
+        initialCenter = LatLng(lat, lng);
         initialZoom = 15.0;
-      } catch (_) {}
+      }
     }
 
     return Scaffold(
@@ -2973,13 +2985,14 @@ class _MapViewState extends State<MapView> {
             options: MapOptions(
               initialCenter: initialCenter,
               initialZoom: initialZoom,
+              onMapReady: () => _tryFocusStore(stores),
             ),
             children: [
               TileLayer(
                 urlTemplate: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
                 subdomains: const ['a', 'b', 'c'],
               ),
-              _buildStoreMarkers(context, stores),
+              _buildStoreMarkers(stores),
               _buildUserLocationMarker(context),
             ],
           );
@@ -3001,32 +3014,21 @@ class _MapViewState extends State<MapView> {
     );
   }
 
-  MarkerLayer _buildStoreMarkers(BuildContext context, List<Store> stores) {
+  Widget _buildStoreMarkers(List<Store> stores) {
     return MarkerLayer(
-      markers: stores.map((store) {
+      markers: stores.map((s) {
         return Marker(
-          width: 120,
-          height: 80,
-          point: LatLng(store.latitude, store.longitude),
-          child: GestureDetector(
-            onTap: () => context.go('/store/${store.storeID}'),
-            child: Column(
-              children: [
-                const Icon(Icons.location_on, color: Colors.red, size: 30),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withAlpha(220),
-                    borderRadius: BorderRadius.circular(8),
-                    boxShadow: const [BoxShadow(color: Colors.black26, blurRadius: 4, offset: Offset(0, 2))],
-                  ),
-                  child: Text(
-                    store.name,
-                    style: const TextStyle(fontSize: 12, color: Colors.black, fontWeight: FontWeight.bold),
-                    textAlign: TextAlign.center,
-                  ),
-                ),
-              ],
+          point: LatLng(s.latitude, s.longitude),
+          width: 40,
+          height: 40,
+          // ❗️تغییر مهم: در نسخه‌های جدید flutter_map باید از child استفاده شود (نه builder)
+          child: Tooltip(
+            message: s.name,
+            child: GestureDetector(
+              onTap: () {
+                _mapController.move(LatLng(s.latitude, s.longitude), 17.0);
+              },
+              child: const Icon(Icons.location_on, size: 36),
             ),
           ),
         );
@@ -3035,30 +3037,19 @@ class _MapViewState extends State<MapView> {
   }
 
   Widget _buildUserLocationMarker(BuildContext context) {
-    return BlocConsumer<LocationCubit, LocationState>(
-      listener: (context, locationState) {
-        if (locationState is LocationLoaded && widget.lat == null && widget.lng == null && widget.focus == null) {
-          _mapController.move(
-            LatLng(locationState.position.latitude, locationState.position.longitude),
-            13.0,
-          );
-        }
-      },
-      builder: (context, locationState) {
-        if (locationState is LocationLoaded) {
-          return MarkerLayer(
-            markers: [
-              Marker(
-                width: 80,
-                height: 80,
-                point: LatLng(locationState.position.latitude, locationState.position.longitude),
-                child: Icon(Icons.my_location, color: Theme.of(context).primaryColor, size: 30),
-              ),
-            ],
-          );
-        }
-        return const SizedBox.shrink();
-      },
+    final loc = context.watch<LocationCubit>().state;
+    if (loc is! LocationLoaded) return const SizedBox.shrink();
+
+    return MarkerLayer(
+      markers: [
+        Marker(
+          point: LatLng(loc.position.latitude, loc.position.longitude),
+          width: 36,
+          height: 36,
+          // ❗️اینجا هم child جایگزین builder شده
+          child: const Icon(Icons.my_location, size: 28),
+        ),
+      ],
     );
   }
 }
@@ -3494,11 +3485,9 @@ class SearchLoaded extends SearchState {
 مسیر: D:\PersiaMarkt 3\persiamarkt\lib\features\search\presentation\view\search_view.dart
 ====================
 
-// lib/features/search/presentation/view/search_view.dart
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:go_router/go_router.dart';
 import 'package:persia_markt/core/models/product.dart';
 import 'package:persia_markt/core/widgets/product_list_item_view.dart';
 import 'package:persia_markt/core/widgets/store_list_item_view.dart';
@@ -3522,163 +3511,127 @@ class _SearchViewState extends State<SearchView> with SingleTickerProviderStateM
   @override
   void initState() {
     super.initState();
-    context.read<SearchCubit>().clearSearch();
     _searchController = TextEditingController();
     _tabController = TabController(length: 2, vsync: this);
-    _searchController.addListener(() => setState(() {}));
   }
 
   @override
   void dispose() {
+    _debounce?.cancel();
     _searchController.dispose();
     _tabController.dispose();
-    _debounce?.cancel();
     super.dispose();
   }
 
-  void _onSearchChanged(String query) {
+  void _onChanged(String text, MarketDataState marketState) {
     if (_debounce?.isActive ?? false) _debounce?.cancel();
-    _debounce = Timer(const Duration(milliseconds: 400), () {
-      final marketState = context.read<MarketDataBloc>().state;
+    _debounce = Timer(const Duration(milliseconds: 300), () {
       if (marketState is MarketDataLoaded) {
         context.read<SearchCubit>().performSearch(
-              query: query,
-              allProducts: marketState.marketData.products,
-              allStores: marketState.marketData.stores,
-            );
+          query: text,
+          allProducts: marketState.marketData.products,
+          allStores: marketState.marketData.stores,
+        );
       }
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    final marketState = context.watch<MarketDataBloc>().state;
-
-    return Directionality(
-      textDirection: TextDirection.rtl,
-      child: Scaffold(
-        appBar: AppBar(
-          automaticallyImplyLeading: false,
-          titleSpacing: 0,
-          title: TextField(
-            controller: _searchController,
-            autofocus: true,
-            decoration: InputDecoration(
-              hintText: 'جستجوی محصول یا فروشگاه...',
-              border: InputBorder.none,
-              suffixIcon: _searchController.text.isNotEmpty
-                  ? IconButton(
-                      icon: const Icon(Icons.clear),
-                      onPressed: () {
-                        _searchController.clear();
-                        context.read<SearchCubit>().clearSearch();
-                      },
-                    )
-                  : null,
-            ),
-            onChanged: _onSearchChanged,
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                if (context.canPop()) {
-                  context.pop();
-                } else {
-                  context.go('/'); // مسیر صفحه اصلی
-                }
-              },
-              child: const Text(
-                'انصراف',
-                style: TextStyle(
-                  fontSize: 16,
-                ),
+    return BlocBuilder<MarketDataBloc, MarketDataState>(
+      builder: (context, marketState) {
+        return Scaffold(
+          appBar: AppBar(
+            title: TextField(
+              controller: _searchController,
+              autofocus: true,
+              decoration: const InputDecoration(
+                hintText: 'جستجو در محصولات و فروشگاه‌ها...',
+                border: InputBorder.none,
               ),
+              onChanged: (t) => _onChanged(t, marketState),
             ),
-          ],
-        ),
-        body: BlocBuilder<SearchCubit, SearchState>(
-          builder: (context, searchState) {
-            if (searchState is SearchInitial) {
-              return const Center(child: Text('لطفاً عبارت مورد نظر را وارد کنید.'));
-            }
-            if (searchState is SearchLoading) {
-              return const Center(child: CircularProgressIndicator());
-            }
-            if (searchState is SearchLoaded) {
-              if (searchState.filteredProducts.isEmpty && searchState.filteredStores.isEmpty) {
-                return const Center(child: Text('نتیجه‌ای یافت نشد.'));
+            bottom: TabBar(
+              controller: _tabController,
+              tabs: const [
+                Tab(text: 'محصولات'),
+                Tab(text: 'فروشگاه‌ها'),
+              ],
+            ),
+          ),
+          body: BlocBuilder<SearchCubit, SearchState>(
+            builder: (context, searchState) {
+              if (searchState is SearchInitial) {
+                return const Center(child: Text('لطفاً عبارت مورد نظر را وارد کنید.'));
               }
-              
-              final Map<String, List<Product>> groupedProducts = {};
-              for (var product in searchState.filteredProducts) {
-                groupedProducts.putIfAbsent(product.storeID, () => []).add(product);
+              if (searchState is SearchLoading) {
+                return const Center(child: CircularProgressIndicator());
               }
-              final storeIds = groupedProducts.keys.toList();
+              if (searchState is SearchLoaded) {
+                if (searchState.filteredProducts.isEmpty && searchState.filteredStores.isEmpty) {
+                  return const Center(child: Text('نتیجه‌ای یافت نشد.'));
+                }
 
-              return Column(
-                children: [
-                  TabBar(
-                    controller: _tabController,
-                    tabs: [
-                      Tab(text: 'محصولات (${searchState.filteredProducts.length})'),
-                      Tab(text: 'فروشگاه‌ها (${searchState.filteredStores.length})'),
-                    ],
-                  ),
-                  Expanded(
-                    child: TabBarView(
-                      controller: _tabController,
-                      children: [
-                        ListView.builder(
-                          itemCount: storeIds.length,
-                          itemBuilder: (context, index) {
-                            if (marketState is! MarketDataLoaded) return const SizedBox.shrink();
-                            
-                            final storeId = storeIds[index];
-                            final productsInStore = groupedProducts[storeId]!;
-                            final store = marketState.marketData.stores
-                                .firstWhere((s) => s.storeID == storeId);
+                final Map<String, List<Product>> groupedProducts = {};
+                for (var product in searchState.filteredProducts) {
+                  groupedProducts.putIfAbsent(product.storeID, () => []).add(product);
+                }
+                final storeIds = groupedProducts.keys.toList();
 
-                            return Card(
-                              margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Padding(
-                                    padding: const EdgeInsets.all(12.0),
-                                    child: Text(store.name, style: Theme.of(context).textTheme.titleLarge),
-                                  ),
-                                  const Divider(height: 1, indent: 12, endIndent: 12),
-                                  ListView.builder(
-                                    shrinkWrap: true,
-                                    physics: const NeverScrollableScrollPhysics(),
-                                    itemCount: productsInStore.length,
-                                    itemBuilder: (context, productIndex) {
-                                      final product = productsInStore[productIndex];
-                                      return ProductListItemView(product: product, store: store);
-                                    },
-                                  ),
-                                ],
+                return TabBarView(
+                  controller: _tabController,
+                  children: [
+                    // محصولات (گروه‌بندی‌شده بر اساس فروشگاه)
+                    ListView.builder(
+                      itemCount: storeIds.length,
+                      itemBuilder: (context, index) {
+                        if (marketState is! MarketDataLoaded) return const SizedBox.shrink();
+
+                        final storeId = storeIds[index];
+                        final productsInStore = groupedProducts[storeId]!;
+                        final store = marketState.marketData.stores
+                            .firstWhere((s) => s.storeID == storeId);
+
+                        return Card(
+                          margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Padding(
+                                padding: const EdgeInsets.all(12.0),
+                                child: Text(store.name, style: Theme.of(context).textTheme.titleLarge),
                               ),
-                            );
-                          },
-                        ),
-                        ListView.builder(
-                          itemCount: searchState.filteredStores.length,
-                          itemBuilder: (context, index) {
-                            final store = searchState.filteredStores[index];
-                            return StoreListItemView(store: store);
-                          },
-                        ),
-                      ],
+                              const Divider(height: 1, indent: 12, endIndent: 12),
+                              ListView.builder(
+                                shrinkWrap: true,
+                                physics: const NeverScrollableScrollPhysics(),
+                                itemCount: productsInStore.length,
+                                itemBuilder: (context, productIndex) {
+                                  final product = productsInStore[productIndex];
+                                  return ProductListItemView(product: product, store: store);
+                                },
+                              ),
+                            ],
+                          ),
+                        );
+                      },
                     ),
-                  ),
-                ],
-              );
-            }
-            return const SizedBox.shrink();
-          },
-        ),
-      ),
+                    // فروشگاه‌ها
+                    ListView.builder(
+                      itemCount: searchState.filteredStores.length,
+                      itemBuilder: (context, index) {
+                        final store = searchState.filteredStores[index];
+                        return StoreListItemView(store: store);
+                      },
+                    ),
+                  ],
+                );
+              }
+              return const SizedBox.shrink();
+            },
+          ),
+        );
+      },
     );
   }
 }
@@ -3740,9 +3693,9 @@ class _StoreDetailViewState extends State<StoreDetailView> {
     if (key != null && key.currentContext != null) {
       Scrollable.ensureVisible(
         key.currentContext!,
-        duration: const Duration(milliseconds: 400),
+        duration: const Duration(milliseconds: 450),
         curve: Curves.easeInOut,
-        alignment: 0.1,
+        alignment: 0.08,
       );
     }
   }
@@ -3752,7 +3705,7 @@ class _StoreDetailViewState extends State<StoreDetailView> {
     if (marketState is MarketDataLoaded) {
       final product = marketState.marketData.products.firstWhere(
         (p) => p.id == widget.initialProductId,
-        orElse: () => marketState.marketData.products.first, // Fallback
+        orElse: () => marketState.marketData.products.first,
       );
       _scrollToCategory(product.categoryID);
     }
@@ -3788,95 +3741,98 @@ class _StoreDetailViewState extends State<StoreDetailView> {
   Widget build(BuildContext context) {
     return BlocBuilder<MarketDataBloc, MarketDataState>(
       builder: (context, state) {
-        if (state is MarketDataLoaded) {
-          final store = state.marketData.stores.firstWhere((s) => s.storeID == widget.storeId, orElse: () => Store.empty());
-          if (store.storeID.isEmpty) {
-            return const Scaffold(body: Center(child: Text('Store not found.')));
-          }
-
-          final storeProducts = state.marketData.products
-              .where((p) => p.storeID == store.storeID)
-              .toList();
-          final categoriesInStore = state.marketData.categories
-              .where((c) => storeProducts.any((p) => p.categoryID == c.id))
-              .toList();
-
-          for (var category in categoriesInStore) {
-            _categoryKeys.putIfAbsent(category.id, () => GlobalKey());
-          }
-
-          return Directionality(
-            textDirection: TextDirection.rtl,
-            child: Scaffold(
-              body: CustomScrollView(
-                controller: _pageScrollController,
-                slivers: [
-                  _buildSliverAppBar(context, store),
-                  _buildStoreDetailsSliver(context, store),
-                  _buildCategoryHeader(context, categoriesInStore),
-                  ..._buildProductSlivers(categoriesInStore, storeProducts, store),
-                ],
-              ),
-            ),
-          );
+        if (state is! MarketDataLoaded) {
+          return const Scaffold(body: Center(child: CircularProgressIndicator()));
         }
-        return const Scaffold(body: Center(child: CircularProgressIndicator()));
+
+        final store = state.marketData.stores
+            .firstWhere((s) => s.storeID == widget.storeId, orElse: () => Store.empty());
+        if (store.storeID.isEmpty) {
+          return const Scaffold(body: Center(child: Text('Store not found.')));
+        }
+
+        final allProducts = state.marketData.products
+            .where((p) => p.storeID == store.storeID)
+            .toList();
+
+        // فقط دسته‌هایی که در این فروشگاه محصول دارند
+        final Set<String> categoryIdsInStore =
+            allProducts.map((p) => p.categoryID).toSet();
+        final categories = state.marketData.categories
+            .where((c) => categoryIdsInStore.contains(c.id))
+            .toList();
+
+        // کلیدها را قبل از ساخت ویجت‌ها تضمین می‌کنیم
+        for (final c in categories) {
+          _categoryKeys.putIfAbsent(c.id, () => GlobalKey());
+        }
+
+        return Scaffold(
+          body: CustomScrollView(
+            controller: _pageScrollController,
+            slivers: [
+              // هدر فروشگاه
+              SliverAppBar(
+                pinned: true,
+                expandedHeight: 140,
+                elevation: 0,
+                flexibleSpace: FlexibleSpaceBar(
+                  titlePadding: const EdgeInsetsDirectional.only(start: 16, bottom: 12, end: 16),
+                  title: Text(store.name, overflow: TextOverflow.ellipsis),
+                ),
+              ),
+
+              SliverToBoxAdapter(child: _buildStoreHeader(context, store)),
+
+              // نوار دسته‌بندی افقی (پین‌شونده)
+              _buildCategoryHeader(context, categories),
+
+              // لیست محصولات گروه‌بندی‌شده بر اساس دسته
+              ..._buildProductSlivers(categories, allProducts, store),
+            ],
+          ),
+        );
       },
     );
   }
 
-  SliverAppBar _buildSliverAppBar(BuildContext context, Store store) {
-    return SliverAppBar(
-      expandedHeight: 220.0,
-      pinned: true,
-      flexibleSpace: FlexibleSpaceBar(
-        title: Text(store.name, style: const TextStyle(fontSize: 16.0, shadows: [Shadow(blurRadius: 2)])),
-        background: Image.network(
-          store.storeImage,
-          fit: BoxFit.cover,
-          errorBuilder: (_, __, ___) =>
-              Image.asset('assets/images/supermarket.png', fit: BoxFit.cover),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildStoreDetailsSliver(BuildContext context, Store store) {
-    return SliverToBoxAdapter(
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              store.name,
-              style: Theme.of(context)
-                  .textTheme
-                  .headlineMedium
-                  ?.copyWith(fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 8),
-            Row(
-              children: [
-                Icon(Icons.location_on_outlined, size: 16, color: Colors.grey.shade700),
-                const SizedBox(width: 4),
-                Expanded(child: Text(store.address, style: const TextStyle(fontSize: 16))),
-                IconButton(
-                  icon: Icon(Icons.map_outlined, color: Theme.of(context).colorScheme.primary),
-                  tooltip: 'نمایش در نقشه',
-                  onPressed: () => context.go('/map?focus=${store.storeID}'),
+  Widget _buildStoreHeader(BuildContext context, Store store) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            store.name,
+            style: Theme.of(context)
+                .textTheme
+                .headlineMedium
+                ?.copyWith(fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 8),
+          Row(
+            children: [
+              Icon(Icons.location_on_outlined, size: 16, color: Colors.grey.shade700),
+              const SizedBox(width: 4),
+              Expanded(child: Text(store.address, style: const TextStyle(fontSize: 16))),
+              IconButton(
+                icon: Icon(Icons.map_outlined, color: Theme.of(context).colorScheme.primary),
+                tooltip: 'نمایش در نقشه',
+                // به‌جای فقط focus، lat/lng را هم پاس می‌دهیم تا حتماً فوکوس شود
+                onPressed: () => context.go(
+                  '/map?lat=${store.latitude}&lng=${store.longitude}&focus=${store.storeID}',
                 ),
-              ],
-            ),
-            Row(
-              children: [
-                Icon(Icons.star_border, size: 16, color: Colors.grey.shade700),
-                const SizedBox(width: 4),
-                Text('امتیاز: ${store.rating}', style: const TextStyle(fontSize: 16)),
-              ],
-            ),
-          ],
-        ),
+              ),
+            ],
+          ),
+          Row(
+            children: [
+              Icon(Icons.star_border, size: 16, color: Colors.grey.shade700),
+              const SizedBox(width: 4),
+              Text('امتیاز: ${store.rating}', style: const TextStyle(fontSize: 16)),
+            ],
+          ),
+        ],
       ),
     );
   }
@@ -3915,11 +3871,12 @@ class _StoreDetailViewState extends State<StoreDetailView> {
 
       return SliverList(
         delegate: SliverChildListDelegate([
-          Padding(
+          // سکشن‌هدری که کلید روی آن ست می‌شود تا ensureVisible کار کند
+          Container(
+            key: _categoryKeys[category.id],
             padding: const EdgeInsets.fromLTRB(16, 24, 16, 8),
             child: Text(
               category.name,
-              key: _categoryKeys[category.id],
               style: Theme.of(context).textTheme.headlineSmall,
             ),
           ),
@@ -3959,10 +3916,11 @@ class _SliverAppBarDelegate extends SliverPersistentHeaderDelegate {
   }
 
   @override
-  bool shouldRebuild(_SliverAppBarDelegate old) =>
-      maxHeight != old.maxHeight ||
-      minHeight != old.minHeight ||
-      child != old.child;
+  bool shouldRebuild(_SliverAppBarDelegate oldDelegate) {
+    return maxHeight != oldDelegate.maxHeight ||
+        minHeight != oldDelegate.minHeight ||
+        child != oldDelegate.child;
+  }
 }
 
 

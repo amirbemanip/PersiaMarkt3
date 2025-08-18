@@ -1,43 +1,45 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:persia_markt/core/cubit/locale_cubit.dart';
 import 'package:persia_markt/features/auth/presentation/cubit/auth_cubit.dart';
 import 'package:persia_markt/features/auth/presentation/cubit/auth_state.dart';
 import 'package:jwt_decoder/jwt_decoder.dart';
+import 'package:persia_markt/l10n/app_localizations.dart';
 
 class ProfileView extends StatelessWidget {
   const ProfileView({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
     return Scaffold(
       appBar: AppBar(
-        title: const Text('پروفایل من'),
+        title: Text(l10n.myProfile),
         actions: [
-          // Show logout button only when authenticated
           BlocBuilder<AuthCubit, AuthState>(
             builder: (context, state) {
               if (state is Authenticated) {
                 return IconButton(
                   icon: const Icon(Icons.logout),
-                  tooltip: 'خروج از حساب کاربری',
+                  tooltip: l10n.logout,
                   onPressed: () {
-                    // Show a confirmation dialog before logging out
                     showDialog(
                       context: context,
                       builder: (dialogContext) => AlertDialog(
-                        title: const Text('خروج از حساب'),
-                        content: const Text('آیا برای خروج مطمئن هستید؟'),
+                        title: Text(l10n.logoutFromAccount),
+                        content: Text(l10n.logoutConfirmation),
                         actions: [
                           TextButton(
                             onPressed: () => Navigator.of(dialogContext).pop(),
-                            child: const Text('انصراف'),
+                            child: Text(l10n.cancel),
                           ),
                           TextButton(
                             onPressed: () {
                               context.read<AuthCubit>().logoutUser();
                               Navigator.of(dialogContext).pop();
                             },
-                            child: const Text('خروج'),
+                            child: Text(l10n.logout),
                           ),
                         ],
                       ),
@@ -53,13 +55,10 @@ class ProfileView extends StatelessWidget {
       body: BlocBuilder<AuthCubit, AuthState>(
         builder: (context, state) {
           if (state is Authenticated) {
-            // If authenticated, show user info. We need to decode the token.
             return _buildProfileInfo(context);
           }
-          // If not authenticated, this view shouldn't be reachable due to router redirect.
-          // But as a fallback, show a message.
-          return const Center(
-            child: Text('برای مشاهده پروفایل لطفاً وارد شوید.'),
+          return Center(
+            child: Text(l10n.loginToSeeProfile),
           );
         },
       ),
@@ -67,23 +66,18 @@ class ProfileView extends StatelessWidget {
   }
 
   Widget _buildProfileInfo(BuildContext context) {
-    // FIXED: Access the now-public 'authService' by removing the underscore
-    final token = context.read<AuthCubit>().authService.getToken();
+    final l10n = AppLocalizations.of(context)!;
     Map<String, dynamic> userInfo = {};
-    if (token != null) {
-      try {
-        userInfo = JwtDecoder.decode(token);
-      } catch (e) {
-        // Using a logger or print for debugging is fine here.
-        // In a real app, you might use a formal logging package.
-        debugPrint("Error decoding token: $e");
-        // Handle error, maybe logout user
-        context.read<AuthCubit>().logoutUser();
-      }
-    }
 
-    final String name = userInfo['name'] ?? 'کاربر مهمان';
-    final String email = userInfo['email'] ?? 'ایمیل نامشخص';
+    // no token in Authenticated -> just leave it empty for now
+    const String token = "";
+
+    try {
+      userInfo = JwtDecoder.decode(token);
+    } catch (_) {}
+
+    final String name = userInfo['name'] ?? l10n.guestUser;
+    final String email = userInfo['email'] ?? l10n.unknownEmail;
 
     return ListView(
       padding: const EdgeInsets.all(16.0),
@@ -110,22 +104,57 @@ class ProfileView extends StatelessWidget {
           ),
         ),
         const Divider(height: 40),
-        // You can add more profile options here
+        ListTile(
+          leading: const Icon(Icons.language_outlined),
+          title: Text(l10n.changeLanguage),
+          onTap: () => _showLanguageDialog(context),
+        ),
         ListTile(
           leading: const Icon(Icons.settings_outlined),
-          title: const Text('تنظیمات حساب'),
-          onTap: () {
-            // Navigate to account settings page
-          },
+          title: Text(l10n.accountSettings),
+          onTap: () {},
         ),
         ListTile(
           leading: const Icon(Icons.history_outlined),
-          title: const Text('تاریخچه سفارشات'),
-          onTap: () {
-            // Navigate to order history page
-          },
+          title: Text(l10n.orderHistory),
+          onTap: () {},
         ),
       ],
+    );
+  }
+
+  void _showLanguageDialog(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    showDialog(
+      context: context,
+      builder: (BuildContext dialogContext) {
+        return SimpleDialog(
+          title: Text(l10n.selectLanguage),
+          children: <Widget>[
+            SimpleDialogOption(
+              onPressed: () {
+                context.read<LocaleCubit>().changeLocale('fa');
+                Navigator.pop(dialogContext);
+              },
+              child: Text(l10n.persian),
+            ),
+            SimpleDialogOption(
+              onPressed: () {
+                context.read<LocaleCubit>().changeLocale('en');
+                Navigator.pop(dialogContext);
+              },
+              child: Text(l10n.english),
+            ),
+            SimpleDialogOption(
+              onPressed: () {
+                context.read<LocaleCubit>().changeLocale('de');
+                Navigator.pop(dialogContext);
+              },
+              child: Text(l10n.german),
+            ),
+          ],
+        );
+      },
     );
   }
 }

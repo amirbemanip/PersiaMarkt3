@@ -1,0 +1,175 @@
+// ignore: unused_import
+import 'package:intl/intl.dart' as intl;
+import 'app_localizations.dart';
+
+// ignore_for_file: type=lint
+
+/// The translations for Persian (`fa`).
+class AppLocalizationsFa extends AppLocalizations {
+  AppLocalizationsFa([String locale = 'fa']) : super(locale);
+
+  @override
+  String get persiaMarkt => 'پرشیا مارکت';
+
+  @override
+  String get home => 'خانه';
+
+  @override
+  String get map => 'نقشه';
+
+  @override
+  String get favorites => 'موردعلاقه‌ها';
+
+  @override
+  String get profile => 'پروفایل';
+
+  @override
+  String get searchHint => 'جستجوی نان، شیر، فروشگاه...';
+
+  @override
+  String get yourLocation => 'موقعیت شما';
+
+  @override
+  String get gettingLocation => 'در حال دریافت موقعیت...';
+
+  @override
+  String get locationUnknown => 'موقعیت نامعلوم';
+
+  @override
+  String get specialOffers => 'پیشنهادهای ویژه';
+
+  @override
+  String get affordableProducts => 'محصولات مقرون به صرفه';
+
+  @override
+  String get stores => 'فروشگاه‌ها';
+
+  @override
+  String get myProfile => 'پروفایل من';
+
+  @override
+  String get logout => 'خروج';
+
+  @override
+  String get logoutFromAccount => 'خروج از حساب';
+
+  @override
+  String get logoutConfirmation => 'آیا برای خروج مطمئن هستید؟';
+
+  @override
+  String get cancel => 'انصراف';
+
+  @override
+  String get loginToSeeProfile => 'برای مشاهده پروفایل لطفاً وارد شوید.';
+
+  @override
+  String get guestUser => 'کاربر مهمان';
+
+  @override
+  String get unknownEmail => 'ایمیل نامشخص';
+
+  @override
+  String get accountSettings => 'تنظیمات حساب';
+
+  @override
+  String get orderHistory => 'تاریخچه سفارشات';
+
+  @override
+  String get changeLanguage => 'تغییر زبان';
+
+  @override
+  String get selectLanguage => 'انتخاب زبان';
+
+  @override
+  String get persian => 'فارسی';
+
+  @override
+  String get english => 'English';
+
+  @override
+  String get german => 'Deutsch';
+
+  @override
+  String get categories => 'دسته بندی ها';
+
+  @override
+  String get viewAll => 'مشاهده همه';
+
+  @override
+  String get allProducts => 'همه محصولات';
+
+  @override
+  String get availableStores => 'فروشگاه های موجود';
+
+  @override
+  String get noProductsInCategory => 'محصولی در این دسته‌بندی یافت نشد.';
+
+  @override
+  String get viewStore => 'مشاهده فروشگاه';
+
+  @override
+  String get noDataAvailable => 'متاسفانه در حال حاضر فروشگاه یا محصولی برای نمایش وجود ندارد.';
+
+  @override
+  String get connectingToServer => 'در حال اتصال به سرور...';
+
+  @override
+  String get initialLoadingMessage => 'بارگذاری اولیه ممکن است کمی طول بکشد. لطفاً صبور باشید.';
+
+  @override
+  String get locationError => 'خطا در تبدیل موقعیت';
+
+  @override
+  String get km => 'کیلومتر';
+
+  @override
+  String get myLocation => 'موقعیت من';
+
+  @override
+  String get yourCartIsEmpty => 'سبد خرید شما خالی است';
+
+  @override
+  String get yourShoppingCart => 'سبد خرید شما';
+
+  @override
+  String get storeRating => 'امتیاز فروشگاه';
+
+  @override
+  String get loginToYourAccount => 'ورود به حساب کاربری';
+
+  @override
+  String get gladToSeeYouAgain => 'خوشحالیم که دوباره شما را می‌بینیم!';
+
+  @override
+  String get email => 'ایمیل';
+
+  @override
+  String get enterYourEmail => 'ایمیل را وارد کنید';
+
+  @override
+  String get invalidEmail => 'ایمیل نامعتبر است';
+
+  @override
+  String get password => 'رمز عبور';
+
+  @override
+  String get enterYourPassword => 'رمز عبور را وارد کنید';
+
+  @override
+  String get passwordTooShort => 'حداقل ۶ کاراکتر';
+
+  @override
+  String get login => 'ورود';
+
+  @override
+  String get noAccount => 'حساب ندارید؟ ثبت‌نام';
+
+  @override
+  String get sellerLogin => 'ورود فروشنده';
+
+  @override
+  String get sellerPanel => 'پنل فروشندگان';
+
+  @override
+  String get language => 'زبان';
+}

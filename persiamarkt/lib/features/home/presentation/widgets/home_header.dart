@@ -1,16 +1,18 @@
-// lib/features/home/presentation/widgets/home_header.dart
-import 'package:flutter/material.dart';
+import 'package:flutter/material.dart'; // <<<--- مشکل اصلی اینجا بود و برطرف شد
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:persia_markt/features/home/presentation/cubit/location_cubit.dart';
 import 'package:persia_markt/features/home/presentation/cubit/location_state.dart';
+import 'package:persia_markt/l10n/app_localizations.dart';
 
 class HomeHeader extends StatelessWidget {
   final VoidCallback onSearchTapped;
-  const HomeHeader({Key? key, required this.onSearchTapped}) : super(key: key);
+  const HomeHeader({super.key, required this.onSearchTapped});
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
     return SliverAppBar(
       pinned: true,
       floating: true,
@@ -36,22 +38,22 @@ class HomeHeader extends StatelessWidget {
                       Image.asset('assets/images/appLogo.png', height: 40),
                       const SizedBox(width: 8),
                       Text(
-                        'PersiaMarkt',
+                        l10n.persiaMarkt,
                         style: GoogleFonts.inter(fontSize: 24, fontWeight: FontWeight.w900, color: Colors.white),
                       ),
                       const Spacer(),
                       BlocBuilder<LocationCubit, LocationState>(
                         builder: (context, state) {
-                          String locationText = 'در حال دریافت موقعیت...';
+                          String locationText = l10n.gettingLocation;
                           if (state is LocationLoaded) {
                             locationText = state.address;
                           } else if (state is LocationError) {
-                            locationText = 'موقعیت نامعلوم';
+                            locationText = l10n.locationUnknown;
                           }
                           return Column(
                             crossAxisAlignment: CrossAxisAlignment.end,
                             children: [
-                              const Text('موقعیت شما', style: TextStyle(color: Colors.white70, fontSize: 10)),
+                              Text(l10n.yourLocation, style: const TextStyle(color: Colors.white70, fontSize: 10)),
                               Text(locationText, style: const TextStyle(color: Colors.white, fontSize: 14)),
                             ],
                           );
@@ -72,7 +74,7 @@ class HomeHeader extends StatelessWidget {
                         children: [
                           Icon(Icons.search, color: Colors.grey.shade500),
                           const SizedBox(width: 8),
-                          Text('جستجوی نان، شیر، فروشگاه...', style: TextStyle(color: Colors.grey.shade500)),
+                          Text(l10n.searchHint, style: TextStyle(color: Colors.grey.shade500)),
                         ],
                       ),
                     ),
