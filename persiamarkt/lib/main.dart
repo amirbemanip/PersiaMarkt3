@@ -24,6 +24,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiBlocProvider(
       providers: [
+        // قبلاً اینجا اشتباه return می‌کرد: sl<MarketDataBloc>().add(...)
         BlocProvider(
           create: (_) => sl<MarketDataBloc>()..add(FetchMarketDataEvent()),
         ),

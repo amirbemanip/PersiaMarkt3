@@ -1,5 +1,5 @@
 import 'dart:convert';
-import 'package:http/http.dart' as http; // <-- اصلاح شد
+import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
 class AuthService {
@@ -21,39 +21,40 @@ class AuthService {
     String? city,
   }) async {
     final response = await _client.post(
-      Uri.parse('$_baseUrl/auth/user/register'),
+      Uri.parse('$_baseUrl/auth/user/register'), // آدرس صحیح برای ثبت‌نام کاربر
       headers: {'Content-Type': 'application/json'},
       body: json.encode({
         'name': name,
         'email': email,
         'password': password,
-        'city': city,
+        'city': city ?? '',
       }),
     );
 
-    if (response.statusCode == 201) {
+    final responseBody = json.decode(response.body);
+    if (response.statusCode >= 200 && response.statusCode < 300) {
       return 'ثبت‌نام با موفقیت انجام شد.';
     } else {
-      final error = json.decode(response.body)['message'];
-      throw Exception(error ?? 'خطا در ثبت‌نام');
+      throw Exception(responseBody['message'] ?? 'خطا در ثبت‌نام');
     }
   }
 
   Future<String> login({required String email, required String password}) async {
     final response = await _client.post(
+      // --- مشکل اینجا بود ---
+      // آدرس ورود از /auth/login به /auth/user/login اصلاح شد
       Uri.parse('$_baseUrl/auth/user/login'),
       headers: {'Content-Type': 'application/json'},
       body: json.encode({'email': email, 'password': password}),
     );
 
-    if (response.statusCode == 201 || response.statusCode == 200) {
-      final data = json.decode(response.body);
-      final token = data['access_token'];
+    final responseBody = json.decode(response.body);
+    if (response.statusCode >= 200 && response.statusCode < 300) {
+      final token = responseBody['access_token'];
       await _prefs.setString(_tokenKey, token);
       return token;
     } else {
-      final error = json.decode(response.body)['message'];
-      throw Exception(error ?? 'خطا در ورود');
+      throw Exception(responseBody['message'] ?? 'خطا در ورود');
     }
   }
 

@@ -1,0 +1,4053 @@
+
+
+====================
+فایل: web_plugin_registrant.dart
+مسیر: D:\PersiaMarkt 3\persiamarkt\.dart_tool\dartpad\web_plugin_registrant.dart
+====================
+
+// Flutter web plugin registrant file.
+//
+// Generated file. Do not edit.
+//
+
+// @dart = 2.13
+// ignore_for_file: type=lint
+
+import 'package:geolocator_web/geolocator_web.dart';
+import 'package:shared_preferences_web/shared_preferences_web.dart';
+import 'package:flutter_web_plugins/flutter_web_plugins.dart';
+
+void registerPlugins([final Registrar? pluginRegistrar]) {
+  final Registrar registrar = pluginRegistrar ?? webPluginRegistrar;
+  GeolocatorPlugin.registerWith(registrar);
+  SharedPreferencesPlugin.registerWith(registrar);
+  registrar.registerMessageHandler();
+}
+
+
+====================
+فایل: main.dart
+مسیر: D:\PersiaMarkt 3\persiamarkt\lib\main.dart
+====================
+
+import 'package:flutter/material.dart'; // <-- FIXED
+import 'package:flutter_bloc/flutter_bloc.dart'; // <-- FIXED
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:persia_markt/core/config/app_router.dart';
+import 'package:persia_markt/core/config/service_locator.dart';
+import 'package:persia_markt/features/auth/presentation/cubit/auth_cubit.dart';
+import 'package:persia_markt/features/home/presentation/bloc/market_data_bloc.dart';
+import 'package:persia_markt/features/home/presentation/bloc/market_data_event.dart';
+import 'package:persia_markt/features/home/presentation/cubit/location_cubit.dart';
+import 'package:persia_markt/features/profile/presentation/cubit/favorites_cubit.dart';
+import 'package:persia_markt/features/search/presentation/cubit/search_cubit.dart';
+
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await setupServiceLocator();
+  runApp(const MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider(
+          create: (_) => sl<MarketDataBloc>()..add(FetchMarketDataEvent()),
+        ),
+        BlocProvider(
+          create: (_) => sl<LocationCubit>()..fetchLocation(),
+        ),
+        BlocProvider(
+          create: (_) => sl<FavoritesCubit>()..loadLikedProducts(),
+        ),
+        BlocProvider(
+          create: (_) => sl<SearchCubit>(),
+        ),
+        BlocProvider(
+          create: (_) => sl<AuthCubit>(),
+        ),
+      ],
+      child: MaterialApp.router(
+        title: 'PersiaMarkt',
+        debugShowCheckedModeBanner: false,
+        routerConfig: AppRouter.router,
+        localizationsDelegates: const [
+          GlobalMaterialLocalizations.delegate,
+          GlobalWidgetsLocalizations.delegate,
+          GlobalCupertinoLocalizations.delegate,
+        ],
+        supportedLocales: const [
+          Locale('fa', 'IR'),
+          Locale('en', ''),
+        ],
+        locale: const Locale('fa', 'IR'),
+        theme: _buildTheme(Brightness.light),
+        darkTheme: _buildTheme(Brightness.dark),
+        themeMode: ThemeMode.system,
+      ),
+    );
+  }
+
+  ThemeData _buildTheme(Brightness brightness) {
+    final colorScheme = ColorScheme.fromSeed(
+      seedColor: const Color(0xFFF57C00),
+      brightness: brightness,
+      primary: const Color(0xFFF57C00),
+      secondary: const Color(0xFFFF9800),
+      background: brightness == Brightness.light
+          ? const Color(0xFFF5F5F5)
+          : const Color(0xFF121212),
+      surface: brightness == Brightness.light
+          ? Colors.white
+          : const Color(0xFF1E1E1E),
+      onSurface:
+          brightness == Brightness.light ? Colors.black87 : Colors.white,
+      outline: brightness == Brightness.light
+          ? Colors.grey.shade300
+          : Colors.grey.shade700,
+    );
+
+    var baseTheme = ThemeData(
+      useMaterial3: true,
+      brightness: brightness,
+      colorScheme: colorScheme,
+    );
+
+    return baseTheme.copyWith(
+      scaffoldBackgroundColor: colorScheme.background,
+      appBarTheme: AppBarTheme(
+        backgroundColor: colorScheme.surface,
+        elevation: 0,
+        iconTheme: IconThemeData(color: colorScheme.onSurface),
+        titleTextStyle: GoogleFonts.lalezar(
+          color: colorScheme.onSurface,
+          fontSize: 22,
+        ),
+      ),
+      textTheme: GoogleFonts.vazirmatnTextTheme(baseTheme.textTheme).copyWith(
+        headlineMedium: GoogleFonts.vazirmatn(
+            fontWeight: FontWeight.bold, color: colorScheme.onSurface),
+        titleLarge: GoogleFonts.vazirmatn(
+            fontWeight: FontWeight.bold, color: colorScheme.onSurface),
+        bodyMedium:
+            GoogleFonts.vazirmatn(fontSize: 15, color: colorScheme.onSurface),
+        labelLarge: GoogleFonts.vazirmatn(fontWeight: FontWeight.bold),
+      ).apply(
+        bodyColor: colorScheme.onSurface,
+        displayColor: colorScheme.onSurface,
+      ),
+      cardTheme: CardThemeData(
+        elevation: 0,
+        shape: RoundedRectangleBorder(
+          borderRadius: const BorderRadius.all(Radius.circular(16)),
+          side: BorderSide(
+            color: colorScheme.outline.withOpacity(0.5),
+            width: 1,
+          ),
+        ),
+      ),
+      elevatedButtonTheme: ElevatedButtonThemeData(
+        style: ElevatedButton.styleFrom(
+          elevation: 0.5,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+          backgroundColor: colorScheme.primary,
+          foregroundColor: colorScheme.onPrimary,
+          padding:
+              const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+        ),
+      ),
+      inputDecorationTheme: InputDecorationTheme(
+        filled: true,
+        fillColor: colorScheme.surface,
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide.none,
+        ),
+        hintStyle: TextStyle(color: Colors.grey.shade500),
+      ),
+      bottomNavigationBarTheme: BottomNavigationBarThemeData(
+        backgroundColor: colorScheme.surface,
+        selectedItemColor: colorScheme.primary,
+        unselectedItemColor: Colors.grey,
+        elevation: 5,
+      ),
+    );
+  }
+}
+
+
+====================
+فایل: app_router.dart
+مسیر: D:\PersiaMarkt 3\persiamarkt\lib\core\config\app_router.dart
+====================
+
+import 'dart:async'; // <-- Import needed for StreamSubscription
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
+import 'package:persia_markt/core/config/service_locator.dart';
+import 'package:persia_markt/features/auth/presentation/cubit/auth_cubit.dart';
+import 'package:persia_markt/features/auth/presentation/cubit/auth_state.dart';
+import 'package:persia_markt/features/auth/presentation/view/login_view.dart';
+import 'package:persia_markt/features/auth/presentation/view/register_view.dart';
+import 'package:persia_markt/features/category/view/category_detail_view.dart';
+import 'package:persia_markt/features/home/presentation/view/home_view.dart';
+import 'package:persia_markt/features/home/presentation/view/main_tab_bar_view.dart';
+import 'package:persia_markt/features/map/view/map_view.dart';
+import 'package:persia_markt/features/profile/presentation/view/favorites_view.dart';
+import 'package:persia_markt/features/profile/presentation/view/profile_view.dart';
+import 'package:persia_markt/features/search/presentation/view/search_view.dart';
+import 'package:persia_markt/features/store/presentation/view/store_detail_view.dart';
+
+final _rootNavigatorKey = GlobalKey<NavigatorState>();
+final _shellNavigatorHomeKey = GlobalKey<NavigatorState>(debugLabel: 'shellHome');
+final _shellNavigatorMapKey = GlobalKey<NavigatorState>(debugLabel: 'shellMap');
+final _shellNavigatorFavoritesKey = GlobalKey<NavigatorState>(debugLabel: 'shellFavorites');
+final _shellNavigatorProfileKey = GlobalKey<NavigatorState>(debugLabel: 'shellProfile');
+
+class AppRouter {
+  static final router = GoRouter(
+    initialLocation: '/',
+    navigatorKey: _rootNavigatorKey,
+    // Listen to AuthCubit state changes to automatically redirect users
+    refreshListenable: GoRouterRefreshStream(sl<AuthCubit>().stream),
+    redirect: (BuildContext context, GoRouterState state) {
+      final authState = context.read<AuthCubit>().state;
+      final isLoggedIn = authState is Authenticated;
+      
+      final onAuthRoutes = state.matchedLocation == '/login' || state.matchedLocation == '/register';
+
+      // If user is not logged in and tries to access a protected route (e.g., /profile)
+      if (!isLoggedIn && !onAuthRoutes) {
+        // Redirect them to the login page
+        return '/login';
+      }
+
+      // If user is logged in and tries to access login/register page
+      if (isLoggedIn && onAuthRoutes) {
+        // Redirect them to the home page
+        return '/';
+      }
+
+      // No redirect needed
+      return null;
+    },
+    routes: [
+      StatefulShellRoute.indexedStack(
+        builder: (context, state, navigationShell) {
+          return MainTabBarView(navigationShell: navigationShell);
+        },
+        branches: [
+          StatefulShellBranch(
+            navigatorKey: _shellNavigatorHomeKey,
+            routes: [
+              GoRoute(
+                path: '/',
+                builder: (context, state) => const HomeView(),
+                routes: [
+                  GoRoute(
+                    path: 'store/:storeId',
+                    builder: (context, state) {
+                      final storeId = state.pathParameters['storeId']!;
+                      final initialProductId = state.uri.queryParameters['productId'];
+                      return StoreDetailView(
+                        storeId: storeId,
+                        initialProductId: initialProductId,
+                      );
+                    },
+                  ),
+                  GoRoute(
+                    path: 'category/:categoryId',
+                    builder: (context, state) {
+                      final categoryId = state.pathParameters['categoryId']!;
+                      return CategoryDetailView(categoryId: categoryId);
+                    },
+                  ),
+                ],
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            navigatorKey: _shellNavigatorMapKey,
+            routes: [
+              GoRoute(
+                path: '/map',
+                builder: (context, state) {
+                  final lat = state.uri.queryParameters['lat'];
+                  final lng = state.uri.queryParameters['lng'];
+                  final focus = state.uri.queryParameters['focus'];
+                  return MapView(lat: lat, lng: lng, focus: focus);
+                },
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            navigatorKey: _shellNavigatorFavoritesKey,
+            routes: [
+              GoRoute(
+                path: '/favorites',
+                builder: (context, state) => const FavoritesView(),
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            navigatorKey: _shellNavigatorProfileKey,
+            routes: [
+              GoRoute(
+                path: '/profile',
+                builder: (context, state) => const ProfileView(),
+              ),
+            ],
+          ),
+        ],
+      ),
+      GoRoute(
+        path: '/search',
+        parentNavigatorKey: _rootNavigatorKey,
+        builder: (context, state) => const SearchView(),
+      ),
+      GoRoute(
+        path: '/login',
+        parentNavigatorKey: _rootNavigatorKey,
+        builder: (context, state) => const LoginView(),
+      ),
+      GoRoute(
+        path: '/register',
+        parentNavigatorKey: _rootNavigatorKey,
+        builder: (context, state) => const RegisterView(),
+      ),
+    ],
+  );
+}
+
+// Helper class to make GoRouter listen to BLoC/Cubit stream changes
+class GoRouterRefreshStream extends ChangeNotifier {
+  GoRouterRefreshStream(Stream<dynamic> stream) {
+    notifyListeners();
+    _subscription = stream.asBroadcastStream().listen((_) => notifyListeners());
+  }
+  // FIXED: Changed the type from Stream to StreamSubscription
+  late final StreamSubscription<dynamic> _subscription;
+
+  @override
+  void dispose() {
+    _subscription.cancel();
+    super.dispose();
+  }
+}
+
+
+====================
+فایل: service_locator.dart
+مسیر: D:\PersiaMarkt 3\persiamarkt\lib\core\config\service_locator.dart
+====================
+
+import 'package:get_it/get_it.dart';
+import 'package:http/http.dart' as http;
+import 'package:persia_markt/core/services/api_service.dart';
+import 'package:persia_markt/core/services/location_service.dart';
+import 'package:persia_markt/features/auth/data/services/auth_service.dart'; // <-- ۱. سرویس جدید اضافه شد
+import 'package:persia_markt/features/auth/presentation/cubit/auth_cubit.dart'; // <-- ۲. کیوبیت جدید اضافه شد
+import 'package:persia_markt/features/home/data/repositories/market_repository_impl.dart';
+import 'package:persia_markt/features/home/domain/repositories/market_repository.dart';
+import 'package:persia_markt/features/home/presentation/bloc/market_data_bloc.dart';
+import 'package:persia_markt/features/home/presentation/cubit/location_cubit.dart';
+import 'package:persia_markt/features/profile/presentation/cubit/favorites_cubit.dart';
+import 'package:persia_markt/features/search/presentation/cubit/search_cubit.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+final sl = GetIt.instance;
+
+Future<void> setupServiceLocator() async {
+  // External
+  final sharedPreferences = await SharedPreferences.getInstance();
+  sl.registerLazySingleton(() => sharedPreferences);
+  sl.registerLazySingleton(() => http.Client());
+
+  // Services
+  sl.registerLazySingleton(() => ApiService(client: sl()));
+  sl.registerLazySingleton(() => LocationService());
+  // ۳. سرویس احراز هویت ثبت شد
+  sl.registerLazySingleton(() => AuthService(client: sl(), prefs: sl()));
+
+  // Repositories
+  sl.registerLazySingleton<MarketRepository>(() => MarketRepositoryImpl(apiService: sl()));
+
+  // Blocs / Cubits
+  sl.registerFactory(() => MarketDataBloc(marketRepository: sl()));
+  sl.registerFactory(() => LocationCubit(locationService: sl()));
+  sl.registerFactory(() => FavoritesCubit(sharedPreferences: sl()));
+  sl.registerFactory(() => SearchCubit());
+  // ۴. کیوبیت احراز هویت ثبت شد
+  sl.registerFactory(() => AuthCubit(authService: sl()));
+}
+
+
+====================
+فایل: failures.dart
+مسیر: D:\PersiaMarkt 3\persiamarkt\lib\core\error\failures.dart
+====================
+
+// lib/core/error/failures.dart
+import 'package:equatable/equatable.dart';
+
+/// Base class for all failures in the application.
+/// A Failure represents an unexpected error (e.g., server error, network error).
+abstract class Failure extends Equatable {
+  final String message;
+  const Failure(this.message);
+
+  @override
+  List<Object> get props => [message];
+}
+
+/// Represents a failure that occurs when communicating with the server.
+class ServerFailure extends Failure {
+  const ServerFailure(String message) : super(message);
+}
+
+/// Represents a failure related to network connectivity issues.
+class NetworkFailure extends Failure {
+  const NetworkFailure(String message) : super(message);
+}
+
+====================
+فایل: category_item.dart
+مسیر: D:\PersiaMarkt 3\persiamarkt\lib\core\models\category_item.dart
+====================
+
+import 'package:equatable/equatable.dart';
+
+class CategoryItem extends Equatable {
+  final String id;
+  final String name;
+  final String nameEn;
+  final String? description;
+  final String? iconUrl;
+
+  const CategoryItem({
+    required this.id,
+    required this.name,
+    required this.nameEn,
+    this.description,
+    this.iconUrl,
+  });
+
+  @override
+  List<Object?> get props => [id, name];
+
+  factory CategoryItem.fromJson(Map<String, dynamic> json) {
+    return CategoryItem(
+      // FIXED: Safely convert the integer ID from the API to a String.
+      id: json['id'].toString(),
+      name: json['name'] as String,
+      nameEn: json['name_en'] as String,
+      description: json['description'] as String?,
+      iconUrl: json['icon_url'] as String?,
+    );
+  }
+}
+
+
+====================
+فایل: location.dart
+مسیر: D:\PersiaMarkt 3\persiamarkt\lib\core\models\location.dart
+====================
+
+// lib/core/models/location.dart
+import 'package:equatable/equatable.dart';
+
+class Location extends Equatable {
+  final double lat;
+  final double lng;
+
+  const Location({required this.lat, required this.lng});
+
+  @override
+  List<Object> get props => [lat, lng];
+
+  factory Location.fromJson(Map<String, dynamic> json) {
+    return Location(
+      lat: (json['lat'] as num).toDouble(),
+      lng: (json['lng'] as num).toDouble(),
+    );
+  }
+}
+
+====================
+فایل: market_data.dart
+مسیر: D:\PersiaMarkt 3\persiamarkt\lib\core\models\market_data.dart
+====================
+
+import 'package:equatable/equatable.dart';
+import 'category_item.dart';
+import 'product.dart';
+import 'store.dart';
+
+class MarketData extends Equatable {
+  final List<Store> stores;
+  final List<CategoryItem> categories;
+  final List<Product> products;
+
+  const MarketData({
+    required this.stores,
+    required this.categories,
+    required this.products,
+  });
+
+  @override
+  List<Object> get props => [stores, categories, products];
+
+  /// Creates a MarketData instance from a JSON object.
+  /// It safely handles potential errors during parsing of its child lists.
+  factory MarketData.fromJson(Map<String, dynamic> json) {
+    // Helper function to safely parse a list of items
+    List<T> _parseList<T>(String key, T Function(Map<String, dynamic>) fromJson) {
+      try {
+        if (json[key] is List) {
+          return (json[key] as List).map((item) => fromJson(item)).toList();
+        }
+      } catch (e) {
+        print('Error parsing list for key "$key": $e');
+      }
+      return []; // Return an empty list on failure
+    }
+
+    return MarketData(
+      stores: _parseList('stores', Store.fromJson),
+      categories: _parseList('categories', CategoryItem.fromJson),
+      products: _parseList('products', Product.fromJson),
+    );
+  }
+}
+
+
+====================
+فایل: product.dart
+مسیر: D:\PersiaMarkt 3\persiamarkt\lib\core\models\product.dart
+====================
+
+import 'package:equatable/equatable.dart';
+
+class Product extends Equatable {
+  final String id;
+  final String storeID;
+  final String name;
+  final String description;
+  final String brand;
+  final List<String> images;
+  final double price;
+  final double? discountPrice;
+  final int stock;
+  final bool isPerishable;
+  final String categoryID;
+
+  const Product({
+    required this.id,
+    required this.storeID,
+    required this.name,
+    required this.description,
+    required this.brand,
+    required this.images,
+    required this.price,
+    this.discountPrice,
+    required this.stock,
+    required this.isPerishable,
+    required this.categoryID,
+  });
+
+  /// A helper getter to return the primary image URL.
+  String get primaryImageUrl => images.isNotEmpty ? images.first : '';
+
+  /// A helper getter to determine the effective price (discounted or original).
+  double get effectivePrice => discountPrice ?? price;
+
+  /// A helper getter to check if the product is on sale.
+  bool get isOnSale => discountPrice != null && discountPrice! < price;
+
+  @override
+  List<Object?> get props => [id, storeID, name, effectivePrice];
+
+  /// Creates a Product instance from a JSON object received from the API.
+  /// This factory is designed to parse the new nested API structure safely.
+  factory Product.fromJson(Map<String, dynamic> json) {
+    // Safely access the nested 'product' object.
+    final productData = json['product'] as Map<String, dynamic>? ?? {};
+
+    // Helper function to safely parse string prices to double.
+    double? _parseDouble(dynamic value) {
+      if (value == null) return null;
+      return double.tryParse(value.toString());
+    }
+
+    return Product(
+      id: json['id']?.toString() ?? 'unknown_id',
+      storeID: json['storeID']?.toString() ?? 'unknown_store',
+      price: _parseDouble(json['price']) ?? 0.0,
+      discountPrice: _parseDouble(json['discount_price']),
+      stock: json['stock'] as int? ?? 0,
+      name: productData['name'] as String? ?? 'Unnamed Product',
+      images: (productData['images'] as List<dynamic>?)?.map((e) => e.toString()).toList() ?? [],
+      brand: productData['brand'] as String? ?? 'Unknown Brand',
+      description: productData['description'] as String? ?? '',
+      isPerishable: productData['is_perishable'] as bool? ?? false,
+      // Safely parse category_id which comes as an integer from the backend.
+      categoryID: productData['category_id']?.toString() ?? 'uncategorized',
+    );
+  }
+}
+
+
+====================
+فایل: store.dart
+مسیر: D:\PersiaMarkt 3\persiamarkt\lib\core\models\store.dart
+====================
+
+import 'package:equatable/equatable.dart';
+
+class Store extends Equatable {
+  final String storeID;
+  final String name;
+  final String address;
+  final String storeImage;
+  final double latitude;
+  final double longitude;
+  final double rating;
+
+  // فیلدهای اضافی که ممکن است در آینده از API بیایند
+  final String? city;
+  final String? phone;
+
+  const Store({
+    required this.storeID,
+    required this.name,
+    required this.address,
+    required this.storeImage,
+    required this.latitude,
+    required this.longitude,
+    required this.rating,
+    this.city,
+    this.phone,
+  });
+
+  /// برای مواقعی که نیاز به Store خالی داریم
+  factory Store.empty() {
+    return const Store(
+      storeID: '',
+      name: 'Not Found',
+      address: '',
+      storeImage: '',
+      latitude: 0.0,
+      longitude: 0.0,
+      rating: 0.0,
+    );
+  }
+
+  @override
+  List<Object?> get props => [storeID, name, address];
+
+  /// Creates a Store instance from a JSON object.
+  /// This factory is now updated to match the backend API response keys.
+  factory Store.fromJson(Map<String, dynamic> json) {
+    // Helper to safely parse numbers
+    double _parseDouble(dynamic value) {
+      if (value is num) return value.toDouble();
+      if (value is String) return double.tryParse(value) ?? 0.0;
+      return 0.0;
+    }
+
+    return Store(
+      // FIXED: Mapped API keys to model properties
+      storeID: (json['id'] as int).toString(),
+      name: json['store_name'] as String? ?? 'Unnamed Store',
+      address: json['store_address'] as String? ?? 'No address',
+      storeImage: json['store_image_url'] as String? ?? '',
+      latitude: _parseDouble(json['latitude']),
+      longitude: _parseDouble(json['longitude']),
+      rating: _parseDouble(json['rating']),
+      city: json['city'] as String?, // Optional field
+      phone: json['phone'] as String?, // Optional field
+    );
+  }
+}
+
+
+====================
+فایل: api_service.dart
+مسیر: D:\PersiaMarkt 3\persiamarkt\lib\core\services\api_service.dart
+====================
+
+import 'dart:convert'; // FIXED: Corrected the import statement
+import 'package:http/http.dart' as http;
+import 'dart:async'; // For timeout
+
+/// A service class for handling all network requests to the PersiaMarkt API.
+/// It is optimized to fetch initial data concurrently and handles server cold starts.
+class ApiService {
+  final String _baseUrl = 'https://persia-market-panel.onrender.com';
+  final http.Client _client;
+  // Increased timeout to handle server cold starts on free hosting tiers.
+  final _timeoutDuration = const Duration(seconds: 90);
+
+  ApiService({required http.Client client}) : _client = client;
+
+  Future<Map<String, dynamic>> fetchMarketDataAsJson() async {
+    try {
+      print("Fetching market data... This might take a minute on the first load.");
+      
+      // 1. Fetch stores and categories concurrently with an extended timeout.
+      final responses = await Future.wait([
+        _client.get(Uri.parse('$_baseUrl/stores')).timeout(_timeoutDuration),
+        _client.get(Uri.parse('$_baseUrl/categories')).timeout(_timeoutDuration),
+      ]);
+
+      final storesResponse = responses[0];
+      final categoriesResponse = responses[1];
+
+      // 2. Validate responses.
+      if (storesResponse.statusCode != 200) {
+        throw Exception('Failed to load stores: ${storesResponse.body}');
+      }
+      if (categoriesResponse.statusCode != 200) {
+        throw Exception('Failed to load categories: ${categoriesResponse.body}');
+      }
+
+      final List<dynamic> storesJson = json.decode(utf8.decode(storesResponse.bodyBytes));
+      final List<dynamic> categoriesJson = json.decode(utf8.decode(categoriesResponse.bodyBytes));
+
+      if (storesJson.isEmpty) {
+         print("Warning: No stores found from API.");
+         return { 'stores': [], 'products': [], 'categories': categoriesJson };
+      }
+
+      // 3. Fetch products for each store concurrently.
+      final productFutures = storesJson.map((storeJson) {
+        final storeId = storeJson['id'];
+        return _client.get(Uri.parse('$_baseUrl/stores/$storeId/products'))
+            .timeout(_timeoutDuration)
+            .then((response) {
+          if (response.statusCode == 200) {
+            final List<dynamic> productsJson = json.decode(utf8.decode(response.bodyBytes));
+            for (var productJson in productsJson) {
+              productJson['storeID'] = storeId.toString();
+            }
+            return productsJson;
+          }
+          print('Warning: Failed to load products for store ID $storeId');
+          return <dynamic>[];
+        });
+      }).toList();
+
+      final List<List<dynamic>> productsByStore = await Future.wait(productFutures);
+      final List<dynamic> allProductsJson = productsByStore.expand((products) => products).toList();
+
+      print("Market data fetched successfully!");
+      return {
+        'stores': storesJson,
+        'products': allProductsJson,
+        'categories': categoriesJson,
+      };
+    } on TimeoutException {
+        print("Error: The request to the server timed out. This can happen on the first load.");
+        throw Exception('سرور پاسخ نمی‌دهد. لطفاً چند لحظه بعد دوباره تلاش کنید.');
+    } catch (e) {
+      print('Error fetching market data: $e');
+      throw Exception('خطا در اتصال به سرور. لطفاً از اتصال اینترنت خود مطمئن شوید.');
+    }
+  }
+}
+
+
+====================
+فایل: location_service.dart
+مسیر: D:\PersiaMarkt 3\persiamarkt\lib\core\services\location_service.dart
+====================
+
+// lib/services/location_service.dart
+import 'package:geolocator/geolocator.dart';
+import 'package:geocoding/geocoding.dart';
+
+class LocationService {
+  /// موقعیت فعلی دستگاه را با بررسی کامل دسترسی‌ها مشخص می‌کند.
+  Future<Position> getCurrentPosition() async {
+    // 1. بررسی فعال بودن سرویس موقعیت‌یاب دستگاه
+    bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    if (!serviceEnabled) {
+      return Future.error('سرویس موقعیت مکانی غیرفعال است.');
+    }
+
+    // 2. بررسی و درخواست دسترسی موقعیت مکانی از کاربر
+    LocationPermission permission = await Geolocator.checkPermission();
+    if (permission == LocationPermission.denied) {
+      permission = await Geolocator.requestPermission();
+      if (permission == LocationPermission.denied) {
+        return Future.error('دسترسی به موقعیت مکانی رد شد.');
+      }
+    }
+
+    if (permission == LocationPermission.deniedForever) {
+      return Future.error('دسترسی به موقعیت مکانی برای همیشه رد شده است.');
+    }
+
+    // 3. در صورت تایید دسترسی، موقعیت فعلی را برمی‌گرداند
+    return await Geolocator.getCurrentPosition();
+  }
+
+  /// یک موقعیت جغرافیایی را به یک آدرس خوانا تبدیل می‌کند.
+  Future<String> getAddressFromPosition(Position position) async {
+    try {
+      List<Placemark> placemarks = await placemarkFromCoordinates(position.latitude, position.longitude);
+
+      if (placemarks.isNotEmpty) {
+        final placemark = placemarks.first; 
+        
+        // بخش‌های مختلف آدرس را استخراج می‌کند
+        final city = placemark.locality ?? ''; 
+        final street = placemark.thoroughfare ?? ''; 
+        
+        // آدرس را به صورت خوانا ترکیب می‌کند
+        final addressParts = [city, street].where((part) => part.isNotEmpty).toList();
+        if (addressParts.isNotEmpty) {
+          return addressParts.join(', ');
+        }
+      }
+      // اگر هیچ آدرسی یافت نشد
+      return 'موقعیت نامعلوم'; 
+    } catch (e) {
+      // دستور print برای محیط نهایی (production) حذف شد.
+      // در صورت بروز خطا، یک پیام مناسب به کاربر نمایش داده می‌شود.
+      return 'خطا در تبدیل موقعیت';
+    }
+  }
+}
+
+====================
+فایل: error_view.dart
+مسیر: D:\PersiaMarkt 3\persiamarkt\lib\core\widgets\error_view.dart
+====================
+
+// lib/core/widgets/error_view.dart
+import 'package:flutter/material.dart';
+
+/// A reusable widget to display an error message with an optional retry button.
+class AppErrorView extends StatelessWidget {
+  final String message;
+  final VoidCallback? onRetry;
+
+  const AppErrorView({
+    Key? key,
+    required this.message,
+    this.onRetry,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(24.0),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.cloud_off_rounded,
+              color: Colors.red.shade300,
+              size: 60,
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'متاسفانه خطایی رخ داد!',
+              style: Theme.of(context).textTheme.headlineSmall,
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 8),
+            Text(
+              message,
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Colors.grey.shade600),
+              textAlign: TextAlign.center,
+            ),
+            if (onRetry != null) ...[
+              const SizedBox(height: 24),
+              ElevatedButton.icon(
+                onPressed: onRetry,
+                icon: const Icon(Icons.refresh),
+                label: const Text('تلاش مجدد'),
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+====================
+فایل: loading_shimmer.dart
+مسیر: D:\PersiaMarkt 3\persiamarkt\lib\core\widgets\loading_shimmer.dart
+====================
+
+// lib/core/widgets/loading_shimmer.dart
+import 'package:flutter/material.dart';
+import 'package:shimmer/shimmer.dart';
+
+/// A reusable shimmer box widget to indicate loading state.
+class ShimmerBox extends StatelessWidget {
+  final double width;
+  final double height;
+  final ShapeBorder shape;
+
+  const ShimmerBox({
+    Key? key,
+    required this.width,
+    required this.height,
+    this.shape = const RoundedRectangleBorder(),
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    bool isDarkMode = Theme.of(context).brightness == Brightness.dark;
+    return Shimmer.fromColors(
+      baseColor: isDarkMode ? Colors.grey.shade800 : Colors.grey.shade300,
+      highlightColor: isDarkMode ? Colors.grey.shade700 : Colors.grey.shade100,
+      child: Container(
+        width: width,
+        height: height,
+        decoration: ShapeDecoration(
+          color: Colors.grey,
+          shape: shape,
+        ),
+      ),
+    );
+  }
+}
+
+====================
+فایل: product_card_view.dart
+مسیر: D:\PersiaMarkt 3\persiamarkt\lib\core\widgets\product_card_view.dart
+====================
+
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
+import 'package:persia_markt/core/models/product.dart';
+import 'package:persia_markt/core/models/store.dart';
+import 'package:persia_markt/features/profile/presentation/cubit/favorites_cubit.dart';
+import 'package:persia_markt/features/profile/presentation/cubit/favorites_state.dart';
+
+/// A card widget to display a product in a compact, column-based layout.
+/// Used in horizontal carousels.
+class ProductCardView extends StatelessWidget {
+  final Product product;
+  final Store store;
+
+  const ProductCardView({super.key, required this.product, required this.store});
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: () => context.go('/store/${store.storeID}?productId=${product.id}'),
+      child: Container(
+        width: 160,
+        margin: const EdgeInsets.symmetric(horizontal: 8),
+        decoration: BoxDecoration(
+          color: Theme.of(context).cardColor,
+          borderRadius: BorderRadius.circular(12),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.05),
+              spreadRadius: 1,
+              blurRadius: 5,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Product Image Section
+            Stack(
+              children: [
+                ClipRRect(
+                  borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
+                  child: Container(
+                    height: 120,
+                    width: double.infinity,
+                    color: Colors.grey.shade100,
+                    child: Image.network(
+                      // FIXED: Use the new primaryImageUrl getter.
+                      product.primaryImageUrl,
+                      fit: BoxFit.contain,
+                      errorBuilder: (_, __, ___) => Image.asset(
+                        'assets/images/supermarket.png',
+                        fit: BoxFit.contain,
+                      ),
+                    ),
+                  ),
+                ),
+                Positioned(
+                  top: 4,
+                  left: 4,
+                  child: BlocBuilder<FavoritesCubit, FavoritesState>(
+                    builder: (context, state) {
+                      final isLiked = state.productIds.contains(product.id);
+                      return IconButton(
+                        onPressed: () => context.read<FavoritesCubit>().toggleLike(product.id),
+                        icon: Icon(
+                          isLiked ? Icons.favorite : Icons.favorite_border,
+                          color: isLiked ? Colors.red : Colors.grey.shade400,
+                          size: 24,
+                        ),
+                      );
+                    },
+                  ),
+                ),
+              ],
+            ),
+            // Product Details Section
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    product.name,
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    store.name,
+                    style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 8),
+                  Align(
+                    alignment: Alignment.centerRight,
+                    child: Text(
+                      // FIXED: Use effectivePrice to show discount if available.
+                      '€${product.effectivePrice.toStringAsFixed(2)}',
+                      style: TextStyle(
+                        color: product.isOnSale ? Colors.red.shade700 : Colors.green.shade700,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+
+====================
+فایل: product_list_item_view.dart
+مسیر: D:\PersiaMarkt 3\persiamarkt\lib\core\widgets\product_list_item_view.dart
+====================
+
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
+import 'package:persia_markt/core/models/product.dart';
+import 'package:persia_markt/core/models/store.dart';
+import 'package:persia_markt/features/profile/presentation/cubit/favorites_cubit.dart';
+import 'package:persia_markt/features/profile/presentation/cubit/favorites_state.dart';
+
+class ProductListItemView extends StatelessWidget {
+  final Product product;
+  final Store store;
+  final VoidCallback? onImageTap;
+
+  const ProductListItemView({
+    super.key,
+    required this.product,
+    required this.store,
+    this.onImageTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      elevation: 1,
+      margin: const EdgeInsets.symmetric(vertical: 4, horizontal: 16),
+      child: ListTile(
+        onTap: () => context.go('/store/${store.storeID}?productId=${product.id}'),
+        leading: GestureDetector(
+          onTap: onImageTap,
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(8),
+            child: Image.network(
+              // FIXED: Use the new primaryImageUrl getter.
+              product.primaryImageUrl,
+              width: 60,
+              height: 60,
+              fit: BoxFit.cover,
+              errorBuilder: (_, __, ___) => Image.asset(
+                'assets/images/supermarket.png',
+                width: 60,
+                height: 60,
+                fit: BoxFit.cover,
+              ),
+            ),
+          ),
+        ),
+        title: Text(
+          product.name,
+          style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+        ),
+        subtitle: Text(
+          product.description,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+        ),
+        trailing: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              // FIXED: Use effectivePrice to show discount if available.
+              '€${product.effectivePrice.toStringAsFixed(2)}',
+              style: TextStyle(
+                color: product.isOnSale ? Colors.red : Colors.green,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(width: 8),
+            _FavoriteButton(productId: product.id),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _FavoriteButton extends StatelessWidget {
+  final String productId;
+  const _FavoriteButton({required this.productId});
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocBuilder<FavoritesCubit, FavoritesState>(
+      builder: (context, state) {
+        final isLiked = state.productIds.contains(productId);
+        return IconButton(
+          onPressed: () => context.read<FavoritesCubit>().toggleLike(productId),
+          icon: Icon(
+            isLiked ? Icons.favorite : Icons.favorite_border,
+            color: isLiked ? Colors.red : Colors.grey,
+          ),
+        );
+      },
+    );
+  }
+}
+
+
+====================
+فایل: store_list_item_view.dart
+مسیر: D:\PersiaMarkt 3\persiamarkt\lib\core\widgets\store_list_item_view.dart
+====================
+
+// lib/core/widgets/store_list_item_view.dart
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:geolocator/geolocator.dart';
+import 'package:go_router/go_router.dart';
+import 'package:persia_markt/core/models/store.dart';
+import 'package:persia_markt/features/home/presentation/cubit/location_cubit.dart';
+import 'package:persia_markt/features/home/presentation/cubit/location_state.dart';
+
+class StoreListItemView extends StatelessWidget {
+  final Store store;
+  const StoreListItemView({super.key, required this.store});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: 6, horizontal: 16),
+      decoration: BoxDecoration(
+        color: Theme.of(context).cardColor,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.08), // سایه ملایم
+            blurRadius: 10,
+            spreadRadius: 1,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(12),
+        child: ListTile(
+          onTap: () => context.go('/store/${store.storeID}'),
+          leading: ClipRRect(
+            borderRadius: BorderRadius.circular(8),
+            child: Image.network(
+              store.storeImage,
+              width: 60,
+              height: 60,
+              fit: BoxFit.cover,
+              errorBuilder: (context, error, stackTrace) => Image.asset(
+                'assets/images/supermarket.png',
+                width: 60,
+                height: 60,
+                fit: BoxFit.cover,
+              ),
+            ),
+          ),
+          title: Text(
+            store.name,
+            style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 18,
+                ),
+          ),
+          subtitle: Text(
+            '${store.address}, ${store.city}',
+            overflow: TextOverflow.ellipsis,
+          ),
+          trailing: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(Icons.star, color: Colors.amber, size: 16),
+                  const SizedBox(width: 4),
+                  Text(store.rating.toString()),
+                ],
+              ),
+              const SizedBox(height: 4),
+              BlocBuilder<LocationCubit, LocationState>(
+                builder: (context, locationState) {
+                  if (locationState is LocationLoaded) {
+                    final distance = Geolocator.distanceBetween(
+                      locationState.position.latitude,
+                      locationState.position.longitude,
+                      store.latitude,  // اصلاح شد
+                      store.longitude, // اصلاح شد
+                    );
+                    final distanceText = '${(distance / 1000).toStringAsFixed(1)} کیلومتر';
+                    return Text(
+                      distanceText,
+                      style: const TextStyle(fontSize: 12, color: Colors.grey),
+                    );
+                  }
+                  return const SizedBox.shrink();
+                },
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+
+====================
+فایل: auth_service.dart
+مسیر: D:\PersiaMarkt 3\persiamarkt\lib\features\auth\data\services\auth_service.dart
+====================
+
+import 'dart:convert';
+import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
+
+class AuthService {
+  final String _baseUrl = 'https://persia-market-panel.onrender.com';
+  final http.Client _client;
+  final SharedPreferences _prefs;
+
+  // Key to store the auth token locally
+  static const String _tokenKey = 'auth_token';
+
+  AuthService({required http.Client client, required SharedPreferences prefs})
+      : _client = client,
+        _prefs = prefs;
+
+  Future<String> register({
+    required String name,
+    required String email,
+    required String password,
+    String? city,
+  }) async {
+    final response = await _client.post(
+      Uri.parse('$_baseUrl/auth/user/register'), // آدرس صحیح برای ثبت‌نام کاربر
+      headers: {'Content-Type': 'application/json'},
+      body: json.encode({
+        'name': name,
+        'email': email,
+        'password': password,
+        'city': city ?? '',
+      }),
+    );
+
+    final responseBody = json.decode(response.body);
+    if (response.statusCode >= 200 && response.statusCode < 300) {
+      return 'ثبت‌نام با موفقیت انجام شد.';
+    } else {
+      throw Exception(responseBody['message'] ?? 'خطا در ثبت‌نام');
+    }
+  }
+
+  Future<String> login({required String email, required String password}) async {
+    final response = await _client.post(
+      // --- مشکل اینجا بود ---
+      // آدرس ورود از /auth/login به /auth/user/login اصلاح شد
+      Uri.parse('$_baseUrl/auth/user/login'),
+      headers: {'Content-Type': 'application/json'},
+      body: json.encode({'email': email, 'password': password}),
+    );
+
+    final responseBody = json.decode(response.body);
+    if (response.statusCode >= 200 && response.statusCode < 300) {
+      final token = responseBody['access_token'];
+      await _prefs.setString(_tokenKey, token);
+      return token;
+    } else {
+      throw Exception(responseBody['message'] ?? 'خطا در ورود');
+    }
+  }
+
+  Future<void> logout() async {
+    await _prefs.remove(_tokenKey);
+  }
+
+  String? getToken() {
+    return _prefs.getString(_tokenKey);
+  }
+
+  bool isLoggedIn() {
+    return _prefs.containsKey(_tokenKey);
+  }
+}
+
+
+====================
+فایل: auth_cubit.dart
+مسیر: D:\PersiaMarkt 3\persiamarkt\lib\features\auth\presentation\cubit\auth_cubit.dart
+====================
+
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:persia_markt/features/auth/data/services/auth_service.dart';
+import 'auth_state.dart';
+
+class AuthCubit extends Cubit<AuthState> {
+  // FIXED: Made authService public by removing the underscore.
+  final AuthService authService;
+
+  AuthCubit({required this.authService}) : super(AuthInitial()) {
+    checkAuthentication();
+  }
+
+  // Checks if a token exists locally to determine initial auth state.
+  void checkAuthentication() {
+    if (authService.isLoggedIn()) {
+      emit(const Authenticated());
+    } else {
+      emit(Unauthenticated());
+    }
+  }
+
+  Future<void> registerUser({
+    required String name,
+    required String email,
+    required String password,
+    String? city,
+  }) async {
+    emit(AuthLoading());
+    try {
+      await authService.register(
+        name: name,
+        email: email,
+        password: password,
+        city: city,
+      );
+      // After successful registration, move to Unauthenticated to prompt login
+      emit(Unauthenticated());
+    } catch (e) {
+      emit(AuthError(e.toString().replaceAll('Exception: ', '')));
+    }
+  }
+
+  Future<void> loginUser({
+    required String email,
+    required String password,
+  }) async {
+    emit(AuthLoading());
+    try {
+      await authService.login(email: email, password: password);
+      emit(const Authenticated());
+    } catch (e) {
+      emit(AuthError(e.toString().replaceAll('Exception: ', '')));
+    }
+  }
+
+  Future<void> logoutUser() async {
+    await authService.logout();
+    emit(Unauthenticated());
+  }
+}
+
+
+====================
+فایل: auth_state.dart
+مسیر: D:\PersiaMarkt 3\persiamarkt\lib\features\auth\presentation\cubit\auth_state.dart
+====================
+
+import 'package:equatable/equatable.dart';
+
+// An abstract class for all authentication states
+abstract class AuthState extends Equatable {
+  const AuthState();
+
+  @override
+  List<Object> get props => [];
+}
+
+// Initial state, user is not authenticated
+class AuthInitial extends AuthState {}
+
+// State when an auth process (login/register) is in progress
+class AuthLoading extends AuthState {}
+
+// State when the user is successfully authenticated
+class Authenticated extends AuthState {
+  // You can add user data here later, e.g., final User user;
+  const Authenticated();
+}
+
+// State when the user is not authenticated (e.g., after logout or failed login)
+class Unauthenticated extends AuthState {}
+
+// State when an error occurs during the auth process
+class AuthError extends AuthState {
+  final String message;
+
+  const AuthError(this.message);
+
+  @override
+  List<Object> get props => [message];
+}
+
+
+====================
+فایل: login_view.dart
+مسیر: D:\PersiaMarkt 3\persiamarkt\lib\features\auth\presentation\view\login_view.dart
+====================
+
+import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+
+class LoginView extends StatefulWidget {
+  const LoginView({super.key});
+
+  @override
+  State<LoginView> createState() => _LoginViewState();
+}
+
+class _LoginViewState extends State<LoginView> {
+  final _formKey = GlobalKey<FormState>();
+  final _emailController = TextEditingController();
+  final _passwordController = TextEditingController();
+  bool _isLoading = false;
+  bool _obscureText = true;
+
+  @override
+  void dispose() {
+    _emailController.dispose();
+    _passwordController.dispose();
+    super.dispose();
+  }
+
+  void _togglePasswordVisibility() {
+    setState(() {
+      _obscureText = !_obscureText;
+    });
+  }
+
+  Future<void> _login() async {
+    if (_formKey.currentState?.validate() ?? false) {
+      setState(() => _isLoading = true);
+      // TODO: Implement login logic with AuthService
+      await Future.delayed(const Duration(seconds: 2)); // Simulate network call
+      print('Logging in with:');
+      print('Email: ${_emailController.text}');
+      print('Password: ${_passwordController.text}');
+      setState(() => _isLoading = false);
+
+      // On success, navigate to home page or profile
+      if (mounted) {
+        context.go('/'); // Navigate to home for now
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Scaffold(
+      body: SafeArea(
+        child: Center(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(24.0),
+            child: Form(
+              key: _formKey,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Image.asset('assets/images/appLogo.png', height: 80),
+                  const SizedBox(height: 16),
+                  Text(
+                    'ورود به حساب کاربری',
+                    textAlign: TextAlign.center,
+                    style: theme.textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'خوشحالیم که دوباره شما را می‌بینیم!',
+                    textAlign: TextAlign.center,
+                    style: theme.textTheme.titleMedium?.copyWith(color: Colors.grey),
+                  ),
+                  const SizedBox(height: 32),
+                  _buildTextFormField(
+                    controller: _emailController,
+                    labelText: 'ایمیل',
+                    icon: Icons.email_outlined,
+                    keyboardType: TextInputType.emailAddress,
+                    validator: (value) {
+                      if (value?.isEmpty ?? true) return 'لطفاً ایمیل خود را وارد کنید';
+                      if (!RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(value!)) return 'ایمیل معتبر نیست';
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 16),
+                  _buildTextFormField(
+                    controller: _passwordController,
+                    labelText: 'رمز عبور',
+                    icon: Icons.lock_outline,
+                    obscureText: _obscureText,
+                    suffixIcon: IconButton(
+                      icon: Icon(_obscureText ? Icons.visibility_off_outlined : Icons.visibility_outlined),
+                      onPressed: _togglePasswordVisibility,
+                    ),
+                    validator: (value) => (value?.isEmpty ?? true) ? 'لطفاً رمز عبور را وارد کنید' : null,
+                  ),
+                  const SizedBox(height: 24),
+                  _isLoading
+                      ? const Center(child: CircularProgressIndicator())
+                      : ElevatedButton(
+                          onPressed: _login,
+                          style: ElevatedButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(vertical: 16),
+                          ),
+                          child: const Text('ورود'),
+                        ),
+                  const SizedBox(height: 16),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Text('حساب کاربری ندارید؟'),
+                      TextButton(
+                        onPressed: () => context.go('/register'),
+                        child: const Text('ثبت نام کنید'),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  TextFormField _buildTextFormField({
+    required TextEditingController controller,
+    required String labelText,
+    required IconData icon,
+    String? Function(String?)? validator,
+    TextInputType? keyboardType,
+    bool obscureText = false,
+    Widget? suffixIcon,
+  }) {
+    return TextFormField(
+      controller: controller,
+      decoration: InputDecoration(
+        labelText: labelText,
+        prefixIcon: Icon(icon),
+        suffixIcon: suffixIcon,
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+        ),
+      ),
+      keyboardType: keyboardType,
+      obscureText: obscureText,
+      validator: validator,
+    );
+  }
+}
+
+
+====================
+فایل: register_view.dart
+مسیر: D:\PersiaMarkt 3\persiamarkt\lib\features\auth\presentation\view\register_view.dart
+====================
+
+import 'package:flutter/material.dart'; // <-- FIXED
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
+import 'package:persia_markt/features/auth/presentation/cubit/auth_cubit.dart';
+import 'package:persia_markt/features/auth/presentation/cubit/auth_state.dart';
+
+class RegisterView extends StatefulWidget {
+  const RegisterView({super.key});
+
+  @override
+  State<RegisterView> createState() => _RegisterViewState();
+}
+
+class _RegisterViewState extends State<RegisterView> {
+  final _formKey = GlobalKey<FormState>();
+  final _nameController = TextEditingController();
+  final _emailController = TextEditingController();
+  final _passwordController = TextEditingController();
+  final _cityController = TextEditingController();
+  bool _obscureText = true;
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    _emailController.dispose();
+    _passwordController.dispose();
+    _cityController.dispose();
+    super.dispose();
+  }
+
+  void _togglePasswordVisibility() {
+    setState(() {
+      _obscureText = !_obscureText;
+    });
+  }
+
+  void _register() {
+    if (_formKey.currentState?.validate() ?? false) {
+      context.read<AuthCubit>().registerUser(
+            name: _nameController.text,
+            email: _emailController.text,
+            password: _passwordController.text,
+            city: _cityController.text,
+          );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Scaffold(
+      body: SafeArea(
+        child: BlocConsumer<AuthCubit, AuthState>(
+          listener: (context, state) {
+            if (state is AuthError) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text(state.message), backgroundColor: Colors.red),
+              );
+            } else if (state is Unauthenticated) {
+              // This state is emitted after successful registration
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('ثبت‌نام با موفقیت انجام شد! لطفاً وارد شوید.')),
+              );
+              context.go('/login');
+            }
+          },
+          builder: (context, state) {
+            final isLoading = state is AuthLoading;
+            return Center(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.all(24.0),
+                child: Form(
+                  key: _formKey,
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Image.asset('assets/images/appLogo.png', height: 80),
+                      const SizedBox(height: 16),
+                      Text(
+                        'ساخت حساب کاربری',
+                        textAlign: TextAlign.center,
+                        style: theme.textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.bold),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        'به پرشیا مارکت خوش آمدید!',
+                        textAlign: TextAlign.center,
+                        style: theme.textTheme.titleMedium?.copyWith(color: Colors.grey),
+                      ),
+                      const SizedBox(height: 32),
+                      _buildTextFormField(
+                        controller: _nameController,
+                        labelText: 'نام و نام خانوادگی',
+                        icon: Icons.person_outline,
+                        validator: (value) => (value?.isEmpty ?? true) ? 'لطفاً نام خود را وارد کنید' : null,
+                      ),
+                      const SizedBox(height: 16),
+                      _buildTextFormField(
+                        controller: _emailController,
+                        labelText: 'ایمیل',
+                        icon: Icons.email_outlined,
+                        keyboardType: TextInputType.emailAddress,
+                        validator: (value) {
+                          if (value?.isEmpty ?? true) return 'لطفاً ایمیل خود را وارد کنید';
+                          if (!RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(value!)) return 'ایمیل معتبر نیست';
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 16),
+                      _buildTextFormField(
+                        controller: _passwordController,
+                        labelText: 'رمز عبور',
+                        icon: Icons.lock_outline,
+                        obscureText: _obscureText,
+                        suffixIcon: IconButton(
+                          icon: Icon(_obscureText ? Icons.visibility_off_outlined : Icons.visibility_outlined),
+                          onPressed: _togglePasswordVisibility,
+                        ),
+                        validator: (value) => (value?.length ?? 0) < 8 ? 'رمز عبور باید حداقل ۸ کاراکتر باشد' : null,
+                      ),
+                      const SizedBox(height: 16),
+                      _buildTextFormField(
+                        controller: _cityController,
+                        labelText: 'شهر (اختیاری)',
+                        icon: Icons.location_city_outlined,
+                      ),
+                      const SizedBox(height: 24),
+                      isLoading
+                          ? const Center(child: CircularProgressIndicator())
+                          : ElevatedButton(
+                              onPressed: _register,
+                              style: ElevatedButton.styleFrom(
+                                padding: const EdgeInsets.symmetric(vertical: 16),
+                              ),
+                              child: const Text('ثبت نام'),
+                            ),
+                      const SizedBox(height: 16),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Text('حساب کاربری دارید؟'),
+                          TextButton(
+                            onPressed: () => context.go('/login'),
+                            child: const Text('وارد شوید'),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            );
+          },
+        ),
+      ),
+    );
+  }
+
+  TextFormField _buildTextFormField({
+    required TextEditingController controller,
+    required String labelText,
+    required IconData icon,
+    String? Function(String?)? validator,
+    TextInputType? keyboardType,
+    bool obscureText = false,
+    Widget? suffixIcon,
+  }) {
+    return TextFormField(
+      controller: controller,
+      decoration: InputDecoration(
+        labelText: labelText,
+        prefixIcon: Icon(icon),
+        suffixIcon: suffixIcon,
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+        ),
+      ),
+      keyboardType: keyboardType,
+      obscureText: obscureText,
+      validator: validator,
+    );
+  }
+}
+
+
+====================
+فایل: category_detail_view.dart
+مسیر: D:\PersiaMarkt 3\persiamarkt\lib\features\category\view\category_detail_view.dart
+====================
+
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
+import 'package:persia_markt/core/widgets/product_card_view.dart';
+import 'package:persia_markt/features/home/presentation/bloc/market_data_bloc.dart';
+import 'package:persia_markt/features/home/presentation/bloc/market_data_state.dart';
+
+class CategoryDetailView extends StatelessWidget {
+  final String categoryId;
+  const CategoryDetailView({super.key, required this.categoryId});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: BlocBuilder<MarketDataBloc, MarketDataState>(
+        builder: (context, state) {
+          if (state is MarketDataLoaded) {
+            // FIXED: Use the new 'id' property instead of 'categoryID'.
+            final category = state.marketData.categories.firstWhere(
+              (c) => c.id == categoryId,
+              // Provide a fallback to prevent crashing if the category is not found.
+              orElse: () => state.marketData.categories.first,
+            );
+
+            // 1. Find all products in this category.
+            final productsInCategory = state.marketData.products
+                .where((p) => p.categoryID == categoryId)
+                .toList();
+
+            // 2. Identify the unique stores that have these products.
+            final storeIds = productsInCategory.map((p) => p.storeID).toSet();
+            final stores = state.marketData.stores
+                .where((s) => storeIds.contains(s.storeID))
+                .toList();
+
+            return CustomScrollView(
+              slivers: [
+                SliverAppBar(
+                  title: Text(category.name),
+                  pinned: true,
+                ),
+                if (stores.isEmpty)
+                  const SliverFillRemaining(
+                    child: Center(child: Text('محصولی در این دسته‌بندی یافت نشد.')),
+                  )
+                else
+                  // 3. Create a vertical list of stores.
+                  SliverList.builder(
+                    itemCount: stores.length,
+                    itemBuilder: (context, index) {
+                      final store = stores[index];
+                      // 4. Filter products for the horizontal list within each store.
+                      final productsInStore = productsInCategory
+                          .where((p) => p.storeID == store.storeID)
+                          .toList();
+
+                      return Card(
+                        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                        elevation: 2,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        child: Column(
+                          children: [
+                            // Store header information
+                            ListTile(
+                              leading: CircleAvatar(
+                                backgroundImage: NetworkImage(store.storeImage),
+                                onBackgroundImageError: (_, __) {},
+                              ),
+                              title: Text(store.name, style: const TextStyle(fontWeight: FontWeight.bold)),
+                              subtitle: Text(store.address),
+                            ),
+                            // Horizontal list of products for this store
+                            SizedBox(
+                              height: 250, // Height for ProductCardView
+                              child: ListView.builder(
+                                scrollDirection: Axis.horizontal,
+                                itemCount: productsInStore.length,
+                                padding: const EdgeInsets.all(8),
+                                itemBuilder: (context, productIndex) {
+                                  return ProductCardView(
+                                    product: productsInStore[productIndex],
+                                    store: store,
+                                  );
+                                },
+                              ),
+                            ),
+                            // Button to navigate to the store's detail page
+                            Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: Align(
+                                alignment: Alignment.centerLeft,
+                                child: ElevatedButton.icon(
+                                  onPressed: () => context.go('/store/${store.storeID}'),
+                                  icon: const Icon(Icons.storefront_outlined),
+                                  label: const Text('مشاهده فروشگاه'),
+                                ),
+                              ),
+                            )
+                          ],
+                        ),
+                      );
+                    },
+                  ),
+              ],
+            );
+          }
+          // Show a loading indicator while data is being fetched.
+          return const Center(child: CircularProgressIndicator());
+        },
+      ),
+    );
+  }
+}
+
+
+====================
+فایل: market_repository.dart
+مسیر: D:\PersiaMarkt 3\persiamarkt\lib\features\home\data\repositories\market_repository.dart
+====================
+
+// lib/features/home/domain/repositories/market_repository.dart
+import 'package:fpdart/fpdart.dart';
+import 'package:persia_markt/core/error/failures.dart';
+import 'package:persia_markt/core/models/market_data.dart';
+
+/// Abstract contract for the market data repository.
+/// This allows the business logic layer (BLoC) to depend on an abstraction,
+/// not a concrete implementation, which is crucial for testing and modularity.
+abstract class MarketRepository {
+  /// Fetches the market data.
+  /// Returns [Either] a [Failure] on error or [MarketData] on success.
+  Future<Either<Failure, MarketData>> getMarketData();
+}
+
+====================
+فایل: market_repository_impl.dart
+مسیر: D:\PersiaMarkt 3\persiamarkt\lib\features\home\data\repositories\market_repository_impl.dart
+====================
+
+import 'package:fpdart/fpdart.dart';
+import 'package:persia_markt/core/error/failures.dart';
+import 'package:persia_markt/core/models/market_data.dart';
+import 'package:persia_markt/core/services/api_service.dart';
+import 'package:persia_markt/features/home/domain/repositories/market_repository.dart';
+
+class MarketRepositoryImpl implements MarketRepository {
+  final ApiService _apiService;
+
+  const MarketRepositoryImpl({required ApiService apiService})
+      : _apiService = apiService;
+
+  @override
+  Future<Either<Failure, MarketData>> getMarketData() async {
+    try {
+      // 1. Fetch the raw JSON data from the optimized ApiService.
+      final Map<String, dynamic> marketDataJson =
+          await _apiService.fetchMarketDataAsJson();
+
+      // 2. Parse the JSON into a strongly-typed MarketData model.
+      final marketData = MarketData.fromJson(marketDataJson);
+
+      // 3. Return the successful result wrapped in a Right.
+      return Right(marketData);
+    } on Exception catch (e) {
+      // 4. On any exception from the service layer, catch it and return
+      //    a standardized ServerFailure with a user-friendly message.
+      return Left(ServerFailure(e.toString().replaceAll('Exception: ', '')));
+    }
+  }
+}
+
+
+====================
+فایل: market_repository.dart
+مسیر: D:\PersiaMarkt 3\persiamarkt\lib\features\home\domain\repositories\market_repository.dart
+====================
+
+// lib/features/home/domain/repositories/market_repository.dart
+import 'package:fpdart/fpdart.dart';
+import 'package:persia_markt/core/error/failures.dart';
+import 'package:persia_markt/core/models/market_data.dart';
+
+/// Abstract contract for the market data repository.
+/// This allows the business logic layer (BLoC) to depend on an abstraction,
+/// not a concrete implementation, which is crucial for testing and modularity.
+///
+/// It defines what the repository *must do*, but not *how* it does it.
+abstract class MarketRepository {
+  /// Fetches the market data.
+  /// Returns [Either] a [Failure] on error or [MarketData] on success.
+  /// The Either type from fpdart provides excellent, explicit error handling.
+  Future<Either<Failure, MarketData>> getMarketData();
+}
+
+====================
+فایل: market_data_bloc.dart
+مسیر: D:\PersiaMarkt 3\persiamarkt\lib\features\home\presentation\bloc\market_data_bloc.dart
+====================
+
+// lib/features/home/presentation/bloc/market_data_bloc.dart
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:persia_markt/features/home/domain/repositories/market_repository.dart';
+import 'market_data_event.dart';
+import 'market_data_state.dart';
+
+class MarketDataBloc extends Bloc<MarketDataEvent, MarketDataState> {
+  final MarketRepository _marketRepository;
+
+  MarketDataBloc({required MarketRepository marketRepository})
+      : _marketRepository = marketRepository,
+        super(MarketDataInitial()) {
+    // Register the event handler
+    on<FetchMarketDataEvent>(_onFetchMarketData);
+  }
+
+  /// Handles the FetchMarketDataEvent.
+  Future<void> _onFetchMarketData(
+    FetchMarketDataEvent event,
+    Emitter<MarketDataState> emit,
+  ) async {
+    emit(MarketDataLoading());
+    final failureOrMarketData = await _marketRepository.getMarketData();
+    
+    // Use .fold for elegant handling of the Either<Failure, Success> type.
+    // The first function handles the Left (Failure) case, the second handles the Right (Success) case.
+    failureOrMarketData.fold(
+      (failure) => emit(MarketDataError(message: failure.message)),
+      (marketData) => emit(MarketDataLoaded(marketData: marketData)),
+    );
+  }
+}
+
+====================
+فایل: market_data_event.dart
+مسیر: D:\PersiaMarkt 3\persiamarkt\lib\features\home\presentation\bloc\market_data_event.dart
+====================
+
+// lib/features/home/presentation/bloc/market_data_event.dart
+import 'package:equatable/equatable.dart';
+
+abstract class MarketDataEvent extends Equatable {
+  const MarketDataEvent();
+  @override
+  List<Object> get props => [];
+}
+
+/// Event to trigger fetching market data from the repository.
+class FetchMarketDataEvent extends MarketDataEvent {}
+
+====================
+فایل: market_data_state.dart
+مسیر: D:\PersiaMarkt 3\persiamarkt\lib\features\home\presentation\bloc\market_data_state.dart
+====================
+
+// lib/features/home/presentation/bloc/market_data_state.dart
+import 'package:equatable/equatable.dart';
+import 'package:persia_markt/core/models/market_data.dart';
+
+abstract class MarketDataState extends Equatable {
+  const MarketDataState();
+  @override
+  List<Object> get props => [];
+}
+
+class MarketDataInitial extends MarketDataState {}
+
+class MarketDataLoading extends MarketDataState {}
+
+class MarketDataLoaded extends MarketDataState {
+  final MarketData marketData;
+  const MarketDataLoaded({required this.marketData});
+  @override
+  List<Object> get props => [marketData];
+}
+
+class MarketDataError extends MarketDataState {
+  final String message;
+  const MarketDataError({required this.message});
+  @override
+  List<Object> get props => [message];
+}
+
+====================
+فایل: location_cubit.dart
+مسیر: D:\PersiaMarkt 3\persiamarkt\lib\features\home\presentation\cubit\location_cubit.dart
+====================
+
+// lib/features/home/presentation/cubit/location_cubit.dart
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:persia_markt/core/services/location_service.dart';
+import 'location_state.dart';
+
+/// Manages the state for user location.
+/// It interacts with the LocationService to fetch the current position and address.
+class LocationCubit extends Cubit<LocationState> {
+  final LocationService _locationService;
+
+  LocationCubit({required LocationService locationService})
+      : _locationService = locationService,
+        super(LocationInitial());
+
+  /// Fetches the user's current location and address.
+  /// Emits [LocationLoading], followed by [LocationLoaded] on success
+  /// or [LocationError] on failure.
+  Future<void> fetchLocation() async {
+    emit(LocationLoading());
+    try {
+      final position = await _locationService.getCurrentPosition();
+      final address = await _locationService.getAddressFromPosition(position);
+      emit(LocationLoaded(position: position, address: address));
+    } catch (e) {
+      emit(LocationError(message: e.toString()));
+    }
+  }
+}
+
+====================
+فایل: location_state.dart
+مسیر: D:\PersiaMarkt 3\persiamarkt\lib\features\home\presentation\cubit\location_state.dart
+====================
+
+// lib/features/home/presentation/cubit/location_state.dart
+import 'package:equatable/equatable.dart';
+import 'package:geolocator/geolocator.dart';
+
+/// Base class for all location-related states.
+abstract class LocationState extends Equatable {
+  const LocationState();
+  @override
+  List<Object?> get props => [];
+}
+
+/// The initial state before any location fetching has started.
+class LocationInitial extends LocationState {}
+
+/// The state while the location is being fetched.
+class LocationLoading extends LocationState {}
+
+/// The state when the location has been successfully fetched.
+class LocationLoaded extends LocationState {
+  final Position position;
+  final String address;
+
+  const LocationLoaded({required this.position, required this.address});
+
+  @override
+  List<Object?> get props => [position, address];
+}
+
+/// The state when an error occurs during location fetching.
+class LocationError extends LocationState {
+  final String message;
+
+  const LocationError({required this.message});
+
+  @override
+  List<Object?> get props => [message];
+}
+
+====================
+فایل: market_data_cubit.dart
+مسیر: D:\PersiaMarkt 3\persiamarkt\lib\features\home\presentation\cubit\market_data_cubit.dart
+====================
+
+// lib/features/home/presentation/cubit/market_data_cubit.dart
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:persia_markt/core/services/api_service.dart';
+import 'package:persia_markt/core/models/market_data.dart';
+import 'package:persia_markt/features/home/presentation/bloc/market_data_state.dart';
+
+class MarketDataCubit extends Cubit<MarketDataState> {
+  final ApiService _apiService;
+
+  MarketDataCubit({required ApiService apiService})
+      : _apiService = apiService,
+        super(MarketDataLoading()); // ← const حذف شد
+
+  /// دریافت داده‌ی بازار و انتشار State مناسب
+  Future<void> fetchMarketData() async {
+    try {
+      emit(MarketDataLoading()); // ← const حذف شد
+
+      final Map<String, dynamic> json = await _apiService.fetchMarketDataAsJson();
+      final MarketData data = MarketData.fromJson(json);
+
+      emit(MarketDataLoaded(marketData: data));
+    } catch (e) {
+      emit(MarketDataError(message: 'خطا در دریافت اطلاعات: ${e.toString()}'));
+    }
+  }
+}
+
+
+====================
+فایل: market_data_state.dart
+مسیر: D:\PersiaMarkt 3\persiamarkt\lib\features\home\presentation\cubit\market_data_state.dart
+====================
+
+import 'package:equatable/equatable.dart';
+import 'package:persia_markt/core/models/market_data.dart';
+
+// کلاس پایه برای وضعیت‌ها
+abstract class MarketDataState extends Equatable {
+  const MarketDataState();
+
+  @override
+  List<Object> get props => [];
+}
+
+// وضعیت اولیه یا در حال بارگذاری
+class MarketDataLoading extends MarketDataState {}
+
+// وضعیت موفقیت آمیز بودن دریافت داده‌ها
+class MarketDataLoaded extends MarketDataState {
+  final MarketData marketData;
+
+  const MarketDataLoaded({required this.marketData});
+
+  @override
+  List<Object> get props => [marketData];
+}
+
+// وضعیت بروز خطا
+class MarketDataError extends MarketDataState {
+  final String message;
+
+  const MarketDataError({required this.message});
+
+  @override
+  List<Object> get props => [message];
+}
+
+====================
+فایل: home_view.dart
+مسیر: D:\PersiaMarkt 3\persiamarkt\lib\features\home\presentation\view\home_view.dart
+====================
+
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
+import 'package:persia_markt/core/widgets/error_view.dart';
+import 'package:persia_markt/features/home/presentation/bloc/market_data_bloc.dart';
+import 'package:persia_markt/features/home/presentation/bloc/market_data_event.dart';
+import 'package:persia_markt/features/home/presentation/bloc/market_data_state.dart';
+import 'package:persia_markt/features/home/presentation/widgets/affordable_products_section.dart';
+import 'package:persia_markt/features/home/presentation/widgets/banner_carousel_view.dart';
+import 'package:persia_markt/features/home/presentation/widgets/category_list_view.dart';
+import 'package:persia_markt/features/home/presentation/widgets/home_header.dart';
+import 'package:persia_markt/features/home/presentation/widgets/home_loading_shimmer.dart';
+import 'package:persia_markt/features/home/presentation/widgets/section_divider.dart';
+import 'package:persia_markt/features/home/presentation/widgets/stores_by_city_section.dart';
+
+class HomeView extends StatelessWidget {
+  const HomeView({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Directionality(
+      textDirection: TextDirection.rtl,
+      child: Scaffold(
+        body: BlocBuilder<MarketDataBloc, MarketDataState>(
+          builder: (context, state) {
+            // --- FIXED: Improved loading and error states ---
+            if (state is MarketDataInitial) {
+              // Show a specific message for the very first load
+              return const _InitialLoadingView();
+            }
+            if (state is MarketDataLoading) {
+              return const HomeLoadingShimmer();
+            }
+            if (state is MarketDataError) {
+              return AppErrorView(
+                message: state.message,
+                onRetry: () => context.read<MarketDataBloc>().add(FetchMarketDataEvent()),
+              );
+            }
+            if (state is MarketDataLoaded) {
+              final marketData = state.marketData;
+              // Handle case where data is loaded but lists are empty
+              if (marketData.stores.isEmpty && marketData.categories.isEmpty) {
+                return AppErrorView(
+                  message: 'متاسفانه در حال حاضر فروشگاه یا محصولی برای نمایش وجود ندارد.',
+                  onRetry: () => context.read<MarketDataBloc>().add(FetchMarketDataEvent()),
+                );
+              }
+              return RefreshIndicator(
+                onRefresh: () async {
+                  context.read<MarketDataBloc>().add(FetchMarketDataEvent());
+                },
+                child: CustomScrollView(
+                  slivers: [
+                    HomeHeader(onSearchTapped: () => context.go('/search')),
+                    SliverList(
+                      delegate: SliverChildListDelegate([
+                        const SizedBox(height: 24),
+                        CategoryListView(categories: marketData.categories),
+                        const SectionDivider(title: 'پیشنهادهای ویژه'),
+                        const BannerCarouselView(
+                          bannerImageUrls: [
+                            'assets/images/banner1.png',
+                            'assets/images/banner2.png',
+                            'assets/images/banner3.png',
+                          ],
+                        ),
+                        const SectionDivider(title: 'محصولات مقرون به صرفه'),
+                        AffordableProductsSection(
+                          products: marketData.products,
+                          stores: marketData.stores,
+                        ),
+                        const SectionDivider(title: 'فروشگاه‌ها'),
+                        StoresByCitySection(stores: marketData.stores),
+                        const SizedBox(height: 50),
+                      ]),
+                    ),
+                  ],
+                ),
+              );
+            }
+            return const SizedBox.shrink();
+          },
+        ),
+      ),
+    );
+  }
+}
+
+/// A dedicated widget for the initial loading screen.
+class _InitialLoadingView extends StatelessWidget {
+  const _InitialLoadingView();
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const CircularProgressIndicator(),
+          const SizedBox(height: 24),
+          Text(
+            'در حال اتصال به سرور...',
+            style: Theme.of(context).textTheme.titleMedium,
+          ),
+          const SizedBox(height: 8),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 32.0),
+            child: Text(
+              'بارگذاری اولیه ممکن است کمی طول بکشد. لطفاً صبور باشید.',
+              textAlign: TextAlign.center,
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Colors.grey.shade600),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+
+====================
+فایل: main_tab_bar_view.dart
+مسیر: D:\PersiaMarkt 3\persiamarkt\lib\features\home\presentation\view\main_tab_bar_view.dart
+====================
+
+// lib/features/home/presentation/view/main_tab_bar_view.dart
+import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+
+class MainTabBarView extends StatelessWidget {
+  final StatefulNavigationShell navigationShell;
+
+  const MainTabBarView({
+    super.key,
+    required this.navigationShell,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Directionality(
+      textDirection: TextDirection.rtl,
+      child: Scaffold(
+        body: navigationShell,
+        bottomNavigationBar: BottomNavigationBar(
+          currentIndex: navigationShell.currentIndex,
+          onTap: (index) {
+            // این بخش منطق مربوط به جابجایی بین تب‌ها و ریست شدن صفحه اصلی را مدیریت می‌کند
+            navigationShell.goBranch(
+              index,
+              initialLocation: index == navigationShell.currentIndex,
+            );
+          },
+          type: BottomNavigationBarType.fixed,
+          selectedItemColor: Theme.of(context).colorScheme.primary,
+          unselectedItemColor: Colors.grey,
+          items: const [
+            BottomNavigationBarItem(icon: Icon(Icons.home_outlined), activeIcon: Icon(Icons.home), label: 'خانه'),
+            BottomNavigationBarItem(icon: Icon(Icons.map_outlined), activeIcon: Icon(Icons.map), label: 'نقشه'),
+            BottomNavigationBarItem(icon: Icon(Icons.favorite_border), activeIcon: Icon(Icons.favorite), label: 'موردعلاقه‌ها'),
+            BottomNavigationBarItem(icon: Icon(Icons.person_outline), activeIcon: Icon(Icons.person), label: 'پروفایل'),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+====================
+فایل: affordable_products_section.dart
+مسیر: D:\PersiaMarkt 3\persiamarkt\lib\features\home\presentation\widgets\affordable_products_section.dart
+====================
+
+import 'package:flutter/material.dart';
+import 'package:persia_markt/core/models/category_item.dart';
+import 'package:persia_markt/core/models/product.dart';
+import 'package:persia_markt/core/models/store.dart';
+import 'package:persia_markt/core/widgets/product_card_view.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:persia_markt/features/home/presentation/bloc/market_data_bloc.dart';
+import 'package:persia_markt/features/home/presentation/bloc/market_data_state.dart';
+
+class AffordableProductsSection extends StatelessWidget {
+  final List<Product> products;
+  final List<Store> stores;
+  
+  // Constructor was missing, added it back.
+  const AffordableProductsSection({super.key, required this.products, required this.stores});
+
+  @override
+  Widget build(BuildContext context) {
+    // --- FIXED: Dynamically find the "Economical" category ID ---
+    final marketState = context.read<MarketDataBloc>().state;
+    String? affordableCategoryId;
+
+    if (marketState is MarketDataLoaded) {
+      try {
+        // Find the category by its Persian name.
+        final affordableCategory = marketState.marketData.categories.firstWhere(
+          (c) => c.name == 'اقتصادی',
+        );
+        affordableCategoryId = affordableCategory.id;
+      } catch (e) {
+        // If the category doesn't exist, do nothing.
+        print('"اقتصادی" category not found.');
+      }
+    }
+
+    // If the category ID couldn't be found, don't show the section.
+    if (affordableCategoryId == null) {
+      return const SizedBox.shrink();
+    }
+
+    // Filter products that belong to the dynamically found category ID.
+    final affordableProducts = products.where((p) => p.categoryID == affordableCategoryId).toList();
+    
+    if (affordableProducts.isEmpty) {
+      return const SizedBox.shrink(); // Return empty space if no affordable products
+    }
+
+    return SizedBox(
+      height: 250, // Height for ProductCardView
+      child: ListView.builder(
+        scrollDirection: Axis.horizontal,
+        itemCount: affordableProducts.length,
+        padding: const EdgeInsets.symmetric(horizontal: 8),
+        itemBuilder: (context, index) {
+          final product = affordableProducts[index];
+          // Safely find the corresponding store.
+          final store = stores.firstWhere(
+            (s) => s.storeID == product.storeID,
+            orElse: () => Store.empty(), // Return a dummy store if not found
+          );
+          if (store.storeID.isEmpty) return const SizedBox.shrink();
+          
+          return ProductCardView(product: product, store: store);
+        },
+      ),
+    );
+  }
+}
+
+
+====================
+فایل: banner_carousel_view.dart
+مسیر: D:\PersiaMarkt 3\persiamarkt\lib\features\home\presentation\widgets\banner_carousel_view.dart
+====================
+
+// lib/features/home/presentation/widgets/banner_carousel_view.dart
+import 'package:flutter/material.dart';
+import 'dart:async';
+
+class BannerCarouselView extends StatefulWidget {
+  final List<String> bannerImageUrls;
+  const BannerCarouselView({super.key, required this.bannerImageUrls});
+
+  @override
+  State<BannerCarouselView> createState() => _BannerCarouselViewState();
+}
+
+class _BannerCarouselViewState extends State<BannerCarouselView> {
+  late final PageController _pageController;
+  late final Timer _timer;
+  int _currentPage = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _pageController = PageController(viewportFraction: 0.9);
+    _startAutoScroll();
+  }
+
+  void _startAutoScroll() {
+    _timer = Timer.periodic(const Duration(seconds: 4), (timer) {
+      if (_pageController.hasClients) {
+        _currentPage = (_currentPage + 1) % widget.bannerImageUrls.length;
+        _pageController.animateToPage(
+          _currentPage,
+          duration: const Duration(milliseconds: 600),
+          curve: Curves.easeInOutCubic,
+        );
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _timer.cancel();
+    _pageController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      height: 150,
+      child: PageView.builder(
+        controller: _pageController,
+        itemCount: widget.bannerImageUrls.length,
+        itemBuilder: (context, index) {
+          return Container(
+            margin: const EdgeInsets.symmetric(horizontal: 8),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(16),
+              image: DecorationImage(
+                image: AssetImage(widget.bannerImageUrls[index]),
+                fit: BoxFit.cover,
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+}
+
+====================
+فایل: category_list_view.dart
+مسیر: D:\PersiaMarkt 3\persiamarkt\lib\features\home\presentation\widgets\category_list_view.dart
+====================
+
+import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+import 'package:persia_markt/core/models/category_item.dart';
+
+class CategoryListView extends StatelessWidget {
+  final List<CategoryItem> categories;
+  const CategoryListView({super.key, required this.categories});
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      height: 120,
+      child: ListView.builder(
+        scrollDirection: Axis.horizontal,
+        itemCount: categories.length,
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+        itemBuilder: (context, index) {
+          final category = categories[index];
+          return GestureDetector(
+            onTap: () => context.go('/category/${category.id}'),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8.0),
+              child: Column(
+                children: [
+                  Container(
+                    width: 80,
+                    height: 80,
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).cardColor,
+                      shape: BoxShape.circle,
+                      boxShadow: [
+                        BoxShadow(
+                          // FIXED: Replaced deprecated withOpacity
+                          color: Colors.black.withAlpha((255 * 0.1).round()),
+                          blurRadius: 8.0,
+                          spreadRadius: 2.0,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
+                    ),
+                    child: ClipOval(
+                      // FIXED: Handle nullable iconUrl
+                      child: (category.iconUrl != null && category.iconUrl!.isNotEmpty)
+                          ? Image.network(
+                              category.iconUrl!, // We know it's not null here
+                              fit: BoxFit.cover,
+                              errorBuilder: (context, error, stackTrace) => _buildPlaceholderIcon(),
+                              loadingBuilder: (context, child, loadingProgress) {
+                                if (loadingProgress == null) return child;
+                                return const Center(
+                                  child: CircularProgressIndicator(strokeWidth: 2.0),
+                                );
+                              },
+                            )
+                          : _buildPlaceholderIcon(),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    category.name,
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold),
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  /// A helper widget for showing a placeholder icon.
+  Widget _buildPlaceholderIcon() {
+    return Padding(
+      padding: const EdgeInsets.all(12.0),
+      child: Image.asset(
+        'assets/images/supermarket.png',
+        color: Colors.grey.shade400,
+      ),
+    );
+  }
+}
+
+
+====================
+فایل: home_header.dart
+مسیر: D:\PersiaMarkt 3\persiamarkt\lib\features\home\presentation\widgets\home_header.dart
+====================
+
+// lib/features/home/presentation/widgets/home_header.dart
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:persia_markt/features/home/presentation/cubit/location_cubit.dart';
+import 'package:persia_markt/features/home/presentation/cubit/location_state.dart';
+
+class HomeHeader extends StatelessWidget {
+  final VoidCallback onSearchTapped;
+  const HomeHeader({Key? key, required this.onSearchTapped}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return SliverAppBar(
+      pinned: true,
+      floating: true,
+      expandedHeight: 180,
+      backgroundColor: Colors.transparent,
+      flexibleSpace: FlexibleSpaceBar(
+        background: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [Colors.orange.shade400, Colors.orange.shade100],
+            ),
+          ),
+          child: SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Image.asset('assets/images/appLogo.png', height: 40),
+                      const SizedBox(width: 8),
+                      Text(
+                        'PersiaMarkt',
+                        style: GoogleFonts.inter(fontSize: 24, fontWeight: FontWeight.w900, color: Colors.white),
+                      ),
+                      const Spacer(),
+                      BlocBuilder<LocationCubit, LocationState>(
+                        builder: (context, state) {
+                          String locationText = 'در حال دریافت موقعیت...';
+                          if (state is LocationLoaded) {
+                            locationText = state.address;
+                          } else if (state is LocationError) {
+                            locationText = 'موقعیت نامعلوم';
+                          }
+                          return Column(
+                            crossAxisAlignment: CrossAxisAlignment.end,
+                            children: [
+                              const Text('موقعیت شما', style: TextStyle(color: Colors.white70, fontSize: 10)),
+                              Text(locationText, style: const TextStyle(color: Colors.white, fontSize: 14)),
+                            ],
+                          );
+                        },
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  GestureDetector(
+                    onTap: onSearchTapped,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                      decoration: BoxDecoration(
+                        color: Theme.of(context).cardColor,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(Icons.search, color: Colors.grey.shade500),
+                          const SizedBox(width: 8),
+                          Text('جستجوی نان، شیر، فروشگاه...', style: TextStyle(color: Colors.grey.shade500)),
+                        ],
+                      ),
+                    ),
+                  )
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+====================
+فایل: home_loading_shimmer.dart
+مسیر: D:\PersiaMarkt 3\persiamarkt\lib\features\home\presentation\widgets\home_loading_shimmer.dart
+====================
+
+// lib/features/home/presentation/widgets/home_loading_shimmer.dart
+import 'package:flutter/material.dart';
+import 'package:persia_markt/core/widgets/loading_shimmer.dart';
+
+class HomeLoadingShimmer extends StatelessWidget {
+  const HomeLoadingShimmer({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return SingleChildScrollView(
+      physics: const NeverScrollableScrollPhysics(),
+      child: Column(
+        children: [
+          // Header Shimmer
+          const ShimmerBox(width: double.infinity, height: 180, shape: RoundedRectangleBorder(borderRadius: BorderRadius.zero)),
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const SizedBox(height: 24),
+                const ShimmerBox(width: 150, height: 24),
+                const SizedBox(height: 16),
+                SizedBox(
+                  height: 120,
+                  child: ListView.builder(
+                    scrollDirection: Axis.horizontal,
+                    itemCount: 5,
+                    itemBuilder: (context, index) => const Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 8.0),
+                      child: Column(
+                        children: [
+                          ShimmerBox(width: 80, height: 80, shape: CircleBorder()),
+                          SizedBox(height: 8),
+                          ShimmerBox(width: 60, height: 16),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 24),
+                const ShimmerBox(width: 150, height: 24),
+                const SizedBox(height: 16),
+                const ShimmerBox(width: double.infinity, height: 150),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+====================
+فایل: section_divider.dart
+مسیر: D:\PersiaMarkt 3\persiamarkt\lib\features\home\presentation\widgets\section_divider.dart
+====================
+
+// lib/features/home/presentation/widgets/section_divider.dart
+import 'package:flutter/material.dart';
+
+class SectionDivider extends StatelessWidget {
+  final String title;
+  const SectionDivider({Key? key, required this.title}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 24.0, horizontal: 16),
+      child: Row(
+        children: [
+          Expanded(child: Divider(thickness: 0.5, color: Colors.grey.shade400)),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16.0),
+            child: Text(
+              title,
+              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                    color: Colors.grey.shade700,
+                  ),
+            ),
+          ),
+          Expanded(child: Divider(thickness: 0.5, color: Colors.grey.shade400)),
+        ],
+      ),
+    );
+  }
+}
+
+====================
+فایل: stores_by_city_section.dart
+مسیر: D:\PersiaMarkt 3\persiamarkt\lib\features\home\presentation\widgets\stores_by_city_section.dart
+====================
+
+import 'package:flutter/material.dart';
+import 'package:persia_markt/core/models/store.dart';
+import 'package:persia_markt/core/widgets/store_list_item_view.dart';
+
+class StoresByCitySection extends StatelessWidget {
+  final List<Store> stores;
+  const StoresByCitySection({super.key, required this.stores});
+
+  @override
+  Widget build(BuildContext context) {
+    // Group stores by city, safely handling nullable city names.
+    final Map<String, List<Store>> storesByCity = {};
+    for (var store in stores) {
+      // FIXED: Only process stores that have a non-null and non-empty city.
+      if (store.city != null && store.city!.isNotEmpty) {
+        storesByCity.putIfAbsent(store.city!, () => []).add(store);
+      }
+    }
+
+    if (storesByCity.isEmpty) {
+      return const SizedBox.shrink(); // Don't show anything if no stores have cities.
+    }
+
+    // Create a list of widgets from the grouped map
+    return ListView.builder(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      itemCount: storesByCity.keys.length,
+      itemBuilder: (context, index) {
+        final city = storesByCity.keys.elementAt(index);
+        final cityStores = storesByCity[city]!;
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+              child: Text(city, style: Theme.of(context).textTheme.headlineSmall),
+            ),
+            // FIXED: Removed unnecessary .toList() from the spread operator.
+            ...cityStores.map((store) => StoreListItemView(store: store)),
+          ],
+        );
+      },
+    );
+  }
+}
+
+
+====================
+فایل: map_view.dart
+مسیر: D:\PersiaMarkt 3\persiamarkt\lib\features\map\view\map_view.dart
+====================
+
+// lib/features/map/view/map_view.dart
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_map/flutter_map.dart';
+import 'package:go_router/go_router.dart';
+import 'package:latlong2/latlong.dart';
+import 'package:persia_markt/core/models/store.dart';
+import 'package:persia_markt/features/home/presentation/bloc/market_data_bloc.dart';
+import 'package:persia_markt/features/home/presentation/bloc/market_data_state.dart';
+import 'package:persia_markt/features/home/presentation/cubit/location_cubit.dart';
+import 'package:persia_markt/features/home/presentation/cubit/location_state.dart';
+
+class MapView extends StatefulWidget {
+  final String? lat;
+  final String? lng;
+  final String? focus;
+
+  const MapView({super.key, this.lat, this.lng, this.focus});
+
+  @override
+  State<MapView> createState() => _MapViewState();
+}
+
+class _MapViewState extends State<MapView> {
+  late final MapController _mapController;
+  bool _hasFocused = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _mapController = MapController();
+  }
+
+  @override
+  void dispose() {
+    _mapController.dispose();
+    super.dispose();
+  }
+
+  void _tryFocusStore(List<Store> stores) {
+    if (_hasFocused) return;
+    if (widget.focus != null && widget.focus!.isNotEmpty) {
+      final store = stores.firstWhere(
+        (s) => s.storeID == widget.focus,
+        orElse: () => Store.empty(),
+      );
+      if (store.storeID.isNotEmpty) {
+        _mapController.move(LatLng(store.latitude, store.longitude), 17.0);
+        _hasFocused = true;
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    LatLng initialCenter = const LatLng(51.1657, 10.4515);
+    double initialZoom = 6.0;
+
+    if (widget.lat != null && widget.lng != null) {
+      try {
+        initialCenter = LatLng(double.parse(widget.lat!), double.parse(widget.lng!));
+        initialZoom = 15.0;
+      } catch (_) {}
+    }
+
+    return Scaffold(
+      appBar: AppBar(title: const Text('نقشه فروشگاه‌ها')),
+      body: BlocBuilder<MarketDataBloc, MarketDataState>(
+        builder: (context, marketState) {
+          if (marketState is! MarketDataLoaded) {
+            return const Center(child: CircularProgressIndicator());
+          }
+
+          final stores = marketState.marketData.stores;
+
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            _tryFocusStore(stores);
+          });
+
+          return FlutterMap(
+            mapController: _mapController,
+            options: MapOptions(
+              initialCenter: initialCenter,
+              initialZoom: initialZoom,
+            ),
+            children: [
+              TileLayer(
+                urlTemplate: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+                subdomains: const ['a', 'b', 'c'],
+              ),
+              _buildStoreMarkers(context, stores),
+              _buildUserLocationMarker(context),
+            ],
+          );
+        },
+      ),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: () {
+          final locationState = context.read<LocationCubit>().state;
+          if (locationState is LocationLoaded) {
+            _mapController.move(
+              LatLng(locationState.position.latitude, locationState.position.longitude),
+              15.0,
+            );
+          }
+        },
+        label: const Text('موقعیت من'),
+        icon: const Icon(Icons.my_location),
+      ),
+    );
+  }
+
+  MarkerLayer _buildStoreMarkers(BuildContext context, List<Store> stores) {
+    return MarkerLayer(
+      markers: stores.map((store) {
+        return Marker(
+          width: 120,
+          height: 80,
+          point: LatLng(store.latitude, store.longitude),
+          child: GestureDetector(
+            onTap: () => context.go('/store/${store.storeID}'),
+            child: Column(
+              children: [
+                const Icon(Icons.location_on, color: Colors.red, size: 30),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withAlpha(220),
+                    borderRadius: BorderRadius.circular(8),
+                    boxShadow: const [BoxShadow(color: Colors.black26, blurRadius: 4, offset: Offset(0, 2))],
+                  ),
+                  child: Text(
+                    store.name,
+                    style: const TextStyle(fontSize: 12, color: Colors.black, fontWeight: FontWeight.bold),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      }).toList(),
+    );
+  }
+
+  Widget _buildUserLocationMarker(BuildContext context) {
+    return BlocConsumer<LocationCubit, LocationState>(
+      listener: (context, locationState) {
+        if (locationState is LocationLoaded && widget.lat == null && widget.lng == null && widget.focus == null) {
+          _mapController.move(
+            LatLng(locationState.position.latitude, locationState.position.longitude),
+            13.0,
+          );
+        }
+      },
+      builder: (context, locationState) {
+        if (locationState is LocationLoaded) {
+          return MarkerLayer(
+            markers: [
+              Marker(
+                width: 80,
+                height: 80,
+                point: LatLng(locationState.position.latitude, locationState.position.longitude),
+                child: Icon(Icons.my_location, color: Theme.of(context).primaryColor, size: 30),
+              ),
+            ],
+          );
+        }
+        return const SizedBox.shrink();
+      },
+    );
+  }
+}
+
+
+====================
+فایل: favorites_cubit.dart
+مسیر: D:\PersiaMarkt 3\persiamarkt\lib\features\profile\presentation\cubit\favorites_cubit.dart
+====================
+
+// lib/features/profile/presentation/cubit/favorites_cubit.dart
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'favorites_state.dart';
+
+/// Manages the state of the user's favorite products.
+/// It uses SharedPreferences for persistence.
+class FavoritesCubit extends Cubit<FavoritesState> {
+  final SharedPreferences _sharedPreferences;
+  static const _key = 'likedProducts';
+
+  FavoritesCubit({required SharedPreferences sharedPreferences})
+      : _sharedPreferences = sharedPreferences,
+        super(const FavoritesState(productIds: []));
+
+  /// Loads the list of liked product IDs from local storage.
+  void loadLikedProducts() {
+    final likedIds = _sharedPreferences.getStringList(_key) ?? [];
+    emit(FavoritesState(productIds: likedIds));
+  }
+
+  /// Toggles the like status of a product and saves it to local storage.
+  Future<void> toggleLike(String productId) async {
+    final currentIds = List<String>.from(state.productIds);
+    if (currentIds.contains(productId)) {
+      currentIds.remove(productId);
+    } else {
+      currentIds.add(productId);
+    }
+    await _sharedPreferences.setStringList(_key, currentIds);
+    emit(FavoritesState(productIds: currentIds));
+  }
+}
+
+====================
+فایل: favorites_state.dart
+مسیر: D:\PersiaMarkt 3\persiamarkt\lib\features\profile\presentation\cubit\favorites_state.dart
+====================
+
+// lib/features/profile/presentation/cubit/favorites_state.dart
+import 'package:equatable/equatable.dart';
+
+/// The state for the FavoritesCubit, containing the list of favorite product IDs.
+class FavoritesState extends Equatable {
+  final List<String> productIds;
+  const FavoritesState({required this.productIds});
+
+  @override
+  List<Object> get props => [productIds];
+}
+
+====================
+فایل: favorites_view.dart
+مسیر: D:\PersiaMarkt 3\persiamarkt\lib\features\profile\presentation\view\favorites_view.dart
+====================
+
+// lib/features/profile/presentation/view/favorites_view.dart
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:persia_markt/core/models/product.dart';
+import 'package:persia_markt/core/widgets/product_list_item_view.dart';
+// اصلاح شد: 'packagepackage:' به 'package:' تغییر یافت.
+import 'package:persia_markt/features/home/presentation/bloc/market_data_bloc.dart';
+import 'package:persia_markt/features/home/presentation/bloc/market_data_state.dart';
+import 'package:persia_markt/features/profile/presentation/cubit/favorites_cubit.dart';
+import 'package:persia_markt/features/profile/presentation/cubit/favorites_state.dart';
+
+class FavoritesView extends StatelessWidget {
+  const FavoritesView({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('سبد خرید شما')),
+      body: BlocBuilder<MarketDataBloc, MarketDataState>(
+        builder: (context, marketState) {
+          if (marketState is MarketDataLoaded) {
+            return BlocBuilder<FavoritesCubit, FavoritesState>(
+              builder: (context, favoritesState) {
+                final favoriteProducts = marketState.marketData.products
+                    .where((p) => favoritesState.productIds.contains(p.id))
+                    .toList();
+                
+                if (favoriteProducts.isEmpty) {
+                  return const Center(child: Text('سبد خرید شما خالی است.'));
+                }
+
+                // اصلاح شده: گروه‌بندی محصولات بر اساس فروشگاه
+                final Map<String, List<Product>> productsByStore = {};
+                for (var product in favoriteProducts) {
+                  productsByStore.putIfAbsent(product.storeID, () => []).add(product);
+                }
+                
+                final double grandTotal = favoriteProducts.fold(0, (sum, item) => sum + item.price);
+
+                return Column(
+                  children: [
+                    // اصلاح شده: بنر تبلیغاتی
+                    Container(
+                      height: 100,
+                      margin: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(12),
+                        image: const DecorationImage(
+                          image: AssetImage('assets/images/banner4.png'),
+                          fit: BoxFit.cover,
+                        ),
+                      ),
+                    ),
+                    Expanded(
+                      child: ListView.builder(
+                        itemCount: productsByStore.keys.length,
+                        itemBuilder: (context, index) {
+                          final storeId = productsByStore.keys.elementAt(index);
+                          final store = marketState.marketData.stores.firstWhere((s) => s.storeID == storeId);
+                          final productsInStore = productsByStore[storeId]!;
+                          final double storeSubtotal = productsInStore.fold(0, (sum, item) => sum + item.price);
+
+                          return Card(
+                            margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Padding(
+                                  padding: const EdgeInsets.all(12.0),
+                                  child: Text(store.name, style: Theme.of(context).textTheme.titleLarge),
+                                ),
+                                const Divider(height: 1),
+                                ...productsInStore.map((p) => ProductListItemView(product: p, store: store)),
+                                // نمایش مجموع قیمت هر فروشگاه
+                                Padding(
+                                  padding: const EdgeInsets.all(12.0),
+                                  child: Align(
+                                    alignment: Alignment.centerLeft,
+                                    child: Text(
+                                      'جمع: €${storeSubtotal.toStringAsFixed(2)}',
+                                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                    // نمایش مجموع کل
+                    Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Text(
+                        'مجموع کل: €${grandTotal.toStringAsFixed(2)}',
+                        style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                    // اصلاح شده: کادر نهایی
+                    Container(
+                      width: double.infinity,
+                      margin: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: Colors.green.shade50,
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: Colors.green.shade300),
+                      ),
+                      child: const Text(
+                        'به زودی قابلیت ارسال سفارش به این اپلیکیشن اضافه خواهد شد.',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(color: Colors.black87),
+                      ),
+                    ),
+                  ],
+                );
+              },
+            );
+          }
+          return const Center(child: CircularProgressIndicator());
+        },
+      ),
+    );
+  }
+}
+
+====================
+فایل: profile_view.dart
+مسیر: D:\PersiaMarkt 3\persiamarkt\lib\features\profile\presentation\view\profile_view.dart
+====================
+
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:persia_markt/features/auth/presentation/cubit/auth_cubit.dart';
+import 'package:persia_markt/features/auth/presentation/cubit/auth_state.dart';
+import 'package:jwt_decoder/jwt_decoder.dart';
+
+class ProfileView extends StatelessWidget {
+  const ProfileView({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('پروفایل من'),
+        actions: [
+          // Show logout button only when authenticated
+          BlocBuilder<AuthCubit, AuthState>(
+            builder: (context, state) {
+              if (state is Authenticated) {
+                return IconButton(
+                  icon: const Icon(Icons.logout),
+                  tooltip: 'خروج از حساب کاربری',
+                  onPressed: () {
+                    // Show a confirmation dialog before logging out
+                    showDialog(
+                      context: context,
+                      builder: (dialogContext) => AlertDialog(
+                        title: const Text('خروج از حساب'),
+                        content: const Text('آیا برای خروج مطمئن هستید؟'),
+                        actions: [
+                          TextButton(
+                            onPressed: () => Navigator.of(dialogContext).pop(),
+                            child: const Text('انصراف'),
+                          ),
+                          TextButton(
+                            onPressed: () {
+                              context.read<AuthCubit>().logoutUser();
+                              Navigator.of(dialogContext).pop();
+                            },
+                            child: const Text('خروج'),
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+                );
+              }
+              return const SizedBox.shrink();
+            },
+          )
+        ],
+      ),
+      body: BlocBuilder<AuthCubit, AuthState>(
+        builder: (context, state) {
+          if (state is Authenticated) {
+            // If authenticated, show user info. We need to decode the token.
+            return _buildProfileInfo(context);
+          }
+          // If not authenticated, this view shouldn't be reachable due to router redirect.
+          // But as a fallback, show a message.
+          return const Center(
+            child: Text('برای مشاهده پروفایل لطفاً وارد شوید.'),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildProfileInfo(BuildContext context) {
+    // FIXED: Access the now-public 'authService' by removing the underscore
+    final token = context.read<AuthCubit>().authService.getToken();
+    Map<String, dynamic> userInfo = {};
+    if (token != null) {
+      try {
+        userInfo = JwtDecoder.decode(token);
+      } catch (e) {
+        // Using a logger or print for debugging is fine here.
+        // In a real app, you might use a formal logging package.
+        debugPrint("Error decoding token: $e");
+        // Handle error, maybe logout user
+        context.read<AuthCubit>().logoutUser();
+      }
+    }
+
+    final String name = userInfo['name'] ?? 'کاربر مهمان';
+    final String email = userInfo['email'] ?? 'ایمیل نامشخص';
+
+    return ListView(
+      padding: const EdgeInsets.all(16.0),
+      children: [
+        CircleAvatar(
+          radius: 50,
+          child: Text(
+            name.isNotEmpty ? name[0].toUpperCase() : 'P',
+            style: Theme.of(context).textTheme.headlineLarge,
+          ),
+        ),
+        const SizedBox(height: 16),
+        Center(
+          child: Text(
+            name,
+            style: Theme.of(context).textTheme.headlineSmall,
+          ),
+        ),
+        const SizedBox(height: 8),
+        Center(
+          child: Text(
+            email,
+            style: Theme.of(context).textTheme.bodyLarge?.copyWith(color: Colors.grey),
+          ),
+        ),
+        const Divider(height: 40),
+        // You can add more profile options here
+        ListTile(
+          leading: const Icon(Icons.settings_outlined),
+          title: const Text('تنظیمات حساب'),
+          onTap: () {
+            // Navigate to account settings page
+          },
+        ),
+        ListTile(
+          leading: const Icon(Icons.history_outlined),
+          title: const Text('تاریخچه سفارشات'),
+          onTap: () {
+            // Navigate to order history page
+          },
+        ),
+      ],
+    );
+  }
+}
+
+
+====================
+فایل: search_cubit.dart
+مسیر: D:\PersiaMarkt 3\persiamarkt\lib\features\search\presentation\cubit\search_cubit.dart
+====================
+
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:persia_markt/core/models/product.dart';
+import 'package:persia_markt/core/models/store.dart';
+import 'search_state.dart';
+
+/// Manages the business logic for the search feature.
+class SearchCubit extends Cubit<SearchState> {
+  SearchCubit() : super(SearchInitial());
+
+  /// Performs a search based on a query against all products and stores.
+  void performSearch({
+    required String query,
+    required List<Product> allProducts,
+    required List<Store> allStores,
+  }) {
+    if (query.isEmpty) {
+      emit(SearchInitial());
+      return;
+    }
+
+    emit(SearchLoading());
+
+    final lowerCaseQuery = query.toLowerCase();
+
+    // Filter products based on name and description.
+    final productResults = allProducts
+        .where((p) =>
+            p.name.toLowerCase().contains(lowerCaseQuery) ||
+            p.description.toLowerCase().contains(lowerCaseQuery))
+        .toList();
+
+    // Filter stores based on name, address, and city.
+    final storeResults = allStores
+        .where((s) {
+          final nameMatch = s.name.toLowerCase().contains(lowerCaseQuery);
+          final addressMatch = s.address.toLowerCase().contains(lowerCaseQuery);
+          // FIXED: Safely handle nullable city by using a null-aware check.
+          final cityMatch = s.city?.toLowerCase().contains(lowerCaseQuery) ?? false;
+          return nameMatch || addressMatch || cityMatch;
+        })
+        .toList();
+
+    emit(SearchLoaded(
+      filteredProducts: productResults,
+      filteredStores: storeResults,
+      query: query,
+    ));
+  }
+
+  /// Resets the search state to its initial value.
+  void clearSearch() {
+    emit(SearchInitial());
+  }
+}
+
+
+====================
+فایل: search_state.dart
+مسیر: D:\PersiaMarkt 3\persiamarkt\lib\features\search\presentation\cubit\search_state.dart
+====================
+
+// lib/features/search/presentation/cubit/search_state.dart
+import 'package:equatable/equatable.dart';
+import 'package:persia_markt/core/models/product.dart';
+import 'package:persia_markt/core/models/store.dart';
+
+/// Base class for all states related to the search feature.
+abstract class SearchState extends Equatable {
+  const SearchState();
+  @override
+  List<Object> get props => [];
+}
+
+/// The initial state before any search query is entered.
+class SearchInitial extends SearchState {}
+
+/// The state indicating that a search is in progress.
+class SearchLoading extends SearchState {}
+
+/// The state representing successfully loaded search results.
+class SearchLoaded extends SearchState {
+  final List<Product> filteredProducts;
+  final List<Store> filteredStores;
+  final String query;
+
+  const SearchLoaded({
+    required this.filteredProducts,
+    required this.filteredStores,
+    required this.query,
+  });
+
+  @override
+  List<Object> get props => [filteredProducts, filteredStores, query];
+}
+
+====================
+فایل: search_view.dart
+مسیر: D:\PersiaMarkt 3\persiamarkt\lib\features\search\presentation\view\search_view.dart
+====================
+
+// lib/features/search/presentation/view/search_view.dart
+import 'dart:async';
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
+import 'package:persia_markt/core/models/product.dart';
+import 'package:persia_markt/core/widgets/product_list_item_view.dart';
+import 'package:persia_markt/core/widgets/store_list_item_view.dart';
+import 'package:persia_markt/features/home/presentation/bloc/market_data_bloc.dart';
+import 'package:persia_markt/features/home/presentation/bloc/market_data_state.dart';
+import 'package:persia_markt/features/search/presentation/cubit/search_cubit.dart';
+import 'package:persia_markt/features/search/presentation/cubit/search_state.dart';
+
+class SearchView extends StatefulWidget {
+  const SearchView({super.key});
+
+  @override
+  State<SearchView> createState() => _SearchViewState();
+}
+
+class _SearchViewState extends State<SearchView> with SingleTickerProviderStateMixin {
+  late final TextEditingController _searchController;
+  late final TabController _tabController;
+  Timer? _debounce;
+
+  @override
+  void initState() {
+    super.initState();
+    context.read<SearchCubit>().clearSearch();
+    _searchController = TextEditingController();
+    _tabController = TabController(length: 2, vsync: this);
+    _searchController.addListener(() => setState(() {}));
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    _tabController.dispose();
+    _debounce?.cancel();
+    super.dispose();
+  }
+
+  void _onSearchChanged(String query) {
+    if (_debounce?.isActive ?? false) _debounce?.cancel();
+    _debounce = Timer(const Duration(milliseconds: 400), () {
+      final marketState = context.read<MarketDataBloc>().state;
+      if (marketState is MarketDataLoaded) {
+        context.read<SearchCubit>().performSearch(
+              query: query,
+              allProducts: marketState.marketData.products,
+              allStores: marketState.marketData.stores,
+            );
+      }
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final marketState = context.watch<MarketDataBloc>().state;
+
+    return Directionality(
+      textDirection: TextDirection.rtl,
+      child: Scaffold(
+        appBar: AppBar(
+          automaticallyImplyLeading: false,
+          titleSpacing: 0,
+          title: TextField(
+            controller: _searchController,
+            autofocus: true,
+            decoration: InputDecoration(
+              hintText: 'جستجوی محصول یا فروشگاه...',
+              border: InputBorder.none,
+              suffixIcon: _searchController.text.isNotEmpty
+                  ? IconButton(
+                      icon: const Icon(Icons.clear),
+                      onPressed: () {
+                        _searchController.clear();
+                        context.read<SearchCubit>().clearSearch();
+                      },
+                    )
+                  : null,
+            ),
+            onChanged: _onSearchChanged,
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                if (context.canPop()) {
+                  context.pop();
+                } else {
+                  context.go('/'); // مسیر صفحه اصلی
+                }
+              },
+              child: const Text(
+                'انصراف',
+                style: TextStyle(
+                  fontSize: 16,
+                ),
+              ),
+            ),
+          ],
+        ),
+        body: BlocBuilder<SearchCubit, SearchState>(
+          builder: (context, searchState) {
+            if (searchState is SearchInitial) {
+              return const Center(child: Text('لطفاً عبارت مورد نظر را وارد کنید.'));
+            }
+            if (searchState is SearchLoading) {
+              return const Center(child: CircularProgressIndicator());
+            }
+            if (searchState is SearchLoaded) {
+              if (searchState.filteredProducts.isEmpty && searchState.filteredStores.isEmpty) {
+                return const Center(child: Text('نتیجه‌ای یافت نشد.'));
+              }
+              
+              final Map<String, List<Product>> groupedProducts = {};
+              for (var product in searchState.filteredProducts) {
+                groupedProducts.putIfAbsent(product.storeID, () => []).add(product);
+              }
+              final storeIds = groupedProducts.keys.toList();
+
+              return Column(
+                children: [
+                  TabBar(
+                    controller: _tabController,
+                    tabs: [
+                      Tab(text: 'محصولات (${searchState.filteredProducts.length})'),
+                      Tab(text: 'فروشگاه‌ها (${searchState.filteredStores.length})'),
+                    ],
+                  ),
+                  Expanded(
+                    child: TabBarView(
+                      controller: _tabController,
+                      children: [
+                        ListView.builder(
+                          itemCount: storeIds.length,
+                          itemBuilder: (context, index) {
+                            if (marketState is! MarketDataLoaded) return const SizedBox.shrink();
+                            
+                            final storeId = storeIds[index];
+                            final productsInStore = groupedProducts[storeId]!;
+                            final store = marketState.marketData.stores
+                                .firstWhere((s) => s.storeID == storeId);
+
+                            return Card(
+                              margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Padding(
+                                    padding: const EdgeInsets.all(12.0),
+                                    child: Text(store.name, style: Theme.of(context).textTheme.titleLarge),
+                                  ),
+                                  const Divider(height: 1, indent: 12, endIndent: 12),
+                                  ListView.builder(
+                                    shrinkWrap: true,
+                                    physics: const NeverScrollableScrollPhysics(),
+                                    itemCount: productsInStore.length,
+                                    itemBuilder: (context, productIndex) {
+                                      final product = productsInStore[productIndex];
+                                      return ProductListItemView(product: product, store: store);
+                                    },
+                                  ),
+                                ],
+                              ),
+                            );
+                          },
+                        ),
+                        ListView.builder(
+                          itemCount: searchState.filteredStores.length,
+                          itemBuilder: (context, index) {
+                            final store = searchState.filteredStores[index];
+                            return StoreListItemView(store: store);
+                          },
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              );
+            }
+            return const SizedBox.shrink();
+          },
+        ),
+      ),
+    );
+  }
+}
+
+
+====================
+فایل: store_detail_view.dart
+مسیر: D:\PersiaMarkt 3\persiamarkt\lib\features\store\presentation\view\store_detail_view.dart
+====================
+
+import 'dart:ui';
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
+import 'package:persia_markt/core/models/category_item.dart';
+import 'package:persia_markt/core/models/product.dart';
+import 'package:persia_markt/core/models/store.dart';
+import 'package:persia_markt/core/widgets/product_list_item_view.dart';
+import 'package:persia_markt/features/home/presentation/bloc/market_data_bloc.dart';
+import 'package:persia_markt/features/home/presentation/bloc/market_data_state.dart';
+
+class StoreDetailView extends StatefulWidget {
+  final String storeId;
+  final String? initialProductId;
+
+  const StoreDetailView({
+    super.key,
+    required this.storeId,
+    this.initialProductId,
+  });
+
+  @override
+  State<StoreDetailView> createState() => _StoreDetailViewState();
+}
+
+class _StoreDetailViewState extends State<StoreDetailView> {
+  final Map<String, GlobalKey> _categoryKeys = {};
+  final ScrollController _pageScrollController = ScrollController();
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _pageScrollController.jumpTo(0.0);
+      if (widget.initialProductId != null) {
+        _scrollToInitialProduct();
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _pageScrollController.dispose();
+    super.dispose();
+  }
+
+  void _scrollToCategory(String categoryId) {
+    final key = _categoryKeys[categoryId];
+    if (key != null && key.currentContext != null) {
+      Scrollable.ensureVisible(
+        key.currentContext!,
+        duration: const Duration(milliseconds: 400),
+        curve: Curves.easeInOut,
+        alignment: 0.1,
+      );
+    }
+  }
+
+  void _scrollToInitialProduct() {
+    final marketState = context.read<MarketDataBloc>().state;
+    if (marketState is MarketDataLoaded) {
+      final product = marketState.marketData.products.firstWhere(
+        (p) => p.id == widget.initialProductId,
+        orElse: () => marketState.marketData.products.first, // Fallback
+      );
+      _scrollToCategory(product.categoryID);
+    }
+  }
+
+  void _showImageDialog(BuildContext context, String imageUrl) {
+    showDialog(
+      context: context,
+      barrierColor: Colors.black.withOpacity(0.5),
+      builder: (BuildContext context) {
+        return BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 5.0, sigmaY: 5.0),
+          child: Dialog(
+            backgroundColor: Colors.transparent,
+            insetPadding: const EdgeInsets.all(20),
+            child: GestureDetector(
+              onTap: () => Navigator.of(context).pop(),
+              child: InteractiveViewer(
+                child: Image.network(
+                  imageUrl,
+                  errorBuilder: (_, __, ___) =>
+                      const Icon(Icons.broken_image, color: Colors.white, size: 48),
+                ),
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocBuilder<MarketDataBloc, MarketDataState>(
+      builder: (context, state) {
+        if (state is MarketDataLoaded) {
+          final store = state.marketData.stores.firstWhere((s) => s.storeID == widget.storeId, orElse: () => Store.empty());
+          if (store.storeID.isEmpty) {
+            return const Scaffold(body: Center(child: Text('Store not found.')));
+          }
+
+          final storeProducts = state.marketData.products
+              .where((p) => p.storeID == store.storeID)
+              .toList();
+          final categoriesInStore = state.marketData.categories
+              .where((c) => storeProducts.any((p) => p.categoryID == c.id))
+              .toList();
+
+          for (var category in categoriesInStore) {
+            _categoryKeys.putIfAbsent(category.id, () => GlobalKey());
+          }
+
+          return Directionality(
+            textDirection: TextDirection.rtl,
+            child: Scaffold(
+              body: CustomScrollView(
+                controller: _pageScrollController,
+                slivers: [
+                  _buildSliverAppBar(context, store),
+                  _buildStoreDetailsSliver(context, store),
+                  _buildCategoryHeader(context, categoriesInStore),
+                  ..._buildProductSlivers(categoriesInStore, storeProducts, store),
+                ],
+              ),
+            ),
+          );
+        }
+        return const Scaffold(body: Center(child: CircularProgressIndicator()));
+      },
+    );
+  }
+
+  SliverAppBar _buildSliverAppBar(BuildContext context, Store store) {
+    return SliverAppBar(
+      expandedHeight: 220.0,
+      pinned: true,
+      flexibleSpace: FlexibleSpaceBar(
+        title: Text(store.name, style: const TextStyle(fontSize: 16.0, shadows: [Shadow(blurRadius: 2)])),
+        background: Image.network(
+          store.storeImage,
+          fit: BoxFit.cover,
+          errorBuilder: (_, __, ___) =>
+              Image.asset('assets/images/supermarket.png', fit: BoxFit.cover),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildStoreDetailsSliver(BuildContext context, Store store) {
+    return SliverToBoxAdapter(
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              store.name,
+              style: Theme.of(context)
+                  .textTheme
+                  .headlineMedium
+                  ?.copyWith(fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                Icon(Icons.location_on_outlined, size: 16, color: Colors.grey.shade700),
+                const SizedBox(width: 4),
+                Expanded(child: Text(store.address, style: const TextStyle(fontSize: 16))),
+                IconButton(
+                  icon: Icon(Icons.map_outlined, color: Theme.of(context).colorScheme.primary),
+                  tooltip: 'نمایش در نقشه',
+                  onPressed: () => context.go('/map?focus=${store.storeID}'),
+                ),
+              ],
+            ),
+            Row(
+              children: [
+                Icon(Icons.star_border, size: 16, color: Colors.grey.shade700),
+                const SizedBox(width: 4),
+                Text('امتیاز: ${store.rating}', style: const TextStyle(fontSize: 16)),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  SliverPersistentHeader _buildCategoryHeader(
+      BuildContext context, List<CategoryItem> categories) {
+    return SliverPersistentHeader(
+      pinned: true,
+      delegate: _SliverAppBarDelegate(
+        minHeight: 60.0,
+        maxHeight: 60.0,
+        child: Container(
+          color: Theme.of(context).scaffoldBackgroundColor.withAlpha(240),
+          child: ListView.builder(
+            scrollDirection: Axis.horizontal,
+            itemCount: categories.length,
+            padding: const EdgeInsets.symmetric(horizontal: 12),
+            itemBuilder: (context, index) => Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 4.0, vertical: 10),
+              child: ElevatedButton(
+                onPressed: () => _scrollToCategory(categories[index].id),
+                child: Text(categories[index].name),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  List<Widget> _buildProductSlivers(
+      List<CategoryItem> categories, List<Product> allProducts, Store store) {
+    return categories.map((category) {
+      final productsInCategory =
+          allProducts.where((p) => p.categoryID == category.id).toList();
+
+      return SliverList(
+        delegate: SliverChildListDelegate([
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 24, 16, 8),
+            child: Text(
+              category.name,
+              key: _categoryKeys[category.id],
+              style: Theme.of(context).textTheme.headlineSmall,
+            ),
+          ),
+          const Divider(indent: 16, endIndent: 16, height: 1),
+          ...productsInCategory.map(
+            (product) => ProductListItemView(
+              product: product,
+              store: store,
+              onImageTap: () => _showImageDialog(context, product.primaryImageUrl),
+            ),
+          ),
+        ]),
+      );
+    }).toList();
+  }
+}
+
+class _SliverAppBarDelegate extends SliverPersistentHeaderDelegate {
+  final double minHeight;
+  final double maxHeight;
+  final Widget child;
+
+  _SliverAppBarDelegate({
+    required this.minHeight,
+    required this.maxHeight,
+    required this.child,
+  });
+
+  @override
+  double get minExtent => minHeight;
+  @override
+  double get maxExtent => maxHeight;
+
+  @override
+  Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) {
+    return SizedBox.expand(child: child);
+  }
+
+  @override
+  bool shouldRebuild(_SliverAppBarDelegate old) =>
+      maxHeight != old.maxHeight ||
+      minHeight != old.minHeight ||
+      child != old.child;
+}
+
+
+====================
+فایل: market_data_bloc_test.dart
+مسیر: D:\PersiaMarkt 3\persiamarkt\test\features\home\presentation\bloc\market_data_bloc_test.dart
+====================
+
+// test/features/home/presentation/bloc/market_data_bloc_test.dart
+import 'package:flutter_test/flutter_test.dart';
+import 'package:bloc_test/bloc_test.dart';
+import 'package:mocktail/mocktail.dart';
+import 'package:fpdart/fpdart.dart';
+import 'package:persia_markt/core/error/failures.dart';
+import 'package:persia_markt/core/models/market_data.dart';
+import 'package:persia_markt/features/home/domain/repositories/market_repository.dart';
+import 'package:persia_markt/features/home/presentation/bloc/market_data_bloc.dart';
+import 'package:persia_markt/features/home/presentation/bloc/market_data_event.dart';
+import 'package:persia_markt/features/home/presentation/bloc/market_data_state.dart';
+
+// ۱. یک کلاس Mock (شبیه‌سازی شده) از Repository می‌سازیم
+// این به ما اجازه می‌دهد رفتار Repository را در تست کنترل کنیم
+class MockMarketRepository extends Mock implements MarketRepository {}
+
+void main() {
+  // ۲. متغیرهای لازم برای تست را تعریف می‌کنیم
+  late MarketDataBloc marketDataBloc;
+  late MockMarketRepository mockMarketRepository;
+
+  // این تابع قبل از اجرای هر تست فراخوانی می‌شود
+  setUp(() {
+    mockMarketRepository = MockMarketRepository();
+    marketDataBloc = MarketDataBloc(marketRepository: mockMarketRepository);
+  });
+
+  // این تابع بعد از اجرای هر تست فراخوانی می‌شود تا منابع آزاد شوند
+  tearDown(() {
+    marketDataBloc.close();
+  });
+
+  // یک نمونه داده برای استفاده در تست موفقیت‌آمیز
+  final tMarketData = const MarketData(stores: [], categories: [], products: []);
+
+  test('حالت اولیه باید MarketDataInitial باشد', () {
+    expect(marketDataBloc.state, isA<MarketDataInitial>());
+  });
+
+  group('FetchMarketDataEvent', () {
+    // سناریوی تست برای زمانی که داده‌ها با موفقیت دریافت می‌شوند
+    blocTest<MarketDataBloc, MarketDataState>(
+      'باید حالت‌های [Loading, Loaded] را منتشر کند وقتی داده موفقیت‌آمیز است',
+      build: () {
+        // ۳. رفتار Mock را تعریف می‌کنیم: اگر getMarketData فراخوانی شد، یک نتیجه موفق برگردان
+        when(() => mockMarketRepository.getMarketData())
+            .thenAnswer((_) async => Right(tMarketData));
+        return marketDataBloc;
+      },
+      act: (bloc) => bloc.add(FetchMarketDataEvent()), // ۴. رویداد (Event) را به BLoC ارسال می‌کنیم
+      expect: () => [ // ۵. انتظار داریم که BLoC این حالت‌ها را به ترتیب منتشر کند
+        isA<MarketDataLoading>(),
+        isA<MarketDataLoaded>(),
+      ],
+      verify: (_) {
+        // ۶. اطمینان حاصل می‌کنیم که متد getMarketData دقیقاً یک بار فراخوانی شده است
+        verify(() => mockMarketRepository.getMarketData()).called(1);
+      },
+    );
+
+    // سناریوی تست برای زمانی که خطا رخ می‌دهد
+    blocTest<MarketDataBloc, MarketDataState>(
+      'باید حالت‌های [Loading, Error] را منتشر کند وقتی خطا رخ می‌دهد',
+      build: () {
+        // رفتار Mock را برای حالت خطا تعریف می‌کنیم
+        when(() => mockMarketRepository.getMarketData())
+            .thenAnswer((_) async => const Left(ServerFailure('API Failure')));
+        return marketDataBloc;
+      },
+      act: (bloc) => bloc.add(FetchMarketDataEvent()),
+      expect: () => [
+        isA<MarketDataLoading>(),
+        isA<MarketDataError>(),
+      ],
+      verify: (_) {
+        verify(() => mockMarketRepository.getMarketData()).called(1);
+      },
+    );
+  });
+}
