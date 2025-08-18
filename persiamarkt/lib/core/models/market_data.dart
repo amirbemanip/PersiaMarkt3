@@ -1,4 +1,3 @@
-// lib/core/models/market_data.dart
 import 'package:equatable/equatable.dart';
 import 'category_item.dart';
 import 'product.dart';
@@ -18,11 +17,25 @@ class MarketData extends Equatable {
   @override
   List<Object> get props => [stores, categories, products];
 
+  /// Creates a MarketData instance from a JSON object.
+  /// It safely handles potential errors during parsing of its child lists.
   factory MarketData.fromJson(Map<String, dynamic> json) {
+    // Helper function to safely parse a list of items
+    List<T> _parseList<T>(String key, T Function(Map<String, dynamic>) fromJson) {
+      try {
+        if (json[key] is List) {
+          return (json[key] as List).map((item) => fromJson(item)).toList();
+        }
+      } catch (e) {
+        print('Error parsing list for key "$key": $e');
+      }
+      return []; // Return an empty list on failure
+    }
+
     return MarketData(
-      stores: (json['stores'] as List).map((item) => Store.fromJson(item)).toList(),
-      categories: (json['categories'] as List).map((item) => CategoryItem.fromJson(item)).toList(),
-      products: (json['products'] as List).map((item) => Product.fromJson(item)).toList(),
+      stores: _parseList('stores', Store.fromJson),
+      categories: _parseList('categories', CategoryItem.fromJson),
+      products: _parseList('products', Product.fromJson),
     );
   }
 }

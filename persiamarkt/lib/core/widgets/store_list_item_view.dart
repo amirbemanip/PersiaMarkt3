@@ -13,22 +13,20 @@ class StoreListItemView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // اصلاح شده: استفاده از Container برای کنترل کامل بر سایه
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 6, horizontal: 16),
       decoration: BoxDecoration(
         color: Theme.of(context).cardColor,
-        borderRadius: BorderRadius.circular(12), // گوشه‌های گرد
+        borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.08), // رنگ سایه بسیار ملایم
-            blurRadius: 10,   // میزان نرمی و پخش‌شوندگی سایه
-            spreadRadius: 1,  // میزان گستردگی سایه
-            offset: const Offset(0, 4), // جهت سایه (کمی به سمت پایین)
+            color: Colors.black.withOpacity(0.08), // سایه ملایم
+            blurRadius: 10,
+            spreadRadius: 1,
+            offset: const Offset(0, 4),
           ),
         ],
       ),
-      // اضافه شده: برای حفظ گوشه‌های گرد در افکت کلیک روی ListTile
       child: ClipRRect(
         borderRadius: BorderRadius.circular(12),
         child: ListTile(
@@ -78,8 +76,8 @@ class StoreListItemView extends StatelessWidget {
                     final distance = Geolocator.distanceBetween(
                       locationState.position.latitude,
                       locationState.position.longitude,
-                      store.location.lat,
-                      store.location.lng,
+                      store.latitude,  // اصلاح شد
+                      store.longitude, // اصلاح شد
                     );
                     final distanceText = '${(distance / 1000).toStringAsFixed(1)} کیلومتر';
                     return Text(

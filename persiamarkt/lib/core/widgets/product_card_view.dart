@@ -1,4 +1,3 @@
-// lib/core/widgets/product_card_view.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -12,12 +11,13 @@ import 'package:persia_markt/features/profile/presentation/cubit/favorites_state
 class ProductCardView extends StatelessWidget {
   final Product product;
   final Store store;
-  const ProductCardView({Key? key, required this.product, required this.store}) : super(key: key);
+
+  const ProductCardView({super.key, required this.product, required this.store});
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () => context.go('/store/${store.storeID}?productId=${product.productID}'),
+      onTap: () => context.go('/store/${store.storeID}?productId=${product.id}'),
       child: Container(
         width: 160,
         margin: const EdgeInsets.symmetric(horizontal: 8),
@@ -46,7 +46,8 @@ class ProductCardView extends StatelessWidget {
                     width: double.infinity,
                     color: Colors.grey.shade100,
                     child: Image.network(
-                      product.imageURL,
+                      // FIXED: Use the new primaryImageUrl getter.
+                      product.primaryImageUrl,
                       fit: BoxFit.contain,
                       errorBuilder: (_, __, ___) => Image.asset(
                         'assets/images/supermarket.png',
@@ -60,16 +61,16 @@ class ProductCardView extends StatelessWidget {
                   left: 4,
                   child: BlocBuilder<FavoritesCubit, FavoritesState>(
                     builder: (context, state) {
-                      final isLiked = state.productIds.contains(product.productID);
+                      final isLiked = state.productIds.contains(product.id);
                       return IconButton(
-                        onPressed: () => context.read<FavoritesCubit>().toggleLike(product.productID),
+                        onPressed: () => context.read<FavoritesCubit>().toggleLike(product.id),
                         icon: Icon(
                           isLiked ? Icons.favorite : Icons.favorite_border,
                           color: isLiked ? Colors.red : Colors.grey.shade400,
                           size: 24,
                         ),
                       );
-                    }
+                    },
                   ),
                 ),
               ],
@@ -97,9 +98,10 @@ class ProductCardView extends StatelessWidget {
                   Align(
                     alignment: Alignment.centerRight,
                     child: Text(
-                      '€${product.price.toStringAsFixed(2)}',
+                      // FIXED: Use effectivePrice to show discount if available.
+                      '€${product.effectivePrice.toStringAsFixed(2)}',
                       style: TextStyle(
-                        color: Colors.green.shade700,
+                        color: product.isOnSale ? Colors.red.shade700 : Colors.green.shade700,
                         fontWeight: FontWeight.bold,
                         fontSize: 16,
                       ),

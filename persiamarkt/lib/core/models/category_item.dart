@@ -1,31 +1,31 @@
-// lib/core/models/category_item.dart
 import 'package:equatable/equatable.dart';
 
 class CategoryItem extends Equatable {
-  final String categoryID;
+  final String id;
   final String name;
   final String nameEn;
-  final String description;
-  final String icon;
+  final String? description;
+  final String? iconUrl;
 
   const CategoryItem({
-    required this.categoryID,
+    required this.id,
     required this.name,
     required this.nameEn,
-    required this.description,
-    required this.icon,
+    this.description,
+    this.iconUrl,
   });
 
   @override
-  List<Object> get props => [categoryID, name];
+  List<Object?> get props => [id, name];
 
   factory CategoryItem.fromJson(Map<String, dynamic> json) {
     return CategoryItem(
-      categoryID: json['categoryID'] as String,
+      // FIXED: Safely convert the integer ID from the API to a String.
+      id: json['id'].toString(),
       name: json['name'] as String,
       nameEn: json['name_en'] as String,
-      description: json['description'] as String,
-      icon: json['icon'] as String,
+      description: json['description'] as String?,
+      iconUrl: json['icon_url'] as String?,
     );
   }
 }

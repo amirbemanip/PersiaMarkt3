@@ -1,4 +1,3 @@
-// lib/features/home/presentation/widgets/stores_by_city_section.dart
 import 'package:flutter/material.dart';
 import 'package:persia_markt/core/models/store.dart';
 import 'package:persia_markt/core/widgets/store_list_item_view.dart';
@@ -9,10 +8,17 @@ class StoresByCitySection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Group stores by city
+    // Group stores by city, safely handling nullable city names.
     final Map<String, List<Store>> storesByCity = {};
     for (var store in stores) {
-      storesByCity.putIfAbsent(store.city, () => []).add(store);
+      // FIXED: Only process stores that have a non-null and non-empty city.
+      if (store.city != null && store.city!.isNotEmpty) {
+        storesByCity.putIfAbsent(store.city!, () => []).add(store);
+      }
+    }
+
+    if (storesByCity.isEmpty) {
+      return const SizedBox.shrink(); // Don't show anything if no stores have cities.
     }
 
     // Create a list of widgets from the grouped map
@@ -30,7 +36,8 @@ class StoresByCitySection extends StatelessWidget {
               padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
               child: Text(city, style: Theme.of(context).textTheme.headlineSmall),
             ),
-            ...cityStores.map((store) => StoreListItemView(store: store)).toList(),
+            // FIXED: Removed unnecessary .toList() from the spread operator.
+            ...cityStores.map((store) => StoreListItemView(store: store)),
           ],
         );
       },

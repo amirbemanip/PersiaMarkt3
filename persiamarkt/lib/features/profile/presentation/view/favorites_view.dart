@@ -22,7 +22,7 @@ class FavoritesView extends StatelessWidget {
             return BlocBuilder<FavoritesCubit, FavoritesState>(
               builder: (context, favoritesState) {
                 final favoriteProducts = marketState.marketData.products
-                    .where((p) => favoritesState.productIds.contains(p.productID))
+                    .where((p) => favoritesState.productIds.contains(p.id))
                     .toList();
                 
                 if (favoriteProducts.isEmpty) {

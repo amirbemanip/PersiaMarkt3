@@ -1,5 +1,4 @@
-// lib/features/search/presentation/cubit/search_cubit.dart
-import 'package:flutter_bloc/flutter_bloc.dart'; // اصلاح شده
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:persia_markt/core/models/product.dart';
 import 'package:persia_markt/core/models/store.dart';
 import 'search_state.dart';
@@ -9,10 +8,6 @@ class SearchCubit extends Cubit<SearchState> {
   SearchCubit() : super(SearchInitial());
 
   /// Performs a search based on a query against all products and stores.
-  ///
-  /// [query]: The search term entered by the user.
-  /// [allProducts]: The complete list of products to filter.
-  /// [allStores]: The complete list of stores to filter.
   void performSearch({
     required String query,
     required List<Product> allProducts,
@@ -25,7 +20,6 @@ class SearchCubit extends Cubit<SearchState> {
 
     emit(SearchLoading());
 
-    // Normalize the query for case-insensitive search.
     final lowerCaseQuery = query.toLowerCase();
 
     // Filter products based on name and description.
@@ -37,10 +31,13 @@ class SearchCubit extends Cubit<SearchState> {
 
     // Filter stores based on name, address, and city.
     final storeResults = allStores
-        .where((s) =>
-            s.name.toLowerCase().contains(lowerCaseQuery) ||
-            s.address.toLowerCase().contains(lowerCaseQuery) ||
-            s.city.toLowerCase().contains(lowerCaseQuery))
+        .where((s) {
+          final nameMatch = s.name.toLowerCase().contains(lowerCaseQuery);
+          final addressMatch = s.address.toLowerCase().contains(lowerCaseQuery);
+          // FIXED: Safely handle nullable city by using a null-aware check.
+          final cityMatch = s.city?.toLowerCase().contains(lowerCaseQuery) ?? false;
+          return nameMatch || addressMatch || cityMatch;
+        })
         .toList();
 
     emit(SearchLoaded(

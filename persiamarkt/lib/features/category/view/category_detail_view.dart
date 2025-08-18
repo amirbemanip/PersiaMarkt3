@@ -1,14 +1,9 @@
-// lib/features/category/view/category_detail_view.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-// import های اضافی حذف شدند
 import 'package:persia_markt/core/widgets/product_card_view.dart';
 import 'package:persia_markt/features/home/presentation/bloc/market_data_bloc.dart';
-// import 'packagepackage:persia_markt/features/home/presentation/bloc/market_data_state.dart'; -> اصلاح شد
 import 'package:persia_markt/features/home/presentation/bloc/market_data_state.dart';
-import 'package:persia_markt/core/models/product.dart';
-import 'package:persia_markt/core/models/store.dart';
 
 class CategoryDetailView extends StatelessWidget {
   final String categoryId;
@@ -20,14 +15,23 @@ class CategoryDetailView extends StatelessWidget {
       body: BlocBuilder<MarketDataBloc, MarketDataState>(
         builder: (context, state) {
           if (state is MarketDataLoaded) {
-            final category = state.marketData.categories.firstWhere((c) => c.categoryID == categoryId);
-            
-            // ۱. ابتدا تمام محصولات این دسته‌بندی را پیدا می‌کنیم
-            final productsInCategory = state.marketData.products.where((p) => p.categoryID == categoryId).toList();
-            
-            // ۲. سپس فروشگاه‌هایی که این محصولات را دارند، شناسایی می‌کنیم
+            // FIXED: Use the new 'id' property instead of 'categoryID'.
+            final category = state.marketData.categories.firstWhere(
+              (c) => c.id == categoryId,
+              // Provide a fallback to prevent crashing if the category is not found.
+              orElse: () => state.marketData.categories.first,
+            );
+
+            // 1. Find all products in this category.
+            final productsInCategory = state.marketData.products
+                .where((p) => p.categoryID == categoryId)
+                .toList();
+
+            // 2. Identify the unique stores that have these products.
             final storeIds = productsInCategory.map((p) => p.storeID).toSet();
-            final stores = state.marketData.stores.where((s) => storeIds.contains(s.storeID)).toList();
+            final stores = state.marketData.stores
+                .where((s) => storeIds.contains(s.storeID))
+                .toList();
 
             return CustomScrollView(
               slivers: [
@@ -40,21 +44,23 @@ class CategoryDetailView extends StatelessWidget {
                     child: Center(child: Text('محصولی در این دسته‌بندی یافت نشد.')),
                   )
                 else
-                  // ۳. یک لیست عمودی از فروشگاه‌ها می‌سازیم
+                  // 3. Create a vertical list of stores.
                   SliverList.builder(
                     itemCount: stores.length,
                     itemBuilder: (context, index) {
                       final store = stores[index];
-                      // ۴. محصولات هر فروشگاه را برای لیست افقی فیلتر می‌کنیم
-                      final productsInStore = productsInCategory.where((p) => p.storeID == store.storeID).toList();
-                      
+                      // 4. Filter products for the horizontal list within each store.
+                      final productsInStore = productsInCategory
+                          .where((p) => p.storeID == store.storeID)
+                          .toList();
+
                       return Card(
                         margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                         elevation: 2,
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                         child: Column(
                           children: [
-                            // هدر اطلاعات فروشگاه
+                            // Store header information
                             ListTile(
                               leading: CircleAvatar(
                                 backgroundImage: NetworkImage(store.storeImage),
@@ -63,22 +69,22 @@ class CategoryDetailView extends StatelessWidget {
                               title: Text(store.name, style: const TextStyle(fontWeight: FontWeight.bold)),
                               subtitle: Text(store.address),
                             ),
-                            // لیست افقی محصولات این فروشگاه
+                            // Horizontal list of products for this store
                             SizedBox(
-                              height: 250, // ارتفاع برای ProductCardView
+                              height: 250, // Height for ProductCardView
                               child: ListView.builder(
                                 scrollDirection: Axis.horizontal,
                                 itemCount: productsInStore.length,
                                 padding: const EdgeInsets.all(8),
                                 itemBuilder: (context, productIndex) {
                                   return ProductCardView(
-                                    product: productsInStore[productIndex], 
-                                    store: store
+                                    product: productsInStore[productIndex],
+                                    store: store,
                                   );
                                 },
                               ),
                             ),
-                            // دکمه رفتن به صفحه فروشگاه
+                            // Button to navigate to the store's detail page
                             Padding(
                               padding: const EdgeInsets.all(8.0),
                               child: Align(
@@ -98,6 +104,7 @@ class CategoryDetailView extends StatelessWidget {
               ],
             );
           }
+          // Show a loading indicator while data is being fetched.
           return const Center(child: CircularProgressIndicator());
         },
       ),

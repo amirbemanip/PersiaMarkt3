@@ -1,10 +1,10 @@
-// lib/main.dart
-import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter/material.dart'; // <-- FIXED
+import 'package:flutter_bloc/flutter_bloc.dart'; // <-- FIXED
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:persia_markt/core/config/app_router.dart';
 import 'package:persia_markt/core/config/service_locator.dart';
+import 'package:persia_markt/features/auth/presentation/cubit/auth_cubit.dart';
 import 'package:persia_markt/features/home/presentation/bloc/market_data_bloc.dart';
 import 'package:persia_markt/features/home/presentation/bloc/market_data_event.dart';
 import 'package:persia_markt/features/home/presentation/cubit/location_cubit.dart';
@@ -35,6 +35,9 @@ class MyApp extends StatelessWidget {
         ),
         BlocProvider(
           create: (_) => sl<SearchCubit>(),
+        ),
+        BlocProvider(
+          create: (_) => sl<AuthCubit>(),
         ),
       ],
       child: MaterialApp.router(

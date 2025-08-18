@@ -1,82 +1,67 @@
-// lib/core/models/store.dart
 import 'package:equatable/equatable.dart';
-import 'location.dart';
 
 class Store extends Equatable {
   final String storeID;
   final String name;
   final String address;
-  final String city;
-  final String phone;
-  final Location location;
-  final double rating;
-  final List<String> deliveryOptions;
-  final double deliveryFeePerKm;
   final String storeImage;
-  final String nameEn;
-  final String cityEn;
-  final String storeType;
-  final Map<String, String> operatingHours;
-  final String currency;
+  final double latitude;
+  final double longitude;
+  final double rating;
+
+  // فیلدهای اضافی که ممکن است در آینده از API بیایند
+  final String? city;
+  final String? phone;
 
   const Store({
     required this.storeID,
     required this.name,
     required this.address,
-    required this.city,
-    required this.phone,
-    required this.location,
-    required this.rating,
-    required this.deliveryOptions,
-    required this.deliveryFeePerKm,
     required this.storeImage,
-    required this.nameEn,
-    required this.cityEn,
-    required this.storeType,
-    required this.operatingHours,
-    required this.currency,
+    required this.latitude,
+    required this.longitude,
+    required this.rating,
+    this.city,
+    this.phone,
   });
 
-  @override
-  List<Object> get props => [storeID, name, city];
-
-  factory Store.fromJson(Map<String, dynamic> json) {
-    return Store(
-      storeID: json['storeID'] as String,
-      name: json['name'] as String,
-      address: json['address'] as String,
-      city: json['city'] as String,
-      phone: json['phone'] as String,
-      location: Location.fromJson(json['location']),
-      rating: (json['rating'] as num).toDouble(),
-      deliveryOptions: List<String>.from(json['deliveryOptions']),
-      deliveryFeePerKm: (json['deliveryFeePerKm'] as num).toDouble(),
-      storeImage: json['storeImage'] as String,
-      nameEn: json['name_en'] as String,
-      cityEn: json['city_en'] as String,
-      storeType: json['storeType'] as String,
-      operatingHours: Map<String, String>.from(json['operatingHours']),
-      currency: json['currency'] as String,
+  /// برای مواقعی که نیاز به Store خالی داریم
+  factory Store.empty() {
+    return const Store(
+      storeID: '',
+      name: 'Not Found',
+      address: '',
+      storeImage: '',
+      latitude: 0.0,
+      longitude: 0.0,
+      rating: 0.0,
     );
   }
 
-  factory Store.empty() {
+  @override
+  List<Object?> get props => [storeID, name, address];
+
+  /// Creates a Store instance from a JSON object.
+  /// This factory is now updated to match the backend API response keys.
+  factory Store.fromJson(Map<String, dynamic> json) {
+    // Helper to safely parse numbers
+    double _parseDouble(dynamic value) {
+      if (value is num) return value.toDouble();
+      if (value is String) return double.tryParse(value) ?? 0.0;
+      return 0.0;
+    }
+
     return Store(
-      storeID: '',
-      name: '',
-      address: '',
-      city: '',
-      phone: '',
-      location: const Location(lat: 0.0, lng: 0.0),
-      rating: 0.0,
-      deliveryOptions: const [],
-      deliveryFeePerKm: 0.0,
-      storeImage: '',
-      nameEn: '',
-      cityEn: '',
-      storeType: '',
-      operatingHours: const {},
-      currency: '',
+      // FIXED: Mapped API keys to model properties
+      storeID: (json['id'] as int).toString(),
+      name: json['store_name'] as String? ?? 'Unnamed Store',
+      address: json['store_address'] as String? ?? 'No address',
+      storeImage: json['store_image_url'] as String? ?? '',
+      latitude: _parseDouble(json['latitude']),
+      longitude: _parseDouble(json['longitude']),
+      rating: _parseDouble(json['rating']),
+      city: json['city'] as String?, // Optional field
+      phone: json['phone'] as String?, // Optional field
     );
   }
 }

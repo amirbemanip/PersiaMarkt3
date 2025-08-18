@@ -13,7 +13,7 @@ import 'package:persia_markt/features/home/presentation/cubit/location_state.dar
 class MapView extends StatefulWidget {
   final String? lat;
   final String? lng;
-  final String? focus; // شناسه فروشگاه برای فوکوس
+  final String? focus;
 
   const MapView({super.key, this.lat, this.lng, this.focus});
 
@@ -23,7 +23,7 @@ class MapView extends StatefulWidget {
 
 class _MapViewState extends State<MapView> {
   late final MapController _mapController;
-  bool _hasFocused = false; // برای جلوگیری از چند بار حرکت دوربین
+  bool _hasFocused = false;
 
   @override
   void initState() {
@@ -38,14 +38,14 @@ class _MapViewState extends State<MapView> {
   }
 
   void _tryFocusStore(List<Store> stores) {
-    if (_hasFocused) return; // اگر قبلا فوکوس شده، کاری نکن
+    if (_hasFocused) return;
     if (widget.focus != null && widget.focus!.isNotEmpty) {
       final store = stores.firstWhere(
         (s) => s.storeID == widget.focus,
         orElse: () => Store.empty(),
       );
       if (store.storeID.isNotEmpty) {
-        _mapController.move(LatLng(store.location.lat, store.location.lng), 17.0);
+        _mapController.move(LatLng(store.latitude, store.longitude), 17.0);
         _hasFocused = true;
       }
     }
@@ -73,7 +73,6 @@ class _MapViewState extends State<MapView> {
 
           final stores = marketState.marketData.stores;
 
-          // فوکوس روی فروشگاه فقط یک بار بعد از رندر کامل انجام می‌شود
           WidgetsBinding.instance.addPostFrameCallback((_) {
             _tryFocusStore(stores);
           });
@@ -117,7 +116,7 @@ class _MapViewState extends State<MapView> {
         return Marker(
           width: 120,
           height: 80,
-          point: LatLng(store.location.lat, store.location.lng),
+          point: LatLng(store.latitude, store.longitude),
           child: GestureDetector(
             onTap: () => context.go('/store/${store.storeID}'),
             child: Column(

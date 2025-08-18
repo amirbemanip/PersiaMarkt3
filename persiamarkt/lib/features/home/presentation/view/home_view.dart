@@ -1,4 +1,3 @@
-// lib/features/home/presentation/view/home_view.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -24,7 +23,12 @@ class HomeView extends StatelessWidget {
       child: Scaffold(
         body: BlocBuilder<MarketDataBloc, MarketDataState>(
           builder: (context, state) {
-            if (state is MarketDataLoading || state is MarketDataInitial) {
+            // --- FIXED: Improved loading and error states ---
+            if (state is MarketDataInitial) {
+              // Show a specific message for the very first load
+              return const _InitialLoadingView();
+            }
+            if (state is MarketDataLoading) {
               return const HomeLoadingShimmer();
             }
             if (state is MarketDataError) {
@@ -35,6 +39,13 @@ class HomeView extends StatelessWidget {
             }
             if (state is MarketDataLoaded) {
               final marketData = state.marketData;
+              // Handle case where data is loaded but lists are empty
+              if (marketData.stores.isEmpty && marketData.categories.isEmpty) {
+                return AppErrorView(
+                  message: 'متاسفانه در حال حاضر فروشگاه یا محصولی برای نمایش وجود ندارد.',
+                  onRetry: () => context.read<MarketDataBloc>().add(FetchMarketDataEvent()),
+                );
+              }
               return RefreshIndicator(
                 onRefresh: () async {
                   context.read<MarketDataBloc>().add(FetchMarketDataEvent());
@@ -71,6 +82,37 @@ class HomeView extends StatelessWidget {
             return const SizedBox.shrink();
           },
         ),
+      ),
+    );
+  }
+}
+
+/// A dedicated widget for the initial loading screen.
+class _InitialLoadingView extends StatelessWidget {
+  const _InitialLoadingView();
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const CircularProgressIndicator(),
+          const SizedBox(height: 24),
+          Text(
+            'در حال اتصال به سرور...',
+            style: Theme.of(context).textTheme.titleMedium,
+          ),
+          const SizedBox(height: 8),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 32.0),
+            child: Text(
+              'بارگذاری اولیه ممکن است کمی طول بکشد. لطفاً صبور باشید.',
+              textAlign: TextAlign.center,
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Colors.grey.shade600),
+            ),
+          ),
+        ],
       ),
     );
   }

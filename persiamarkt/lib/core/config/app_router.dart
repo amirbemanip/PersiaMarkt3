@@ -1,6 +1,12 @@
-// lib/core/config/app_router.dart
+import 'dart:async'; // <-- Import needed for StreamSubscription
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:persia_markt/core/config/service_locator.dart';
+import 'package:persia_markt/features/auth/presentation/cubit/auth_cubit.dart';
+import 'package:persia_markt/features/auth/presentation/cubit/auth_state.dart';
+import 'package:persia_markt/features/auth/presentation/view/login_view.dart';
+import 'package:persia_markt/features/auth/presentation/view/register_view.dart';
 import 'package:persia_markt/features/category/view/category_detail_view.dart';
 import 'package:persia_markt/features/home/presentation/view/home_view.dart';
 import 'package:persia_markt/features/home/presentation/view/main_tab_bar_view.dart';
@@ -20,13 +26,35 @@ class AppRouter {
   static final router = GoRouter(
     initialLocation: '/',
     navigatorKey: _rootNavigatorKey,
+    // Listen to AuthCubit state changes to automatically redirect users
+    refreshListenable: GoRouterRefreshStream(sl<AuthCubit>().stream),
+    redirect: (BuildContext context, GoRouterState state) {
+      final authState = context.read<AuthCubit>().state;
+      final isLoggedIn = authState is Authenticated;
+      
+      final onAuthRoutes = state.matchedLocation == '/login' || state.matchedLocation == '/register';
+
+      // If user is not logged in and tries to access a protected route (e.g., /profile)
+      if (!isLoggedIn && !onAuthRoutes) {
+        // Redirect them to the login page
+        return '/login';
+      }
+
+      // If user is logged in and tries to access login/register page
+      if (isLoggedIn && onAuthRoutes) {
+        // Redirect them to the home page
+        return '/';
+      }
+
+      // No redirect needed
+      return null;
+    },
     routes: [
       StatefulShellRoute.indexedStack(
         builder: (context, state, navigationShell) {
           return MainTabBarView(navigationShell: navigationShell);
         },
         branches: [
-          // Branch (شاخه) برای تب "خانه"
           StatefulShellBranch(
             navigatorKey: _shellNavigatorHomeKey,
             routes: [
@@ -56,7 +84,6 @@ class AppRouter {
               ),
             ],
           ),
-          // Branch برای تب "نقشه"
           StatefulShellBranch(
             navigatorKey: _shellNavigatorMapKey,
             routes: [
@@ -65,13 +92,12 @@ class AppRouter {
                 builder: (context, state) {
                   final lat = state.uri.queryParameters['lat'];
                   final lng = state.uri.queryParameters['lng'];
-                  final focus = state.uri.queryParameters['focus'];  // اضافه شده
+                  final focus = state.uri.queryParameters['focus'];
                   return MapView(lat: lat, lng: lng, focus: focus);
                 },
               ),
             ],
           ),
-          // Branch برای تب "علاقه‌مندی‌ها"
           StatefulShellBranch(
             navigatorKey: _shellNavigatorFavoritesKey,
             routes: [
@@ -81,7 +107,6 @@ class AppRouter {
               ),
             ],
           ),
-          // Branch برای تب "پروفایل"
           StatefulShellBranch(
             navigatorKey: _shellNavigatorProfileKey,
             routes: [
@@ -98,6 +123,32 @@ class AppRouter {
         parentNavigatorKey: _rootNavigatorKey,
         builder: (context, state) => const SearchView(),
       ),
+      GoRoute(
+        path: '/login',
+        parentNavigatorKey: _rootNavigatorKey,
+        builder: (context, state) => const LoginView(),
+      ),
+      GoRoute(
+        path: '/register',
+        parentNavigatorKey: _rootNavigatorKey,
+        builder: (context, state) => const RegisterView(),
+      ),
     ],
   );
+}
+
+// Helper class to make GoRouter listen to BLoC/Cubit stream changes
+class GoRouterRefreshStream extends ChangeNotifier {
+  GoRouterRefreshStream(Stream<dynamic> stream) {
+    notifyListeners();
+    _subscription = stream.asBroadcastStream().listen((_) => notifyListeners());
+  }
+  // FIXED: Changed the type from Stream to StreamSubscription
+  late final StreamSubscription<dynamic> _subscription;
+
+  @override
+  void dispose() {
+    _subscription.cancel();
+    super.dispose();
+  }
 }

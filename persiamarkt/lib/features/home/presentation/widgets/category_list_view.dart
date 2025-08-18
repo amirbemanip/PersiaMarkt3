@@ -1,4 +1,3 @@
-// lib/features/home/presentation/widgets/category_list_view.dart
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:persia_markt/core/models/category_item.dart';
@@ -14,39 +13,48 @@ class CategoryListView extends StatelessWidget {
       child: ListView.builder(
         scrollDirection: Axis.horizontal,
         itemCount: categories.length,
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4), // کمی پدینگ عمودی برای نمایش کامل سایه
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
         itemBuilder: (context, index) {
           final category = categories[index];
           return GestureDetector(
-            onTap: () => context.go('/category/${category.categoryID}'),
+            onTap: () => context.go('/category/${category.id}'),
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 8.0),
               child: Column(
                 children: [
-                  // ======================= تغییر اصلی اینجاست =======================
-                  // CircleAvatar با یک Container جایگزین شد تا بتوانیم سایه اضافه کنیم
                   Container(
-                    width: 80,  // قطر دایره
-                    height: 80, // قطر دایره
+                    width: 80,
+                    height: 80,
                     decoration: BoxDecoration(
-                      color: Colors.orange.shade100,
+                      color: Theme.of(context).cardColor,
                       shape: BoxShape.circle,
-                      image: const DecorationImage(
-                        image: AssetImage('assets/images/supermarket.png'),
-                        fit: BoxFit.cover,
-                      ),
                       boxShadow: [
-                        // تعریف سایه ظریف
                         BoxShadow(
-                          color: Colors.black.withOpacity(0.1), // رنگ سایه بسیار ملایم
-                          blurRadius: 8.0,  // میزان نرمی سایه
-                          spreadRadius: 2.0, // میزان گستردگی
-                          offset: const Offset(0, 4), // کمی به سمت پایین
+                          // FIXED: Replaced deprecated withOpacity
+                          color: Colors.black.withAlpha((255 * 0.1).round()),
+                          blurRadius: 8.0,
+                          spreadRadius: 2.0,
+                          offset: const Offset(0, 4),
                         ),
                       ],
                     ),
+                    child: ClipOval(
+                      // FIXED: Handle nullable iconUrl
+                      child: (category.iconUrl != null && category.iconUrl!.isNotEmpty)
+                          ? Image.network(
+                              category.iconUrl!, // We know it's not null here
+                              fit: BoxFit.cover,
+                              errorBuilder: (context, error, stackTrace) => _buildPlaceholderIcon(),
+                              loadingBuilder: (context, child, loadingProgress) {
+                                if (loadingProgress == null) return child;
+                                return const Center(
+                                  child: CircularProgressIndicator(strokeWidth: 2.0),
+                                );
+                              },
+                            )
+                          : _buildPlaceholderIcon(),
+                    ),
                   ),
-                  // ================================================================
                   const SizedBox(height: 8),
                   Text(
                     category.name,
@@ -57,6 +65,17 @@ class CategoryListView extends StatelessWidget {
             ),
           );
         },
+      ),
+    );
+  }
+
+  /// A helper widget for showing a placeholder icon.
+  Widget _buildPlaceholderIcon() {
+    return Padding(
+      padding: const EdgeInsets.all(12.0),
+      child: Image.asset(
+        'assets/images/supermarket.png',
+        color: Colors.grey.shade400,
       ),
     );
   }
