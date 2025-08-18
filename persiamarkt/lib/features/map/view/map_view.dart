@@ -2,7 +2,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_map/flutter_map.dart';
-import 'package:go_router/go_router.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:persia_markt/core/models/store.dart';
 import 'package:persia_markt/features/home/presentation/bloc/market_data_bloc.dart';
@@ -57,10 +56,12 @@ class _MapViewState extends State<MapView> {
     double initialZoom = 6.0;
 
     if (widget.lat != null && widget.lng != null) {
-      try {
-        initialCenter = LatLng(double.parse(widget.lat!), double.parse(widget.lng!));
+      final lat = double.tryParse(widget.lat!);
+      final lng = double.tryParse(widget.lng!);
+      if (lat != null && lng != null) {
+        initialCenter = LatLng(lat, lng);
         initialZoom = 15.0;
-      } catch (_) {}
+      }
     }
 
     return Scaffold(
@@ -82,13 +83,14 @@ class _MapViewState extends State<MapView> {
             options: MapOptions(
               initialCenter: initialCenter,
               initialZoom: initialZoom,
+              onMapReady: () => _tryFocusStore(stores),
             ),
             children: [
               TileLayer(
                 urlTemplate: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
                 subdomains: const ['a', 'b', 'c'],
               ),
-              _buildStoreMarkers(context, stores),
+              _buildStoreMarkers(stores),
               _buildUserLocationMarker(context),
             ],
           );
@@ -110,32 +112,21 @@ class _MapViewState extends State<MapView> {
     );
   }
 
-  MarkerLayer _buildStoreMarkers(BuildContext context, List<Store> stores) {
+  Widget _buildStoreMarkers(List<Store> stores) {
     return MarkerLayer(
-      markers: stores.map((store) {
+      markers: stores.map((s) {
         return Marker(
-          width: 120,
-          height: 80,
-          point: LatLng(store.latitude, store.longitude),
-          child: GestureDetector(
-            onTap: () => context.go('/store/${store.storeID}'),
-            child: Column(
-              children: [
-                const Icon(Icons.location_on, color: Colors.red, size: 30),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withAlpha(220),
-                    borderRadius: BorderRadius.circular(8),
-                    boxShadow: const [BoxShadow(color: Colors.black26, blurRadius: 4, offset: Offset(0, 2))],
-                  ),
-                  child: Text(
-                    store.name,
-                    style: const TextStyle(fontSize: 12, color: Colors.black, fontWeight: FontWeight.bold),
-                    textAlign: TextAlign.center,
-                  ),
-                ),
-              ],
+          point: LatLng(s.latitude, s.longitude),
+          width: 40,
+          height: 40,
+          // ❗️تغییر مهم: در نسخه‌های جدید flutter_map باید از child استفاده شود (نه builder)
+          child: Tooltip(
+            message: s.name,
+            child: GestureDetector(
+              onTap: () {
+                _mapController.move(LatLng(s.latitude, s.longitude), 17.0);
+              },
+              child: const Icon(Icons.location_on, size: 36),
             ),
           ),
         );
@@ -144,30 +135,19 @@ class _MapViewState extends State<MapView> {
   }
 
   Widget _buildUserLocationMarker(BuildContext context) {
-    return BlocConsumer<LocationCubit, LocationState>(
-      listener: (context, locationState) {
-        if (locationState is LocationLoaded && widget.lat == null && widget.lng == null && widget.focus == null) {
-          _mapController.move(
-            LatLng(locationState.position.latitude, locationState.position.longitude),
-            13.0,
-          );
-        }
-      },
-      builder: (context, locationState) {
-        if (locationState is LocationLoaded) {
-          return MarkerLayer(
-            markers: [
-              Marker(
-                width: 80,
-                height: 80,
-                point: LatLng(locationState.position.latitude, locationState.position.longitude),
-                child: Icon(Icons.my_location, color: Theme.of(context).primaryColor, size: 30),
-              ),
-            ],
-          );
-        }
-        return const SizedBox.shrink();
-      },
+    final loc = context.watch<LocationCubit>().state;
+    if (loc is! LocationLoaded) return const SizedBox.shrink();
+
+    return MarkerLayer(
+      markers: [
+        Marker(
+          point: LatLng(loc.position.latitude, loc.position.longitude),
+          width: 36,
+          height: 36,
+          // ❗️اینجا هم child جایگزین builder شده
+          child: const Icon(Icons.my_location, size: 28),
+        ),
+      ],
     );
   }
 }

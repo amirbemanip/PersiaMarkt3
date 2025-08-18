@@ -1,4 +1,3 @@
-// lib/core/widgets/error_view.dart
 import 'package:flutter/material.dart';
 
 /// A reusable widget to display an error message with an optional retry button.

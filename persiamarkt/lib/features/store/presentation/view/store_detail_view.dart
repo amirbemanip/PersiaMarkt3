@@ -49,9 +49,9 @@ class _StoreDetailViewState extends State<StoreDetailView> {
     if (key != null && key.currentContext != null) {
       Scrollable.ensureVisible(
         key.currentContext!,
-        duration: const Duration(milliseconds: 400),
+        duration: const Duration(milliseconds: 450),
         curve: Curves.easeInOut,
-        alignment: 0.1,
+        alignment: 0.08,
       );
     }
   }
@@ -61,7 +61,7 @@ class _StoreDetailViewState extends State<StoreDetailView> {
     if (marketState is MarketDataLoaded) {
       final product = marketState.marketData.products.firstWhere(
         (p) => p.id == widget.initialProductId,
-        orElse: () => marketState.marketData.products.first, // Fallback
+        orElse: () => marketState.marketData.products.first,
       );
       _scrollToCategory(product.categoryID);
     }
@@ -97,95 +97,98 @@ class _StoreDetailViewState extends State<StoreDetailView> {
   Widget build(BuildContext context) {
     return BlocBuilder<MarketDataBloc, MarketDataState>(
       builder: (context, state) {
-        if (state is MarketDataLoaded) {
-          final store = state.marketData.stores.firstWhere((s) => s.storeID == widget.storeId, orElse: () => Store.empty());
-          if (store.storeID.isEmpty) {
-            return const Scaffold(body: Center(child: Text('Store not found.')));
-          }
-
-          final storeProducts = state.marketData.products
-              .where((p) => p.storeID == store.storeID)
-              .toList();
-          final categoriesInStore = state.marketData.categories
-              .where((c) => storeProducts.any((p) => p.categoryID == c.id))
-              .toList();
-
-          for (var category in categoriesInStore) {
-            _categoryKeys.putIfAbsent(category.id, () => GlobalKey());
-          }
-
-          return Directionality(
-            textDirection: TextDirection.rtl,
-            child: Scaffold(
-              body: CustomScrollView(
-                controller: _pageScrollController,
-                slivers: [
-                  _buildSliverAppBar(context, store),
-                  _buildStoreDetailsSliver(context, store),
-                  _buildCategoryHeader(context, categoriesInStore),
-                  ..._buildProductSlivers(categoriesInStore, storeProducts, store),
-                ],
-              ),
-            ),
-          );
+        if (state is! MarketDataLoaded) {
+          return const Scaffold(body: Center(child: CircularProgressIndicator()));
         }
-        return const Scaffold(body: Center(child: CircularProgressIndicator()));
+
+        final store = state.marketData.stores
+            .firstWhere((s) => s.storeID == widget.storeId, orElse: () => Store.empty());
+        if (store.storeID.isEmpty) {
+          return const Scaffold(body: Center(child: Text('Store not found.')));
+        }
+
+        final allProducts = state.marketData.products
+            .where((p) => p.storeID == store.storeID)
+            .toList();
+
+        // فقط دسته‌هایی که در این فروشگاه محصول دارند
+        final Set<String> categoryIdsInStore =
+            allProducts.map((p) => p.categoryID).toSet();
+        final categories = state.marketData.categories
+            .where((c) => categoryIdsInStore.contains(c.id))
+            .toList();
+
+        // کلیدها را قبل از ساخت ویجت‌ها تضمین می‌کنیم
+        for (final c in categories) {
+          _categoryKeys.putIfAbsent(c.id, () => GlobalKey());
+        }
+
+        return Scaffold(
+          body: CustomScrollView(
+            controller: _pageScrollController,
+            slivers: [
+              // هدر فروشگاه
+              SliverAppBar(
+                pinned: true,
+                expandedHeight: 140,
+                elevation: 0,
+                flexibleSpace: FlexibleSpaceBar(
+                  titlePadding: const EdgeInsetsDirectional.only(start: 16, bottom: 12, end: 16),
+                  title: Text(store.name, overflow: TextOverflow.ellipsis),
+                ),
+              ),
+
+              SliverToBoxAdapter(child: _buildStoreHeader(context, store)),
+
+              // نوار دسته‌بندی افقی (پین‌شونده)
+              _buildCategoryHeader(context, categories),
+
+              // لیست محصولات گروه‌بندی‌شده بر اساس دسته
+              ..._buildProductSlivers(categories, allProducts, store),
+            ],
+          ),
+        );
       },
     );
   }
 
-  SliverAppBar _buildSliverAppBar(BuildContext context, Store store) {
-    return SliverAppBar(
-      expandedHeight: 220.0,
-      pinned: true,
-      flexibleSpace: FlexibleSpaceBar(
-        title: Text(store.name, style: const TextStyle(fontSize: 16.0, shadows: [Shadow(blurRadius: 2)])),
-        background: Image.network(
-          store.storeImage,
-          fit: BoxFit.cover,
-          errorBuilder: (_, __, ___) =>
-              Image.asset('assets/images/supermarket.png', fit: BoxFit.cover),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildStoreDetailsSliver(BuildContext context, Store store) {
-    return SliverToBoxAdapter(
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              store.name,
-              style: Theme.of(context)
-                  .textTheme
-                  .headlineMedium
-                  ?.copyWith(fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 8),
-            Row(
-              children: [
-                Icon(Icons.location_on_outlined, size: 16, color: Colors.grey.shade700),
-                const SizedBox(width: 4),
-                Expanded(child: Text(store.address, style: const TextStyle(fontSize: 16))),
-                IconButton(
-                  icon: Icon(Icons.map_outlined, color: Theme.of(context).colorScheme.primary),
-                  tooltip: 'نمایش در نقشه',
-                  onPressed: () => context.go('/map?focus=${store.storeID}'),
+  Widget _buildStoreHeader(BuildContext context, Store store) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            store.name,
+            style: Theme.of(context)
+                .textTheme
+                .headlineMedium
+                ?.copyWith(fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 8),
+          Row(
+            children: [
+              Icon(Icons.location_on_outlined, size: 16, color: Colors.grey.shade700),
+              const SizedBox(width: 4),
+              Expanded(child: Text(store.address, style: const TextStyle(fontSize: 16))),
+              IconButton(
+                icon: Icon(Icons.map_outlined, color: Theme.of(context).colorScheme.primary),
+                tooltip: 'نمایش در نقشه',
+                // به‌جای فقط focus، lat/lng را هم پاس می‌دهیم تا حتماً فوکوس شود
+                onPressed: () => context.go(
+                  '/map?lat=${store.latitude}&lng=${store.longitude}&focus=${store.storeID}',
                 ),
-              ],
-            ),
-            Row(
-              children: [
-                Icon(Icons.star_border, size: 16, color: Colors.grey.shade700),
-                const SizedBox(width: 4),
-                Text('امتیاز: ${store.rating}', style: const TextStyle(fontSize: 16)),
-              ],
-            ),
-          ],
-        ),
+              ),
+            ],
+          ),
+          Row(
+            children: [
+              Icon(Icons.star_border, size: 16, color: Colors.grey.shade700),
+              const SizedBox(width: 4),
+              Text('امتیاز: ${store.rating}', style: const TextStyle(fontSize: 16)),
+            ],
+          ),
+        ],
       ),
     );
   }
@@ -224,11 +227,12 @@ class _StoreDetailViewState extends State<StoreDetailView> {
 
       return SliverList(
         delegate: SliverChildListDelegate([
-          Padding(
+          // سکشن‌هدری که کلید روی آن ست می‌شود تا ensureVisible کار کند
+          Container(
+            key: _categoryKeys[category.id],
             padding: const EdgeInsets.fromLTRB(16, 24, 16, 8),
             child: Text(
               category.name,
-              key: _categoryKeys[category.id],
               style: Theme.of(context).textTheme.headlineSmall,
             ),
           ),
@@ -268,8 +272,9 @@ class _SliverAppBarDelegate extends SliverPersistentHeaderDelegate {
   }
 
   @override
-  bool shouldRebuild(_SliverAppBarDelegate old) =>
-      maxHeight != old.maxHeight ||
-      minHeight != old.minHeight ||
-      child != old.child;
+  bool shouldRebuild(_SliverAppBarDelegate oldDelegate) {
+    return maxHeight != oldDelegate.maxHeight ||
+        minHeight != oldDelegate.minHeight ||
+        child != oldDelegate.child;
+  }
 }
