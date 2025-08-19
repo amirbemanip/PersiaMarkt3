@@ -41,16 +41,33 @@ dependencies:
   scrollable_positioned_list: ^0.3.8
   jwt_decoder: ^2.0.1
   flutter_staggered_animations: ^1.1.1 
-  webview_flutter: ^4.8.0 # <<< این خط جدید اضافه شده است
+  webview_flutter: ^4.8.0
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^3.0.0
   
+  # ۱. پکیج جدید برای ساخت آیکون اضافه شد
+  flutter_launcher_icons: ^0.13.1
+
   # TESTING LIBRARIES
   bloc_test: ^9.1.7
   mocktail: ^1.0.3
+
+# ۲. تنظیمات مربوط به پکیج آیکون اینجا اضافه شد
+flutter_launcher_icons:
+  android: "launcher_icon"
+  ios: true
+  image_path: "assets/images/icon.png" # <<< اگر نام فایل شما متفاوت است، اینجا تغییر دهید
+  min_sdk_android: 21 # To support adaptive icons, the minimum SDK version must be 26.
+  web:
+    generate: true
+  windows:
+    generate: true
+  macos:
+    generate: true
+
 
 flutter:
   generate: true 
@@ -64,3 +81,4 @@ flutter:
     - assets/images/banner2.png
     - assets/images/banner3.png
     - assets/images/banner4.png
+    - assets/images/icon.png # <<< فایل آیکون جدید به لیست دارایی‌ها اضافه شد

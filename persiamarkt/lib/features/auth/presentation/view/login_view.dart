@@ -114,7 +114,7 @@ class _LoginViewState extends State<LoginView> {
                         mainAxisAlignment: MainAxisAlignment.center,
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
-                          const SizedBox(height: 50), // فاصله برای دکمه‌های بالا
+                          const SizedBox(height: 50),
                           Image.asset('assets/images/appLogo.png', height: 80),
                           const SizedBox(height: 16),
                           Text(
@@ -176,7 +176,6 @@ class _LoginViewState extends State<LoginView> {
                     ),
                   ),
                 ),
-                // دکمه‌های ورود فروشنده و تغییر زبان در بالای صفحه
                 Positioned(
                   top: 16,
                   left: isRtl ? null : 16,
