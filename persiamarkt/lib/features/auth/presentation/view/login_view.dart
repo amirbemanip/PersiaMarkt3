@@ -183,7 +183,9 @@ class _LoginViewState extends State<LoginView> {
                   child: TextButton.icon(
                     icon: const Icon(Icons.storefront_outlined, size: 20),
                     label: Text(l10n.sellerLogin),
-                    onPressed: () => context.go(AppRoutes.sellerPanel),
+                    // ==================== تغییر اصلی اینجاست ====================
+                    onPressed: () => context.push(AppRoutes.sellerPanel),
+                    // ==========================================================
                     style: _buttonStyle(theme),
                   ),
                 ),
