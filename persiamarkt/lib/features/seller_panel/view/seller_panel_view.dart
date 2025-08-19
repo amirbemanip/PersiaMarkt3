@@ -1,7 +1,9 @@
 // مسیر: lib/features/seller_panel/view/seller_panel_view.dart
 
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart'; // ۱. پکیج GoRouter برای بازگشت امن اضافه شد
 import 'package:webview_flutter/webview_flutter.dart';
+// ۲. مسیر import فایل ترجمه به مسیر صحیح و استاندارد تغییر یافت
 import 'package:persia_markt/l10n/app_localizations.dart';
 
 class SellerPanelView extends StatefulWidget {
@@ -49,16 +51,14 @@ class _SellerPanelViewState extends State<SellerPanelView> {
       appBar: AppBar(
         title: Text(l10n.sellerPanel),
         leading: IconButton(
-          // دکمه بازگشت یا بستن صفحه
           icon: const Icon(Icons.close),
-          onPressed: () => Navigator.of(context).pop(),
+          // ۳. دستور بازگشت برای سازگاری کامل با GoRouter اصلاح شد
+          onPressed: () => context.pop(),
         ),
       ),
-      // از Stack استفاده می‌کنیم تا بتوانیم یک لودینگ روی WebView نمایش دهیم
       body: Stack(
         children: [
           WebViewWidget(controller: _controller),
-          // تا زمانی که صفحه وب در حال بارگذاری است، یک لودینگ نمایش داده می‌شود
           if (_isLoading)
             const Center(
               child: CircularProgressIndicator(),
