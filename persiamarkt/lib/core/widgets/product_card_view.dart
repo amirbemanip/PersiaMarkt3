@@ -6,8 +6,6 @@ import 'package:persia_markt/core/models/store.dart';
 import 'package:persia_markt/features/profile/presentation/cubit/favorites_cubit.dart';
 import 'package:persia_markt/features/profile/presentation/cubit/favorites_state.dart';
 
-/// A card widget to display a product in a compact, column-based layout.
-/// Used in horizontal carousels.
 class ProductCardView extends StatelessWidget {
   final Product product;
   final Store store;
@@ -36,7 +34,6 @@ class ProductCardView extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Product Image Section
             Stack(
               children: [
                 ClipRRect(
@@ -46,7 +43,6 @@ class ProductCardView extends StatelessWidget {
                     width: double.infinity,
                     color: Colors.grey.shade100,
                     child: Image.network(
-                      // FIXED: Use the new primaryImageUrl getter.
                       product.primaryImageUrl,
                       fit: BoxFit.contain,
                       errorBuilder: (_, __, ___) => Image.asset(
@@ -73,9 +69,29 @@ class ProductCardView extends StatelessWidget {
                     },
                   ),
                 ),
+                // ۲. نمایش درصد تخفیف
+                if (product.isOnSale)
+                  Positioned(
+                    top: 8,
+                    right: 8,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: Colors.red.shade700,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Text(
+                        '%${((1 - product.effectivePrice / product.price) * 100).toStringAsFixed(0)}',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ),
               ],
             ),
-            // Product Details Section
             Padding(
               padding: const EdgeInsets.all(8.0),
               child: Column(
@@ -97,14 +113,28 @@ class ProductCardView extends StatelessWidget {
                   const SizedBox(height: 8),
                   Align(
                     alignment: Alignment.centerRight,
-                    child: Text(
-                      // FIXED: Use effectivePrice to show discount if available.
-                      '€${product.effectivePrice.toStringAsFixed(2)}',
-                      style: TextStyle(
-                        color: product.isOnSale ? Colors.red.shade700 : Colors.green.shade700,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 16,
-                      ),
+                    // ۲. نمایش قیمت قبل و بعد از تخفیف
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        if (product.isOnSale)
+                          Text(
+                            '€${product.price.toStringAsFixed(2)}',
+                            style: TextStyle(
+                              color: Colors.grey.shade500,
+                              decoration: TextDecoration.lineThrough,
+                              fontSize: 12,
+                            ),
+                          ),
+                        Text(
+                          '€${product.effectivePrice.toStringAsFixed(2)}',
+                          style: TextStyle(
+                            color: product.isOnSale ? Colors.red.shade700 : Colors.green.shade700,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ],

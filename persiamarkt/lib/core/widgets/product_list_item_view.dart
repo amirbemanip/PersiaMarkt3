@@ -30,7 +30,6 @@ class ProductListItemView extends StatelessWidget {
           child: ClipRRect(
             borderRadius: BorderRadius.circular(8),
             child: Image.network(
-              // FIXED: Use the new primaryImageUrl getter.
               product.primaryImageUrl,
               width: 60,
               height: 60,
@@ -56,13 +55,28 @@ class ProductListItemView extends StatelessWidget {
         trailing: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text(
-              // FIXED: Use effectivePrice to show discount if available.
-              '€${product.effectivePrice.toStringAsFixed(2)}',
-              style: TextStyle(
-                color: product.isOnSale ? Colors.red : Colors.green,
-                fontWeight: FontWeight.bold,
-              ),
+            // ۲. نمایش قیمت قبل و بعد از تخفیف
+            Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                if (product.isOnSale)
+                  Text(
+                    '€${product.price.toStringAsFixed(2)}',
+                    style: TextStyle(
+                      color: Colors.grey.shade500,
+                      decoration: TextDecoration.lineThrough,
+                      fontSize: 11,
+                    ),
+                  ),
+                Text(
+                  '€${product.effectivePrice.toStringAsFixed(2)}',
+                  style: TextStyle(
+                    color: product.isOnSale ? Colors.red : Colors.green,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
             ),
             const SizedBox(width: 8),
             _FavoriteButton(productId: product.id),

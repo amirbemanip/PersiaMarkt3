@@ -12,14 +12,15 @@ class AppRoutes {
   static const String login = '/login';
   static const String register = '/register';
   static const String sellerPanel = '/seller-panel';
-  // ۸. افزودن مسیر جدید برای صفحه تنظیمات
   static const String settings = '/settings';
+  // ۱۰. افزودن مسیر جدید برای صفحه پشتیبانی کاربر
+  static const String userSupport = '/support';
 
   // مسیرهای داینامیک (فرزندان مسیر خانه)
   static const String storeDetail = 'store/:storeId';
   static const String categoryDetail = 'category/:categoryId';
 
-  // متدهای کمکی برای ساخت مسیرهای پیچیده به صورت امن و خوانا
+  // متدهای کمکی
   static String storeDetailPath(String storeId, {String? productId}) {
     String path = '/store/$storeId';
     if (productId != null) {

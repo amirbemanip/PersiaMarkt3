@@ -18,7 +18,7 @@ class AppLocalizationsFa extends AppLocalizations {
   String get map => 'نقشه';
 
   @override
-  String get favorites => 'موردعلاقه‌ها';
+  String get favorites => 'علاقه‌مندی‌ها';
 
   @override
   String get profile => 'پروفایل';
@@ -33,13 +33,13 @@ class AppLocalizationsFa extends AppLocalizations {
   String get gettingLocation => 'در حال دریافت موقعیت...';
 
   @override
-  String get locationUnknown => 'موقعیت نامعلوم';
+  String get locationUnknown => 'موقعیت نامشخص';
 
   @override
   String get specialOffers => 'پیشنهادهای ویژه';
 
   @override
-  String get affordableProducts => 'محصولات مقرون به صرفه';
+  String get affordableProducts => 'کالاهای مقرون به صرفه';
 
   @override
   String get stores => 'فروشگاه‌ها';
@@ -51,16 +51,16 @@ class AppLocalizationsFa extends AppLocalizations {
   String get logout => 'خروج';
 
   @override
-  String get logoutFromAccount => 'خروج از حساب';
+  String get logoutFromAccount => 'خروج از حساب کاربری';
 
   @override
-  String get logoutConfirmation => 'آیا برای خروج مطمئن هستید؟';
+  String get logoutConfirmation => 'آیا برای خروج از حساب کاربری خود اطمینان دارید؟';
 
   @override
   String get cancel => 'انصراف';
 
   @override
-  String get loginToSeeProfile => 'برای مشاهده پروفایل لطفاً وارد شوید.';
+  String get loginToSeeProfile => 'برای مشاهده پروفایل خود، لطفاً وارد شوید.';
 
   @override
   String get guestUser => 'کاربر مهمان';
@@ -69,7 +69,7 @@ class AppLocalizationsFa extends AppLocalizations {
   String get unknownEmail => 'ایمیل نامشخص';
 
   @override
-  String get accountSettings => 'تنظیمات حساب';
+  String get accountSettings => 'تنظیمات حساب کاربری';
 
   @override
   String get orderHistory => 'تاریخچه سفارشات';
@@ -90,7 +90,7 @@ class AppLocalizationsFa extends AppLocalizations {
   String get german => 'Deutsch';
 
   @override
-  String get categories => 'دسته بندی ها';
+  String get categories => 'دسته‌بندی‌ها';
 
   @override
   String get viewAll => 'مشاهده همه';
@@ -99,7 +99,7 @@ class AppLocalizationsFa extends AppLocalizations {
   String get allProducts => 'همه محصولات';
 
   @override
-  String get availableStores => 'فروشگاه های موجود';
+  String get availableStores => 'فروشگاه‌های موجود';
 
   @override
   String get noProductsInCategory => 'محصولی در این دسته‌بندی یافت نشد.';
@@ -114,10 +114,10 @@ class AppLocalizationsFa extends AppLocalizations {
   String get connectingToServer => 'در حال اتصال به سرور...';
 
   @override
-  String get initialLoadingMessage => 'بارگذاری اولیه ممکن است کمی طول بکشد. لطفاً صبور باشید.';
+  String get initialLoadingMessage => 'بارگذاری اولیه ممکن است کمی طول بکشد. لطفاً شکیبا باشید.';
 
   @override
-  String get locationError => 'خطا در تبدیل موقعیت';
+  String get locationError => 'خطا در تبدیل موقعیت مکانی';
 
   @override
   String get km => 'کیلومتر';
@@ -144,32 +144,64 @@ class AppLocalizationsFa extends AppLocalizations {
   String get email => 'ایمیل';
 
   @override
-  String get enterYourEmail => 'ایمیل را وارد کنید';
+  String get enterYourEmail => 'لطفاً ایمیل خود را وارد کنید';
 
   @override
-  String get invalidEmail => 'ایمیل نامعتبر است';
+  String get invalidEmail => 'فرمت ایمیل نامعتبر است';
 
   @override
   String get password => 'رمز عبور';
 
   @override
-  String get enterYourPassword => 'رمز عبور را وارد کنید';
+  String get enterYourPassword => 'لطفاً رمز عبور خود را وارد کنید';
 
   @override
-  String get passwordTooShort => 'حداقل ۶ کاراکتر';
+  String passwordTooShort(int length) {
+    return 'رمز عبور باید حداقل $length کاراکتر باشد';
+  }
 
   @override
   String get login => 'ورود';
 
   @override
-  String get noAccount => 'حساب ندارید؟ ثبت‌نام';
+  String get noAccount => 'حساب کاربری ندارید؟ ثبت نام کنید';
 
   @override
-  String get sellerLogin => 'ورود فروشنده';
+  String get sellerLogin => 'ورود فروشندگان';
 
   @override
   String get sellerPanel => 'پنل فروشندگان';
 
   @override
   String get language => 'زبان';
+
+  @override
+  String get createAccount => 'ساخت حساب کاربری';
+
+  @override
+  String get welcomeToPersiaMarkt => 'به پرشیا مارکت خوش آمدید!';
+
+  @override
+  String get fullName => 'نام و نام خانوادگی';
+
+  @override
+  String get enterYourName => 'لطفاً نام خود را وارد کنید';
+
+  @override
+  String get city => 'شهر';
+
+  @override
+  String get selectCity => 'لطفاً یک شهر انتخاب کنید';
+
+  @override
+  String get register => 'ثبت نام';
+
+  @override
+  String get haveAccount => 'حساب کاربری دارید؟';
+
+  @override
+  String get registrationSuccess => 'ثبت‌نام با موفقیت انجام شد! لطفاً وارد شوید.';
+
+  @override
+  String get support => 'پشتیبانی';
 }

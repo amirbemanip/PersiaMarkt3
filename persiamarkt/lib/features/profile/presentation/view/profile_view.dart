@@ -38,15 +38,8 @@ class ProfileView extends StatelessWidget {
                           ),
                           TextButton(
                             onPressed: () {
-                              // ۳. رفع مشکل خروج از حساب
-                              // ابتدا از دیالوگ خارج می‌شویم
                               Navigator.of(dialogContext).pop();
-                              // سپس عملیات خروج را انجام می‌دهیم
                               context.read<AuthCubit>().logoutUser();
-                              // در نهایت به صفحه لاگین هدایت می‌کنیم
-                              // این کار توسط redirect در GoRouter هم انجام می‌شود،
-                              // اما برای اطمینان بیشتر اینجا هم اضافه شده است.
-                              context.go(AppRoutes.login);
                             },
                             child: Text(l10n.logout),
                           ),
@@ -88,15 +81,12 @@ class ProfileView extends StatelessWidget {
     final l10n = AppLocalizations.of(context)!;
     Map<String, dynamic> userInfo = {};
 
-    // ۹. رفع مشکل نمایش ایمیل
-    // توکن کاربر از سرویس احراز هویت خوانده می‌شود
     final token = context.read<AuthCubit>().authService.getToken();
 
     if (token != null) {
       try {
         userInfo = JwtDecoder.decode(token);
       } catch (e) {
-        // اگر توکن نامعتبر بود، اطلاعات پیش‌فرض نمایش داده می‌شود
         print("Error decoding JWT: $e");
       }
     }
@@ -137,12 +127,10 @@ class ProfileView extends StatelessWidget {
           title: Text(l10n.changeLanguage),
           onTap: () => _showLanguageDialog(context),
         ),
-        // ۸. فعال‌سازی دکمه تنظیمات حساب کاربری
         ListTile(
           leading: const Icon(Icons.settings_outlined),
           title: Text(l10n.accountSettings),
           onTap: () {
-            // این مسیر در فایل app_router.dart اضافه خواهد شد
             context.go(AppRoutes.settings);
           },
         ),
@@ -151,6 +139,14 @@ class ProfileView extends StatelessWidget {
           title: Text(l10n.orderHistory),
           onTap: () {
             // TODO: Navigate to order history page
+          },
+        ),
+        const Divider(),
+        ListTile(
+          leading: const Icon(Icons.support_agent_outlined),
+          title: Text(l10n.support),
+          onTap: () {
+            context.go(AppRoutes.userSupport);
           },
         ),
       ],

@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:persia_markt/features/auth/presentation/cubit/auth_cubit.dart';
 import 'package:persia_markt/features/auth/presentation/cubit/auth_state.dart';
+import 'package:persia_markt/l10n/app_localizations.dart';
 
 class RegisterView extends StatefulWidget {
   const RegisterView({super.key});
@@ -16,12 +17,9 @@ class _RegisterViewState extends State<RegisterView> {
   final _nameController = TextEditingController();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
-  // ۱۰. رفع مشکل لیست شهرها
-  // یک متغیر برای نگهداری شهر انتخاب شده
   String? _selectedCity;
   bool _obscureText = true;
 
-  // لیست شهرهای بزرگ آلمان
   final List<String> _germanCities = [
     'Berlin', 'Hamburg', 'Munich (München)', 'Cologne (Köln)', 'Frankfurt am Main',
     'Stuttgart', 'Düsseldorf', 'Dortmund', 'Essen', 'Leipzig', 'Bremen', 'Dresden',
@@ -49,7 +47,7 @@ class _RegisterViewState extends State<RegisterView> {
             name: _nameController.text,
             email: _emailController.text,
             password: _passwordController.text,
-            city: _selectedCity, // ارسال شهر انتخاب شده
+            city: _selectedCity,
           );
     }
   }
@@ -57,7 +55,13 @@ class _RegisterViewState extends State<RegisterView> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
+
     return Scaffold(
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+      ),
       body: SafeArea(
         child: BlocConsumer<AuthCubit, AuthState>(
           listener: (context, state) {
@@ -68,9 +72,7 @@ class _RegisterViewState extends State<RegisterView> {
               );
             } else if (state is Unauthenticated) {
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                    content:
-                        Text('ثبت‌نام با موفقیت انجام شد! لطفاً وارد شوید.')),
+                SnackBar(content: Text(l10n.registrationSuccess)),
               );
               context.go('/login');
             }
@@ -89,14 +91,14 @@ class _RegisterViewState extends State<RegisterView> {
                       Image.asset('assets/images/appLogo.png', height: 80),
                       const SizedBox(height: 16),
                       Text(
-                        'ساخت حساب کاربری',
+                        l10n.createAccount,
                         textAlign: TextAlign.center,
                         style: theme.textTheme.headlineMedium
                             ?.copyWith(fontWeight: FontWeight.bold),
                       ),
                       const SizedBox(height: 8),
                       Text(
-                        'به پرشیا مارکت خوش آمدید!',
+                        l10n.welcomeToPersiaMarkt,
                         textAlign: TextAlign.center,
                         style: theme.textTheme.titleMedium
                             ?.copyWith(color: Colors.grey),
@@ -104,33 +106,29 @@ class _RegisterViewState extends State<RegisterView> {
                       const SizedBox(height: 32),
                       _buildTextFormField(
                         controller: _nameController,
-                        labelText: 'نام و نام خانوادگی',
+                        labelText: l10n.fullName,
                         icon: Icons.person_outline,
                         validator: (value) => (value?.isEmpty ?? true)
-                            ? 'لطفاً نام خود را وارد کنید'
+                            ? l10n.enterYourName
                             : null,
                       ),
                       const SizedBox(height: 16),
                       _buildTextFormField(
                         controller: _emailController,
-                        labelText: 'ایمیل',
+                        labelText: l10n.email,
                         icon: Icons.email_outlined,
                         keyboardType: TextInputType.emailAddress,
                         validator: (value) {
-                          if (value?.isEmpty ?? true) {
-                            return 'لطفاً ایمیل خود را وارد کنید';
-                          }
+                          if (value?.isEmpty ?? true) return l10n.enterYourEmail;
                           if (!RegExp(r'^[^@]+@[^@]+\.[^@]+')
-                              .hasMatch(value!)) {
-                            return 'ایمیل معتبر نیست';
-                          }
+                              .hasMatch(value!)) return l10n.invalidEmail;
                           return null;
                         },
                       ),
                       const SizedBox(height: 16),
                       _buildTextFormField(
                         controller: _passwordController,
-                        labelText: 'رمز عبور',
+                        labelText: l10n.password,
                         icon: Icons.lock_outline,
                         obscureText: _obscureText,
                         suffixIcon: IconButton(
@@ -140,11 +138,10 @@ class _RegisterViewState extends State<RegisterView> {
                           onPressed: _togglePasswordVisibility,
                         ),
                         validator: (value) => (value?.length ?? 0) < 8
-                            ? 'رمز عبور باید حداقل ۸ کاراکتر باشد'
+                            ? l10n.passwordTooShort(8)
                             : null,
                       ),
                       const SizedBox(height: 16),
-                      // ۱۰. جایگزینی فیلد متنی شهر با لیست کشویی
                       DropdownButtonFormField<String>(
                         value: _selectedCity,
                         items: _germanCities.map((String city) {
@@ -159,15 +156,14 @@ class _RegisterViewState extends State<RegisterView> {
                           });
                         },
                         decoration: InputDecoration(
-                          labelText: 'شهر',
+                          labelText: l10n.city,
                           prefixIcon: const Icon(Icons.location_city_outlined),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
                           ),
                         ),
-                        // این فیلد دیگر اختیاری نیست
                         validator: (value) =>
-                            value == null ? 'لطفاً یک شهر انتخاب کنید' : null,
+                            value == null ? l10n.selectCity : null,
                       ),
                       const SizedBox(height: 24),
                       isLoading
@@ -178,16 +174,16 @@ class _RegisterViewState extends State<RegisterView> {
                                 padding:
                                     const EdgeInsets.symmetric(vertical: 16),
                               ),
-                              child: const Text('ثبت نام'),
+                              child: Text(l10n.register),
                             ),
                       const SizedBox(height: 16),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          const Text('حساب کاربری دارید؟'),
+                          Text(l10n.haveAccount),
                           TextButton(
                             onPressed: () => context.go('/login'),
-                            child: const Text('وارد شوید'),
+                            child: Text(l10n.login),
                           ),
                         ],
                       ),

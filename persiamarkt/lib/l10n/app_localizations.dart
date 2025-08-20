@@ -184,7 +184,7 @@ abstract class AppLocalizations {
   /// No description provided for @logoutFromAccount.
   ///
   /// In en, this message translates to:
-  /// **'Logout from account'**
+  /// **'Logout'**
   String get logoutFromAccount;
 
   /// No description provided for @logoutConfirmation.
@@ -202,7 +202,7 @@ abstract class AppLocalizations {
   /// No description provided for @loginToSeeProfile.
   ///
   /// In en, this message translates to:
-  /// **'Please log in to view your profile.'**
+  /// **'Please log in to see your profile.'**
   String get loginToSeeProfile;
 
   /// No description provided for @guestUser.
@@ -244,7 +244,7 @@ abstract class AppLocalizations {
   /// No description provided for @persian.
   ///
   /// In en, this message translates to:
-  /// **'Persian'**
+  /// **'فارسی'**
   String get persian;
 
   /// No description provided for @english.
@@ -256,7 +256,7 @@ abstract class AppLocalizations {
   /// No description provided for @german.
   ///
   /// In en, this message translates to:
-  /// **'German'**
+  /// **'Deutsch'**
   String get german;
 
   /// No description provided for @categories.
@@ -298,19 +298,19 @@ abstract class AppLocalizations {
   /// No description provided for @noDataAvailable.
   ///
   /// In en, this message translates to:
-  /// **'Unfortunately, there are no stores or products to display at the moment.'**
+  /// **'Sorry, there are currently no stores or products to display.'**
   String get noDataAvailable;
 
   /// No description provided for @connectingToServer.
   ///
   /// In en, this message translates to:
-  /// **'Connecting to server...'**
+  /// **'Connecting to the server...'**
   String get connectingToServer;
 
   /// No description provided for @initialLoadingMessage.
   ///
   /// In en, this message translates to:
-  /// **'Initial loading may take a moment. Please be patient.'**
+  /// **'The initial load might take a moment. Please be patient.'**
   String get initialLoadingMessage;
 
   /// No description provided for @locationError.
@@ -334,7 +334,7 @@ abstract class AppLocalizations {
   /// No description provided for @yourCartIsEmpty.
   ///
   /// In en, this message translates to:
-  /// **'Your shopping cart is empty'**
+  /// **'Your cart is empty'**
   String get yourCartIsEmpty;
 
   /// No description provided for @yourShoppingCart.
@@ -352,7 +352,7 @@ abstract class AppLocalizations {
   /// No description provided for @loginToYourAccount.
   ///
   /// In en, this message translates to:
-  /// **'Login to your Account'**
+  /// **'Login to your account'**
   String get loginToYourAccount;
 
   /// No description provided for @gladToSeeYouAgain.
@@ -391,11 +391,11 @@ abstract class AppLocalizations {
   /// **'Please enter your password'**
   String get enterYourPassword;
 
-  /// No description provided for @passwordTooShort.
+  /// Password length validation message
   ///
   /// In en, this message translates to:
-  /// **'At least 6 characters'**
-  String get passwordTooShort;
+  /// **'Password must be at least {length} characters'**
+  String passwordTooShort(int length);
 
   /// No description provided for @login.
   ///
@@ -406,7 +406,7 @@ abstract class AppLocalizations {
   /// No description provided for @noAccount.
   ///
   /// In en, this message translates to:
-  /// **'No account? Sign up'**
+  /// **'No account? Register'**
   String get noAccount;
 
   /// No description provided for @sellerLogin.
@@ -426,6 +426,66 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Language'**
   String get language;
+
+  /// No description provided for @createAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'Create Account'**
+  String get createAccount;
+
+  /// No description provided for @welcomeToPersiaMarkt.
+  ///
+  /// In en, this message translates to:
+  /// **'Welcome to PersiaMarkt!'**
+  String get welcomeToPersiaMarkt;
+
+  /// No description provided for @fullName.
+  ///
+  /// In en, this message translates to:
+  /// **'Full Name'**
+  String get fullName;
+
+  /// No description provided for @enterYourName.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter your name'**
+  String get enterYourName;
+
+  /// No description provided for @city.
+  ///
+  /// In en, this message translates to:
+  /// **'City'**
+  String get city;
+
+  /// No description provided for @selectCity.
+  ///
+  /// In en, this message translates to:
+  /// **'Please select a city'**
+  String get selectCity;
+
+  /// No description provided for @register.
+  ///
+  /// In en, this message translates to:
+  /// **'Register'**
+  String get register;
+
+  /// No description provided for @haveAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'Already have an account?'**
+  String get haveAccount;
+
+  /// No description provided for @registrationSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Registration successful! Please log in.'**
+  String get registrationSuccess;
+
+  /// No description provided for @support.
+  ///
+  /// In en, this message translates to:
+  /// **'Support'**
+  String get support;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

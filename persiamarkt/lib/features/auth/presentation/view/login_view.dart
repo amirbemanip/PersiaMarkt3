@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:persia_markt/core/config/app_routes.dart';
+// ==================== کد اصلاح شده اینجاست ====================
 import 'package:persia_markt/core/cubit/locale_cubit.dart';
+// ==========================================================
 import 'package:persia_markt/features/auth/presentation/cubit/auth_cubit.dart';
 import 'package:persia_markt/features/auth/presentation/cubit/auth_state.dart';
 import 'package:persia_markt/l10n/app_localizations.dart';
@@ -152,7 +154,7 @@ class _LoginViewState extends State<LoginView> {
                             ),
                             validator: (value) {
                               if (value == null || value.isEmpty) return l10n.enterYourPassword;
-                              if (value.length < 6) return l10n.passwordTooShort;
+                              if (value.length < 6) return l10n.passwordTooShort(6);
                               return null;
                             },
                           ),
@@ -183,9 +185,7 @@ class _LoginViewState extends State<LoginView> {
                   child: TextButton.icon(
                     icon: const Icon(Icons.storefront_outlined, size: 20),
                     label: Text(l10n.sellerLogin),
-                    // ==================== تغییر اصلی اینجاست ====================
                     onPressed: () => context.push(AppRoutes.sellerPanel),
-                    // ==========================================================
                     style: _buttonStyle(theme),
                   ),
                 ),
@@ -211,7 +211,9 @@ class _LoginViewState extends State<LoginView> {
   ButtonStyle _buttonStyle(ThemeData theme) {
     return TextButton.styleFrom(
       foregroundColor: theme.colorScheme.primary,
-      backgroundColor: theme.colorScheme.surface.withOpacity(0.9),
+      // ==================== کد اصلاح شده اینجاست ====================
+      backgroundColor: theme.colorScheme.surface.withAlpha((255 * 0.9).round()),
+      // ==========================================================
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(20),
       ),

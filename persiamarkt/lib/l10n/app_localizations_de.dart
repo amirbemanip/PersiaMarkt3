@@ -75,10 +75,10 @@ class AppLocalizationsDe extends AppLocalizations {
   String get orderHistory => 'Bestellverlauf';
 
   @override
-  String get changeLanguage => 'Sprache ändern / تغییر زبان';
+  String get changeLanguage => 'Sprache ändern';
 
   @override
-  String get selectLanguage => 'Sprache auswählen / انتخاب زبان';
+  String get selectLanguage => 'Sprache auswählen';
 
   @override
   String get persian => 'فارسی';
@@ -156,7 +156,9 @@ class AppLocalizationsDe extends AppLocalizations {
   String get enterYourPassword => 'Bitte geben Sie Ihr Passwort ein';
 
   @override
-  String get passwordTooShort => 'Mindestens 6 Zeichen';
+  String passwordTooShort(int length) {
+    return 'Das Passwort muss mindestens $length Zeichen lang sein';
+  }
 
   @override
   String get login => 'Anmelden';
@@ -172,4 +174,34 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get language => 'Sprache';
+
+  @override
+  String get createAccount => 'Konto erstellen';
+
+  @override
+  String get welcomeToPersiaMarkt => 'Willkommen bei PersiaMarkt!';
+
+  @override
+  String get fullName => 'Vollständiger Name';
+
+  @override
+  String get enterYourName => 'Bitte geben Sie Ihren Namen ein';
+
+  @override
+  String get city => 'Stadt';
+
+  @override
+  String get selectCity => 'Bitte wählen Sie eine Stadt aus';
+
+  @override
+  String get register => 'Registrieren';
+
+  @override
+  String get haveAccount => 'Haben Sie bereits ein Konto?';
+
+  @override
+  String get registrationSuccess => 'Registrierung erfolgreich! Bitte anmelden.';
+
+  @override
+  String get support => 'Support';
 }

@@ -22,8 +22,8 @@
     "unknownEmail": "Unbekannte E-Mail",
     "accountSettings": "Kontoeinstellungen",
     "orderHistory": "Bestellverlauf",
-    "changeLanguage": "Sprache ändern / تغییر زبان",
-    "selectLanguage": "Sprache auswählen / انتخاب زبان",
+    "changeLanguage": "Sprache ändern",
+    "selectLanguage": "Sprache auswählen",
     "persian": "فارسی",
     "english": "English",
     "german": "Deutsch",
@@ -49,10 +49,28 @@
     "invalidEmail": "Ungültiges E-Mail-Format",
     "password": "Passwort",
     "enterYourPassword": "Bitte geben Sie Ihr Passwort ein",
-    "passwordTooShort": "Mindestens 6 Zeichen",
+    "passwordTooShort": "Das Passwort muss mindestens {length} Zeichen lang sein",
+    "@passwordTooShort": {
+        "description": "Password length validation message",
+        "placeholders": {
+            "length": {
+                "type": "int"
+            }
+        }
+    },
     "login": "Anmelden",
     "noAccount": "Kein Konto? Registrieren",
     "sellerLogin": "Verkäufer-Login",
     "sellerPanel": "Verkäufer-Panel",
-    "language": "Sprache"
+    "language": "Sprache",
+    "createAccount": "Konto erstellen",
+    "welcomeToPersiaMarkt": "Willkommen bei PersiaMarkt!",
+    "fullName": "Vollständiger Name",
+    "enterYourName": "Bitte geben Sie Ihren Namen ein",
+    "city": "Stadt",
+    "selectCity": "Bitte wählen Sie eine Stadt aus",
+    "register": "Registrieren",
+    "haveAccount": "Haben Sie bereits ein Konto?",
+    "registrationSuccess": "Registrierung erfolgreich! Bitte anmelden.",
+    "support": "Support"
 }

@@ -1,5 +1,3 @@
-// مسیر: lib/core/config/app_router.dart
-
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -18,8 +16,8 @@ import 'package:persia_markt/features/profile/presentation/view/profile_view.dar
 import 'package:persia_markt/features/search/presentation/view/search_view.dart';
 import 'package:persia_markt/features/seller_panel/view/seller_panel_view.dart';
 import 'package:persia_markt/features/store/presentation/view/store_detail_view.dart';
-// ۸. ایمپورت کردن صفحه جدید تنظیمات
 import 'package:persia_markt/features/settings/view/settings_view.dart';
+import 'package:persia_markt/features/support/view/user_support_view.dart';
 import 'app_routes.dart';
 
 final _rootNavigatorKey = GlobalKey<NavigatorState>();
@@ -47,11 +45,9 @@ class AppRouter {
       final onAuthRoutes = authRelatedRoutes.contains(state.matchedLocation);
 
       if (!isLoggedIn && !onAuthRoutes) {
-        // اگر کاربر لاگین نکرده و در صفحات عمومی نیست، به صفحه لاگین برو
         return AppRoutes.login;
       }
       if (isLoggedIn && (state.matchedLocation == AppRoutes.login || state.matchedLocation == AppRoutes.register)) {
-        // اگر کاربر لاگین کرده و سعی در دسترسی به صفحات لاگین/ثبت‌نام دارد، به خانه برو
         return AppRoutes.home;
       }
       return null;
@@ -176,13 +172,20 @@ class AppRouter {
           child: SellerPanelView(),
         ),
       ),
-      // ۸. افزودن مسیر جدید برای صفحه تنظیمات
       GoRoute(
         path: AppRoutes.settings,
         parentNavigatorKey: _rootNavigatorKey,
         pageBuilder: (context, state) => _buildPageWithTransition(
           key: state.pageKey,
           child: const SettingsView(),
+        ),
+      ),
+      GoRoute(
+        path: AppRoutes.userSupport,
+        parentNavigatorKey: _rootNavigatorKey,
+        pageBuilder: (context, state) => _buildPageWithTransition(
+          key: state.pageKey,
+          child: const UserSupportView(),
         ),
       ),
     ],

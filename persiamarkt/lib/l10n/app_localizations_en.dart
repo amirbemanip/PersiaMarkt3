@@ -51,7 +51,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get logout => 'Logout';
 
   @override
-  String get logoutFromAccount => 'Logout from account';
+  String get logoutFromAccount => 'Logout';
 
   @override
   String get logoutConfirmation => 'Are you sure you want to log out?';
@@ -60,7 +60,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get cancel => 'Cancel';
 
   @override
-  String get loginToSeeProfile => 'Please log in to view your profile.';
+  String get loginToSeeProfile => 'Please log in to see your profile.';
 
   @override
   String get guestUser => 'Guest User';
@@ -81,13 +81,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get selectLanguage => 'Select Language';
 
   @override
-  String get persian => 'Persian';
+  String get persian => 'فارسی';
 
   @override
   String get english => 'English';
 
   @override
-  String get german => 'German';
+  String get german => 'Deutsch';
 
   @override
   String get categories => 'Categories';
@@ -108,13 +108,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get viewStore => 'View Store';
 
   @override
-  String get noDataAvailable => 'Unfortunately, there are no stores or products to display at the moment.';
+  String get noDataAvailable => 'Sorry, there are currently no stores or products to display.';
 
   @override
-  String get connectingToServer => 'Connecting to server...';
+  String get connectingToServer => 'Connecting to the server...';
 
   @override
-  String get initialLoadingMessage => 'Initial loading may take a moment. Please be patient.';
+  String get initialLoadingMessage => 'The initial load might take a moment. Please be patient.';
 
   @override
   String get locationError => 'Error converting location';
@@ -126,7 +126,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get myLocation => 'My Location';
 
   @override
-  String get yourCartIsEmpty => 'Your shopping cart is empty';
+  String get yourCartIsEmpty => 'Your cart is empty';
 
   @override
   String get yourShoppingCart => 'Your Shopping Cart';
@@ -135,7 +135,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get storeRating => 'Store Rating';
 
   @override
-  String get loginToYourAccount => 'Login to your Account';
+  String get loginToYourAccount => 'Login to your account';
 
   @override
   String get gladToSeeYouAgain => 'Glad to see you again!';
@@ -156,13 +156,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String get enterYourPassword => 'Please enter your password';
 
   @override
-  String get passwordTooShort => 'At least 6 characters';
+  String passwordTooShort(int length) {
+    return 'Password must be at least $length characters';
+  }
 
   @override
   String get login => 'Login';
 
   @override
-  String get noAccount => 'No account? Sign up';
+  String get noAccount => 'No account? Register';
 
   @override
   String get sellerLogin => 'Seller Login';
@@ -172,4 +174,34 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get language => 'Language';
+
+  @override
+  String get createAccount => 'Create Account';
+
+  @override
+  String get welcomeToPersiaMarkt => 'Welcome to PersiaMarkt!';
+
+  @override
+  String get fullName => 'Full Name';
+
+  @override
+  String get enterYourName => 'Please enter your name';
+
+  @override
+  String get city => 'City';
+
+  @override
+  String get selectCity => 'Please select a city';
+
+  @override
+  String get register => 'Register';
+
+  @override
+  String get haveAccount => 'Already have an account?';
+
+  @override
+  String get registrationSuccess => 'Registration successful! Please log in.';
+
+  @override
+  String get support => 'Support';
 }
