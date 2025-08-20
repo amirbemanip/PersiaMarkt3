@@ -11,7 +11,9 @@ class AppRoutes {
   static const String search = '/search';
   static const String login = '/login';
   static const String register = '/register';
-  static const String sellerPanel = '/seller-panel'; // <<< این خط جدید اضافه شده است
+  static const String sellerPanel = '/seller-panel';
+  // ۸. افزودن مسیر جدید برای صفحه تنظیمات
+  static const String settings = '/settings';
 
   // مسیرهای داینامیک (فرزندان مسیر خانه)
   static const String storeDetail = 'store/:storeId';

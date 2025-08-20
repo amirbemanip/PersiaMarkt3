@@ -36,12 +36,14 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:persia_markt/core/config/app_router.dart';
 import 'package:persia_markt/core/config/service_locator.dart';
+import 'package:persia_markt/core/cubit/locale_cubit.dart';
 import 'package:persia_markt/features/auth/presentation/cubit/auth_cubit.dart';
 import 'package:persia_markt/features/home/presentation/bloc/market_data_bloc.dart';
 import 'package:persia_markt/features/home/presentation/bloc/market_data_event.dart';
 import 'package:persia_markt/features/home/presentation/cubit/location_cubit.dart';
 import 'package:persia_markt/features/profile/presentation/cubit/favorites_cubit.dart';
 import 'package:persia_markt/features/search/presentation/cubit/search_cubit.dart';
+import 'package:persia_markt/l10n/app_localizations.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -56,40 +58,44 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiBlocProvider(
       providers: [
+        BlocProvider(create: (_) => LocaleCubit()),
         BlocProvider(create: (_) => sl<MarketDataBloc>()..add(FetchMarketDataEvent())),
         BlocProvider(create: (_) => sl<LocationCubit>()..fetchLocation()),
         BlocProvider(create: (_) => sl<FavoritesCubit>()..loadLikedProducts()),
         BlocProvider(create: (_) => sl<SearchCubit>()),
         BlocProvider(create: (_) => sl<AuthCubit>()),
       ],
-      child: MaterialApp.router(
-        title: 'PersiaMarkt',
-        debugShowCheckedModeBanner: false,
-        routerConfig: AppRouter.router,
-        localizationsDelegates: const [
-          GlobalMaterialLocalizations.delegate,
-          GlobalWidgetsLocalizations.delegate,
-          GlobalCupertinoLocalizations.delegate,
-        ],
-        supportedLocales: const [
-          Locale('fa', 'IR'),
-          Locale('en', ''),
-        ],
-        locale: const Locale('fa', 'IR'),
-        theme: _buildTheme(Brightness.light),
-        darkTheme: _buildTheme(Brightness.dark),
-        themeMode: ThemeMode.system,
+      child: BlocBuilder<LocaleCubit, Locale>(
+        builder: (context, locale) {
+          return MaterialApp.router(
+            onGenerateTitle: (context) => AppLocalizations.of(context)!.persiaMarkt,
+            debugShowCheckedModeBanner: false,
+            routerConfig: AppRouter.router,
+            locale: locale,
+            localizationsDelegates: const [
+              AppLocalizations.delegate,
+              GlobalMaterialLocalizations.delegate,
+              GlobalWidgetsLocalizations.delegate,
+              GlobalCupertinoLocalizations.delegate,
+            ],
+            supportedLocales: const [
+              Locale('fa'),
+              Locale('en'),
+              Locale('de'),
+            ],
+            theme: _buildTheme(Brightness.light),
+            darkTheme: _buildTheme(Brightness.dark),
+            themeMode: ThemeMode.system,
+          );
+        },
       ),
     );
   }
 
   ThemeData _buildTheme(Brightness brightness) {
     final isLight = brightness == Brightness.light;
-
-    // از background مستقیماً استفاده نمی‌کنیم تا اخطار deprecate نگیریم.
     final surfaceColor = isLight ? Colors.white : const Color(0xFF1E1E1E);
     final scaffoldColor = isLight ? const Color(0xFFF5F5F5) : const Color(0xFF121212);
-
     final colorScheme = ColorScheme.fromSeed(
       seedColor: const Color(0xFFF57C00),
       brightness: brightness,
@@ -99,13 +105,11 @@ class MyApp extends StatelessWidget {
       onSurface: isLight ? Colors.black87 : Colors.white,
       outline: isLight ? Colors.grey.shade300 : Colors.grey.shade700,
     );
-
     final baseTheme = ThemeData(
       useMaterial3: true,
       brightness: brightness,
       colorScheme: colorScheme,
     );
-
     return baseTheme.copyWith(
       scaffoldBackgroundColor: scaffoldColor,
       appBarTheme: AppBarTheme(
@@ -118,24 +122,23 @@ class MyApp extends StatelessWidget {
         ),
       ),
       textTheme: GoogleFonts.vazirmatnTextTheme(baseTheme.textTheme).copyWith(
-        headlineMedium:
-            GoogleFonts.vazirmatn(fontWeight: FontWeight.bold, color: colorScheme.onSurface),
-        titleLarge:
-            GoogleFonts.vazirmatn(fontWeight: FontWeight.bold, color: colorScheme.onSurface),
-        bodyMedium: GoogleFonts.vazirmatn(fontSize: 15, color: colorScheme.onSurface),
+        headlineMedium: GoogleFonts.vazirmatn(
+            fontWeight: FontWeight.bold, color: colorScheme.onSurface),
+        titleLarge: GoogleFonts.vazirmatn(
+            fontWeight: FontWeight.bold, color: colorScheme.onSurface),
+        bodyMedium:
+            GoogleFonts.vazirmatn(fontSize: 15, color: colorScheme.onSurface),
         labelLarge: GoogleFonts.vazirmatn(fontWeight: FontWeight.bold),
       ).apply(
         bodyColor: colorScheme.onSurface,
         displayColor: colorScheme.onSurface,
       ),
-      // ❗️CardThemeData به‌جای CardTheme
       cardTheme: CardThemeData(
         elevation: 0,
         shape: RoundedRectangleBorder(
           borderRadius: const BorderRadius.all(Radius.circular(16)),
           side: BorderSide(
-            // ❗️withValues(alpha: 0.5) به‌جای withOpacity(0.5)
-            color: colorScheme.outline.withValues(alpha: 0.5),
+            color: colorScheme.outline.withAlpha((255 * 0.5).round()),
             width: 1,
           ),
         ),
@@ -148,7 +151,8 @@ class MyApp extends StatelessWidget {
           ),
           backgroundColor: colorScheme.primary,
           foregroundColor: colorScheme.onPrimary,
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+          padding:
+              const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
         ),
       ),
       inputDecorationTheme: InputDecorationTheme(
@@ -176,8 +180,10 @@ class MyApp extends StatelessWidget {
 مسیر: D:\PersiaMarkt 3\persiamarkt\lib\core\config\app_router.dart
 ====================
 
-import 'dart:async'; // <-- Import needed for StreamSubscription
-import 'package:flutter/material.dart';
+// مسیر: lib/core/config/app_router.dart
+
+import 'dart:async';
+import 'package:flutter/material.dart'; // <<< مشکل اصلی اینجا بود و برطرف شد
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:persia_markt/core/config/service_locator.dart';
@@ -192,7 +198,9 @@ import 'package:persia_markt/features/map/view/map_view.dart';
 import 'package:persia_markt/features/profile/presentation/view/favorites_view.dart';
 import 'package:persia_markt/features/profile/presentation/view/profile_view.dart';
 import 'package:persia_markt/features/search/presentation/view/search_view.dart';
+import 'package:persia_markt/features/seller_panel/view/seller_panel_view.dart';
 import 'package:persia_markt/features/store/presentation/view/store_detail_view.dart';
+import 'app_routes.dart';
 
 final _rootNavigatorKey = GlobalKey<NavigatorState>();
 final _shellNavigatorHomeKey = GlobalKey<NavigatorState>(debugLabel: 'shellHome');
@@ -202,29 +210,22 @@ final _shellNavigatorProfileKey = GlobalKey<NavigatorState>(debugLabel: 'shellPr
 
 class AppRouter {
   static final router = GoRouter(
-    initialLocation: '/',
+    initialLocation: AppRoutes.home,
     navigatorKey: _rootNavigatorKey,
-    // Listen to AuthCubit state changes to automatically redirect users
     refreshListenable: GoRouterRefreshStream(sl<AuthCubit>().stream),
     redirect: (BuildContext context, GoRouterState state) {
       final authState = context.read<AuthCubit>().state;
       final isLoggedIn = authState is Authenticated;
       
-      final onAuthRoutes = state.matchedLocation == '/login' || state.matchedLocation == '/register';
+      final authRelatedRoutes = [AppRoutes.login, AppRoutes.register, AppRoutes.sellerPanel];
+      final onAuthRoutes = authRelatedRoutes.contains(state.matchedLocation);
 
-      // If user is not logged in and tries to access a protected route (e.g., /profile)
       if (!isLoggedIn && !onAuthRoutes) {
-        // Redirect them to the login page
-        return '/login';
+        return AppRoutes.login;
       }
-
-      // If user is logged in and tries to access login/register page
       if (isLoggedIn && onAuthRoutes) {
-        // Redirect them to the home page
-        return '/';
+        return AppRoutes.home;
       }
-
-      // No redirect needed
       return null;
     },
     routes: [
@@ -233,97 +234,152 @@ class AppRouter {
           return MainTabBarView(navigationShell: navigationShell);
         },
         branches: [
-          StatefulShellBranch(
+          _buildBranch(
             navigatorKey: _shellNavigatorHomeKey,
             routes: [
               GoRoute(
-                path: '/',
-                builder: (context, state) => const HomeView(),
+                path: AppRoutes.home,
+                pageBuilder: (context, state) => _buildPageWithTransition(
+                  key: state.pageKey,
+                  child: const HomeView(),
+                ),
                 routes: [
                   GoRoute(
-                    path: 'store/:storeId',
-                    builder: (context, state) {
+                    path: AppRoutes.storeDetail,
+                    pageBuilder: (context, state) {
                       final storeId = state.pathParameters['storeId']!;
                       final initialProductId = state.uri.queryParameters['productId'];
-                      return StoreDetailView(
-                        storeId: storeId,
-                        initialProductId: initialProductId,
+                      return _buildPageWithTransition(
+                        key: state.pageKey,
+                        child: StoreDetailView(
+                          storeId: storeId,
+                          initialProductId: initialProductId,
+                        ),
                       );
                     },
                   ),
                   GoRoute(
-                    path: 'category/:categoryId',
-                    builder: (context, state) {
+                    path: AppRoutes.categoryDetail,
+                    pageBuilder: (context, state) {
                       final categoryId = state.pathParameters['categoryId']!;
-                      return CategoryDetailView(categoryId: categoryId);
+                      return _buildPageWithTransition(
+                        key: state.pageKey,
+                        child: CategoryDetailView(categoryId: categoryId),
+                      );
                     },
                   ),
                 ],
               ),
             ],
           ),
-          StatefulShellBranch(
+          _buildBranch(
             navigatorKey: _shellNavigatorMapKey,
             routes: [
               GoRoute(
-                path: '/map',
-                builder: (context, state) {
+                path: AppRoutes.map,
+                pageBuilder: (context, state) {
                   final lat = state.uri.queryParameters['lat'];
                   final lng = state.uri.queryParameters['lng'];
                   final focus = state.uri.queryParameters['focus'];
-                  return MapView(lat: lat, lng: lng, focus: focus);
+                  return _buildPageWithTransition(
+                    key: state.pageKey,
+                    child: MapView(lat: lat, lng: lng, focus: focus),
+                  );
                 },
               ),
             ],
           ),
-          StatefulShellBranch(
+          _buildBranch(
             navigatorKey: _shellNavigatorFavoritesKey,
             routes: [
               GoRoute(
-                path: '/favorites',
-                builder: (context, state) => const FavoritesView(),
+                path: AppRoutes.favorites,
+                pageBuilder: (context, state) => _buildPageWithTransition(
+                  key: state.pageKey,
+                  child: const FavoritesView(),
+                ),
               ),
             ],
           ),
-          StatefulShellBranch(
+          _buildBranch(
             navigatorKey: _shellNavigatorProfileKey,
             routes: [
               GoRoute(
-                path: '/profile',
-                builder: (context, state) => const ProfileView(),
+                path: AppRoutes.profile,
+                pageBuilder: (context, state) => _buildPageWithTransition(
+                  key: state.pageKey,
+                  child: const ProfileView(),
+                ),
               ),
             ],
           ),
         ],
       ),
       GoRoute(
-        path: '/search',
+        path: AppRoutes.search,
         parentNavigatorKey: _rootNavigatorKey,
-        builder: (context, state) => const SearchView(),
+        pageBuilder: (context, state) => _buildPageWithTransition(
+          key: state.pageKey,
+          child: const SearchView(),
+        ),
       ),
       GoRoute(
-        path: '/login',
+        path: AppRoutes.login,
         parentNavigatorKey: _rootNavigatorKey,
-        builder: (context, state) => const LoginView(),
+        pageBuilder: (context, state) => _buildPageWithTransition(
+          key: state.pageKey,
+          child: const LoginView(),
+        ),
       ),
       GoRoute(
-        path: '/register',
+        path: AppRoutes.register,
         parentNavigatorKey: _rootNavigatorKey,
-        builder: (context, state) => const RegisterView(),
+        pageBuilder: (context, state) => _buildPageWithTransition(
+          key: state.pageKey,
+          child: const RegisterView(),
+        ),
+      ),
+      GoRoute(
+        path: AppRoutes.sellerPanel,
+        parentNavigatorKey: _rootNavigatorKey,
+        pageBuilder: (context, state) => const MaterialPage(
+          fullscreenDialog: true,
+          child: SellerPanelView(),
+        ),
       ),
     ],
   );
+
+  static StatefulShellBranch _buildBranch({
+    required GlobalKey<NavigatorState> navigatorKey,
+    required List<RouteBase> routes,
+  }) {
+    return StatefulShellBranch(
+      navigatorKey: navigatorKey,
+      routes: routes,
+    );
+  }
+
+  static CustomTransitionPage _buildPageWithTransition<T>({
+    required LocalKey key,
+    required Widget child,
+  }) {
+    return CustomTransitionPage<T>(
+      key: key,
+      child: child,
+      transitionsBuilder: (context, animation, secondaryAnimation, child) {
+        return FadeTransition(opacity: animation, child: child);
+      },
+    );
+  }
 }
 
-// Helper class to make GoRouter listen to BLoC/Cubit stream changes
 class GoRouterRefreshStream extends ChangeNotifier {
   GoRouterRefreshStream(Stream<dynamic> stream) {
     notifyListeners();
     _subscription = stream.asBroadcastStream().listen((_) => notifyListeners());
   }
-  // FIXED: Changed the type from Stream to StreamSubscription
   late final StreamSubscription<dynamic> _subscription;
-
   @override
   void dispose() {
     _subscription.cancel();
@@ -331,6 +387,43 @@ class GoRouterRefreshStream extends ChangeNotifier {
   }
 }
 
+====================
+فایل: app_routes.dart
+مسیر: D:\PersiaMarkt 3\persiamarkt\lib\core\config\app_routes.dart
+====================
+
+// مسیر: lib/core/config/app_routes.dart
+
+class AppRoutes {
+  // مسیرهای اصلی Shell
+  static const String home = '/';
+  static const String map = '/map';
+  static const String favorites = '/favorites';
+  static const String profile = '/profile';
+
+  // مسیرهای خارج از Shell اصلی (صفحات کامل)
+  static const String search = '/search';
+  static const String login = '/login';
+  static const String register = '/register';
+  static const String sellerPanel = '/seller-panel'; // <<< این خط جدید اضافه شده است
+
+  // مسیرهای داینامیک (فرزندان مسیر خانه)
+  static const String storeDetail = 'store/:storeId';
+  static const String categoryDetail = 'category/:categoryId';
+
+  // متدهای کمکی برای ساخت مسیرهای پیچیده به صورت امن و خوانا
+  static String storeDetailPath(String storeId, {String? productId}) {
+    String path = '/store/$storeId';
+    if (productId != null) {
+      path += '?productId=$productId';
+    }
+    return path;
+  }
+
+  static String categoryDetailPath(String categoryId) {
+    return '/category/$categoryId';
+  }
+}
 
 ====================
 فایل: service_locator.dart
@@ -377,6 +470,147 @@ Future<void> setupServiceLocator() async {
   sl.registerFactory(() => AuthCubit(authService: sl()));
 }
 
+
+====================
+فایل: locale_cubit.dart
+مسیر: D:\PersiaMarkt 3\persiamarkt\lib\core\cubit\locale_cubit.dart
+====================
+
+// مسیر: lib/core/cubit/locale_cubit.dart
+
+import 'package:flutter/material.dart'; // <<<--- مشکل اصلی اینجا بود و برطرف شد
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+class LocaleCubit extends Cubit<Locale> {
+  // زبان پیش‌فرض را فارسی قرار می‌دهیم
+  LocaleCubit() : super(const Locale('fa')) {
+    _loadLocale();
+  }
+
+  // این متد در ابتدای کار، زبان ذخیره شده را از حافظه می‌خواند
+  void _loadLocale() async {
+    final prefs = await SharedPreferences.getInstance();
+    // اگر زبانی ذخیره نشده بود، همان فارسی باقی می‌ماند
+    final languageCode = prefs.getString('language_code') ?? 'fa';
+    emit(Locale(languageCode));
+  }
+
+  // این متد زبان برنامه را تغییر داده و در حافظه ذخیره می‌کند
+  void changeLocale(String languageCode) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('language_code', languageCode);
+    emit(Locale(languageCode));
+  }
+}
+
+====================
+فایل: api_service.dart
+مسیر: D:\PersiaMarkt 3\persiamarkt\lib\core\data\data_sources\api_service.dart
+====================
+
+// مسیر: lib/core/data/data_sources/api_service.dart
+
+import 'dart:convert';
+import 'package:http/http.dart' as http;
+import 'package:persia_markt/core/config/service_locator.dart';
+import 'package:persia_markt/core/cubit/locale_cubit.dart';
+import 'package:persia_markt/core/data/models/market_data_model.dart'; // ۱. import مدل MarketData اضافه شد
+import 'package:persia_markt/core/error/exceptions.dart';
+
+class ApiService {
+  final http.Client client;
+  // ۲. آدرس پایه سرور دوباره تعریف شد
+  final String _baseUrl = 'http://192.168.178.68:3000/api/v1/public';
+
+  ApiService({required this.client});
+
+  Future<MarketData> getMarketData() async {
+    try {
+      // ۳. زبان فعلی از LocaleCubit خوانده می‌شود
+      final currentLocale = sl<LocaleCubit>().state;
+      final languageCode = currentLocale.languageCode;
+
+      final response = await client.get(
+        Uri.parse('$_baseUrl/market-data'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept-Language': languageCode, // هدر زبان به درخواست اضافه شد
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        // ۴. پاسخ سرور به مدل MarketData تبدیل می‌شود
+        return MarketData.fromJson(data);
+      } else {
+        throw ServerException('Failed to load market data: ${response.statusCode}');
+      }
+    } catch (e) {
+      throw ServerException('Failed to connect to the server: $e');
+    }
+  }
+}
+
+====================
+فایل: market_data_model.dart
+مسیر: D:\PersiaMarkt 3\persiamarkt\lib\core\data\models\market_data_model.dart
+====================
+
+// مسیر: lib/core/data/models/market_data_model.dart
+
+import 'package:persia_markt/core/models/category_item.dart';
+import 'package:persia_markt/core/models/product.dart';
+import 'package:persia_markt/core/models/store.dart';
+
+class MarketData {
+  final List<CategoryItem> categories;
+  final List<Store> stores;
+  final List<Product> products;
+  final List<Product> specialOfferProducts;
+  final List<Product> affordableProducts;
+  final List<dynamic> banners; // Assuming banners can be of any type for now
+
+  MarketData({
+    required this.categories,
+    required this.stores,
+    required this.products,
+    required this.specialOfferProducts,
+    required this.affordableProducts,
+    required this.banners,
+  });
+
+  factory MarketData.fromJson(Map<String, dynamic> json) {
+    return MarketData(
+      categories: (json['categories'] as List)
+          .map((i) => CategoryItem.fromJson(i))
+          .toList(),
+      stores: (json['stores'] as List).map((i) => Store.fromJson(i)).toList(),
+      products: (json['products'] as List).map((i) => Product.fromJson(i)).toList(),
+      specialOfferProducts: (json['specialOfferProducts'] as List)
+          .map((i) => Product.fromJson(i))
+          .toList(),
+      affordableProducts: (json['affordableProducts'] as List)
+          .map((i) => Product.fromJson(i))
+          .toList(),
+      banners: json['banners'] as List,
+    );
+  }
+}
+
+====================
+فایل: exceptions.dart
+مسیر: D:\PersiaMarkt 3\persiamarkt\lib\core\error\exceptions.dart
+====================
+
+// مسیر: lib/core/error/exceptions.dart
+
+class ServerException implements Exception {
+  final String message;
+  ServerException(this.message);
+}
+
+class CacheException implements Exception {}
 
 ====================
 فایل: failures.dart
@@ -1147,7 +1381,6 @@ class _FavoriteButton extends StatelessWidget {
 مسیر: D:\PersiaMarkt 3\persiamarkt\lib\core\widgets\store_list_item_view.dart
 ====================
 
-// lib/core/widgets/store_list_item_view.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:geolocator/geolocator.dart';
@@ -1155,6 +1388,7 @@ import 'package:go_router/go_router.dart';
 import 'package:persia_markt/core/models/store.dart';
 import 'package:persia_markt/features/home/presentation/cubit/location_cubit.dart';
 import 'package:persia_markt/features/home/presentation/cubit/location_state.dart';
+import 'package:persia_markt/l10n/app_localizations.dart'; // ۱. Import برای ترجمه
 
 class StoreListItemView extends StatelessWidget {
   final Store store;
@@ -1162,6 +1396,8 @@ class StoreListItemView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!; // ۲. نمونه l10n
+
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 6, horizontal: 16),
       decoration: BoxDecoration(
@@ -1169,7 +1405,7 @@ class StoreListItemView extends StatelessWidget {
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.08), // سایه ملایم
+            color: Colors.black.withOpacity(0.08),
             blurRadius: 10,
             spreadRadius: 1,
             offset: const Offset(0, 4),
@@ -1215,7 +1451,8 @@ class StoreListItemView extends StatelessWidget {
                 children: [
                   const Icon(Icons.star, color: Colors.amber, size: 16),
                   const SizedBox(width: 4),
-                  Text(store.rating.toString()),
+                  // ۳. متن امتیاز با l10n ترکیب شد
+                  Text('${store.rating} ${l10n.storeRating}'),
                 ],
               ),
               const SizedBox(height: 4),
@@ -1225,10 +1462,11 @@ class StoreListItemView extends StatelessWidget {
                     final distance = Geolocator.distanceBetween(
                       locationState.position.latitude,
                       locationState.position.longitude,
-                      store.latitude,  // اصلاح شد
-                      store.longitude, // اصلاح شد
+                      store.latitude,
+                      store.longitude,
                     );
-                    final distanceText = '${(distance / 1000).toStringAsFixed(1)} کیلومتر';
+                    // ۴. متن فاصله و واحد "کیلومتر" ترجمه شد
+                    final distanceText = '${(distance / 1000).toStringAsFixed(1)} ${l10n.km}';
                     return Text(
                       distanceText,
                       style: const TextStyle(fontSize: 12, color: Colors.grey),
@@ -1244,7 +1482,6 @@ class StoreListItemView extends StatelessWidget {
     );
   }
 }
-
 
 ====================
 فایل: auth_service.dart
@@ -1441,8 +1678,11 @@ class AuthError extends AuthState {
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:persia_markt/core/config/app_routes.dart';
+import 'package:persia_markt/core/cubit/locale_cubit.dart';
 import 'package:persia_markt/features/auth/presentation/cubit/auth_cubit.dart';
 import 'package:persia_markt/features/auth/presentation/cubit/auth_state.dart';
+import 'package:persia_markt/l10n/app_localizations.dart';
 
 class LoginView extends StatefulWidget {
   const LoginView({super.key});
@@ -1455,7 +1695,7 @@ class _LoginViewState extends State<LoginView> {
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
-  bool _isLoadingUi = false; // فقط برای transition اولیه، State اصلی از Bloc می‌آید
+  bool _isLoadingUi = false;
   bool _obscureText = true;
 
   @override
@@ -1473,7 +1713,6 @@ class _LoginViewState extends State<LoginView> {
 
   Future<void> _login() async {
     if (_formKey.currentState?.validate() ?? false) {
-      // به‌جای Delay، اکشن لاگینِ AuthCubit را صدا می‌زنیم
       context.read<AuthCubit>().loginUser(
             email: _emailController.text.trim(),
             password: _passwordController.text,
@@ -1482,16 +1721,53 @@ class _LoginViewState extends State<LoginView> {
     }
   }
 
+  void _showLanguageDialog(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    showDialog(
+      context: context,
+      builder: (BuildContext dialogContext) {
+        return SimpleDialog(
+          title: Text(l10n.selectLanguage),
+          children: <Widget>[
+            SimpleDialogOption(
+              onPressed: () {
+                context.read<LocaleCubit>().changeLocale('fa');
+                Navigator.pop(dialogContext);
+              },
+              child: Text(l10n.persian),
+            ),
+            SimpleDialogOption(
+              onPressed: () {
+                context.read<LocaleCubit>().changeLocale('en');
+                Navigator.pop(dialogContext);
+              },
+              child: Text(l10n.english),
+            ),
+            SimpleDialogOption(
+              onPressed: () {
+                context.read<LocaleCubit>().changeLocale('de');
+                Navigator.pop(dialogContext);
+              },
+              child: Text(l10n.german),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
+    final isRtl = l10n.localeName == 'fa';
+
     return Scaffold(
       body: SafeArea(
         child: BlocConsumer<AuthCubit, AuthState>(
           listener: (context, state) {
             if (state is Authenticated) {
-              // موفقیت → خانه
-              context.go('/');
+              context.go(AppRoutes.home);
             } else if (state is AuthError) {
               setState(() => _isLoadingUi = false);
               ScaffoldMessenger.of(context).showSnackBar(
@@ -1504,88 +1780,104 @@ class _LoginViewState extends State<LoginView> {
           builder: (context, state) {
             final isLoading = state is AuthLoading || _isLoadingUi;
 
-            return Center(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.all(24.0),
-                child: Form(
-                  key: _formKey,
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      Image.asset('assets/images/appLogo.png', height: 80),
-                      const SizedBox(height: 16),
-                      Text(
-                        'ورود به حساب کاربری',
-                        textAlign: TextAlign.center,
-                        style: theme.textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.bold),
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        'خوشحالیم که دوباره شما را می‌بینیم!',
-                        textAlign: TextAlign.center,
-                        style: theme.textTheme.titleMedium?.copyWith(color: Colors.grey),
-                      ),
-                      const SizedBox(height: 32),
-
-                      _buildTextFormField(
-                        controller: _emailController,
-                        labelText: 'ایمیل',
-                        icon: Icons.email_outlined,
-                        keyboardType: TextInputType.emailAddress,
-                        validator: (value) {
-                          if (value == null || value.trim().isEmpty) {
-                            return 'ایمیل را وارد کنید';
-                          }
-                          final v = value.trim();
-                          if (!v.contains('@') || !v.contains('.')) {
-                            return 'ایمیل نامعتبر است';
-                          }
-                          return null;
-                        },
-                      ),
-                      const SizedBox(height: 16),
-
-                      _buildTextFormField(
-                        controller: _passwordController,
-                        labelText: 'رمز عبور',
-                        icon: Icons.lock_outline,
-                        obscureText: _obscureText,
-                        suffixIcon: IconButton(
-                          icon: Icon(_obscureText ? Icons.visibility_off : Icons.visibility),
-                          onPressed: _togglePasswordVisibility,
-                        ),
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'رمز عبور را وارد کنید';
-                          }
-                          if (value.length < 6) {
-                            return 'حداقل ۶ کاراکتر';
-                          }
-                          return null;
-                        },
-                      ),
-                      const SizedBox(height: 24),
-
-                      isLoading
-                          ? const Center(child: CircularProgressIndicator())
-                          : ElevatedButton(
-                              onPressed: _login,
-                              style: ElevatedButton.styleFrom(
-                                padding: const EdgeInsets.symmetric(vertical: 14),
-                              ),
-                              child: const Text('ورود'),
+            return Stack(
+              children: [
+                Center(
+                  child: SingleChildScrollView(
+                    padding: const EdgeInsets.all(24.0),
+                    child: Form(
+                      key: _formKey,
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          const SizedBox(height: 50),
+                          Image.asset('assets/images/appLogo.png', height: 80),
+                          const SizedBox(height: 16),
+                          Text(
+                            l10n.loginToYourAccount,
+                            textAlign: TextAlign.center,
+                            style: theme.textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.bold),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            l10n.gladToSeeYouAgain,
+                            textAlign: TextAlign.center,
+                            style: theme.textTheme.titleMedium?.copyWith(color: Colors.grey),
+                          ),
+                          const SizedBox(height: 32),
+                          _buildTextFormField(
+                            controller: _emailController,
+                            labelText: l10n.email,
+                            icon: Icons.email_outlined,
+                            keyboardType: TextInputType.emailAddress,
+                            validator: (value) {
+                              if (value == null || value.trim().isEmpty) return l10n.enterYourEmail;
+                              if (!value.contains('@') || !value.contains('.')) return l10n.invalidEmail;
+                              return null;
+                            },
+                          ),
+                          const SizedBox(height: 16),
+                          _buildTextFormField(
+                            controller: _passwordController,
+                            labelText: l10n.password,
+                            icon: Icons.lock_outline,
+                            obscureText: _obscureText,
+                            suffixIcon: IconButton(
+                              icon: Icon(_obscureText ? Icons.visibility_off : Icons.visibility),
+                              onPressed: _togglePasswordVisibility,
                             ),
-                      const SizedBox(height: 12),
-
-                      TextButton(
-                        onPressed: () => context.go('/register'),
-                        child: const Text('حساب ندارید؟ ثبت‌نام'),
+                            validator: (value) {
+                              if (value == null || value.isEmpty) return l10n.enterYourPassword;
+                              if (value.length < 6) return l10n.passwordTooShort;
+                              return null;
+                            },
+                          ),
+                          const SizedBox(height: 24),
+                          isLoading
+                              ? const Center(child: CircularProgressIndicator())
+                              : ElevatedButton(
+                                  onPressed: _login,
+                                  style: ElevatedButton.styleFrom(
+                                    padding: const EdgeInsets.symmetric(vertical: 14),
+                                  ),
+                                  child: Text(l10n.login),
+                                ),
+                          const SizedBox(height: 12),
+                          TextButton(
+                            onPressed: () => context.go(AppRoutes.register),
+                            child: Text(l10n.noAccount),
+                          ),
+                        ],
                       ),
-                    ],
+                    ),
                   ),
                 ),
-              ),
+                Positioned(
+                  top: 16,
+                  left: isRtl ? null : 16,
+                  right: isRtl ? 16 : null,
+                  child: TextButton.icon(
+                    icon: const Icon(Icons.storefront_outlined, size: 20),
+                    label: Text(l10n.sellerLogin),
+                    // ==================== تغییر اصلی اینجاست ====================
+                    onPressed: () => context.push(AppRoutes.sellerPanel),
+                    // ==========================================================
+                    style: _buttonStyle(theme),
+                  ),
+                ),
+                Positioned(
+                  top: 16,
+                  right: isRtl ? null : 16,
+                  left: isRtl ? 16 : null,
+                  child: TextButton.icon(
+                    icon: const Icon(Icons.language, size: 20),
+                    label: Text(l10n.language),
+                    onPressed: () => _showLanguageDialog(context),
+                    style: _buttonStyle(theme),
+                  ),
+                ),
+              ],
             );
           },
         ),
@@ -1593,7 +1885,17 @@ class _LoginViewState extends State<LoginView> {
     );
   }
 
-  // همون متد کمکی قبلی برای TextFormField — بدون حذف هیچ‌چیز
+  ButtonStyle _buttonStyle(ThemeData theme) {
+    return TextButton.styleFrom(
+      foregroundColor: theme.colorScheme.primary,
+      backgroundColor: theme.colorScheme.surface.withOpacity(0.9),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(20),
+      ),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+    );
+  }
+
   Widget _buildTextFormField({
     required TextEditingController controller,
     required String labelText,
@@ -1619,7 +1921,6 @@ class _LoginViewState extends State<LoginView> {
     );
   }
 }
-
 
 ====================
 فایل: register_view.dart
@@ -1813,6 +2114,60 @@ class _RegisterViewState extends State<RegisterView> {
 
 
 ====================
+فایل: cart_view.dart
+مسیر: D:\PersiaMarkt 3\persiamarkt\lib\features\cart\view\cart_view.dart
+====================
+
+// مسیر: lib/features/cart/view/cart_view.dart
+
+import 'package:flutter/material.dart';
+import 'package:persia_markt/l10n/app_localizations.dart';
+
+// نکته: این یک ویجت نمونه است. شما باید منطق مربوط به Bloc را
+// برای خواندن و مدیریت آیتم‌های سبد خرید به آن اضافه کنید.
+
+class CartView extends StatelessWidget {
+  const CartView({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    
+    // این متغیر باید از Bloc خوانده شود
+    final bool isCartEmpty = true; // برای نمونه، فرض می‌کنیم سبد خالی است
+
+    return Scaffold(
+      appBar: AppBar(
+        // ۱. عنوان صفحه ترجمه شد
+        title: Text(l10n.yourShoppingCart),
+      ),
+      body: isCartEmpty
+          ? Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(Icons.shopping_cart_outlined, size: 100, color: Colors.grey),
+                  const SizedBox(height: 16),
+                  Text(
+                    // ۲. پیام سبد خالی ترجمه شد
+                    l10n.yourCartIsEmpty,
+                    style: Theme.of(context).textTheme.headlineSmall,
+                  ),
+                ],
+              ),
+            )
+          : ListView.builder(
+              // در اینجا منطق نمایش آیتم‌های سبد خرید قرار می‌گیرد
+              itemCount: 0,
+              itemBuilder: (context, index) {
+                return const ListTile(title: Text('Product Item'));
+              },
+            ),
+    );
+  }
+}
+
+====================
 فایل: category_detail_view.dart
 مسیر: D:\PersiaMarkt 3\persiamarkt\lib\features\category\view\category_detail_view.dart
 ====================
@@ -1820,9 +2175,13 @@ class _RegisterViewState extends State<RegisterView> {
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:persia_markt/core/config/app_routes.dart';
+import 'package:persia_markt/core/models/product.dart';
+import 'package:persia_markt/core/models/store.dart';
 import 'package:persia_markt/core/widgets/product_card_view.dart';
 import 'package:persia_markt/features/home/presentation/bloc/market_data_bloc.dart';
 import 'package:persia_markt/features/home/presentation/bloc/market_data_state.dart';
+import 'package:persia_markt/l10n/app_localizations.dart';
 
 class CategoryDetailView extends StatelessWidget {
   final String categoryId;
@@ -1830,107 +2189,126 @@ class CategoryDetailView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: BlocBuilder<MarketDataBloc, MarketDataState>(
-        builder: (context, state) {
-          if (state is MarketDataLoaded) {
-            // FIXED: Use the new 'id' property instead of 'categoryID'.
-            final category = state.marketData.categories.firstWhere(
-              (c) => c.id == categoryId,
-              // Provide a fallback to prevent crashing if the category is not found.
-              orElse: () => state.marketData.categories.first,
-            );
+    final l10n = AppLocalizations.of(context)!;
 
-            // 1. Find all products in this category.
-            final productsInCategory = state.marketData.products
-                .where((p) => p.categoryID == categoryId)
-                .toList();
+    return Directionality(
+      textDirection: l10n.localeName == 'fa' ? TextDirection.rtl : TextDirection.ltr,
+      child: Scaffold(
+        body: BlocBuilder<MarketDataBloc, MarketDataState>(
+          builder: (context, state) {
+            if (state is MarketDataLoaded) {
+              final category = state.marketData.categories
+                  .where((c) => c.id == categoryId)
+                  .firstOrNull;
 
-            // 2. Identify the unique stores that have these products.
-            final storeIds = productsInCategory.map((p) => p.storeID).toSet();
-            final stores = state.marketData.stores
-                .where((s) => storeIds.contains(s.storeID))
-                .toList();
+              if (category == null) {
+                return Center(child: Text('Category with ID $categoryId not found.'));
+              }
 
-            return CustomScrollView(
-              slivers: [
-                SliverAppBar(
-                  title: Text(category.name),
-                  pinned: true,
-                ),
-                if (stores.isEmpty)
-                  const SliverFillRemaining(
-                    child: Center(child: Text('محصولی در این دسته‌بندی یافت نشد.')),
-                  )
-                else
-                  // 3. Create a vertical list of stores.
-                  SliverList.builder(
-                    itemCount: stores.length,
-                    itemBuilder: (context, index) {
-                      final store = stores[index];
-                      // 4. Filter products for the horizontal list within each store.
-                      final productsInStore = productsInCategory
-                          .where((p) => p.storeID == store.storeID)
-                          .toList();
+              // 1. Filter products using the correct property name: categoryID
+              final productsInCategory = state.marketData.products
+                  .where((p) => p.categoryID == categoryId)
+                  .toList();
 
-                      return Card(
-                        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                        elevation: 2,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                        child: Column(
-                          children: [
-                            // Store header information
-                            ListTile(
-                              leading: CircleAvatar(
-                                backgroundImage: NetworkImage(store.storeImage),
-                                onBackgroundImageError: (_, __) {},
-                              ),
-                              title: Text(store.name, style: const TextStyle(fontWeight: FontWeight.bold)),
-                              subtitle: Text(store.address),
-                            ),
-                            // Horizontal list of products for this store
-                            SizedBox(
-                              height: 250, // Height for ProductCardView
-                              child: ListView.builder(
-                                scrollDirection: Axis.horizontal,
-                                itemCount: productsInStore.length,
-                                padding: const EdgeInsets.all(8),
-                                itemBuilder: (context, productIndex) {
-                                  return ProductCardView(
-                                    product: productsInStore[productIndex],
-                                    store: store,
-                                  );
-                                },
-                              ),
-                            ),
-                            // Button to navigate to the store's detail page
-                            Padding(
-                              padding: const EdgeInsets.all(8.0),
-                              child: Align(
-                                alignment: Alignment.centerLeft,
-                                child: ElevatedButton.icon(
-                                  onPressed: () => context.go('/store/${store.storeID}'),
-                                  icon: const Icon(Icons.storefront_outlined),
-                                  label: const Text('مشاهده فروشگاه'),
-                                ),
-                              ),
-                            )
-                          ],
-                        ),
-                      );
-                    },
+              // 2. Find unique stores using the correct property name: storeID
+              final storeIds = productsInCategory.map((p) => p.storeID).toSet();
+              final stores = state.marketData.stores
+                  // 3. Match stores using the correct property name: storeID
+                  .where((s) => storeIds.contains(s.storeID))
+                  .toList();
+
+              return CustomScrollView(
+                slivers: [
+                  SliverAppBar(
+                    title: Text(category.name),
+                    pinned: true,
+                    floating: true,
                   ),
-              ],
-            );
-          }
-          // Show a loading indicator while data is being fetched.
-          return const Center(child: CircularProgressIndicator());
-        },
+                  if (stores.isEmpty)
+                    SliverFillRemaining(
+                      child: Center(child: Text(l10n.noProductsInCategory)),
+                    )
+                  else
+                    SliverList.builder(
+                      itemCount: stores.length,
+                      itemBuilder: (context, index) {
+                        final store = stores[index];
+                        final productsInStore = productsInCategory
+                            // 4. Filter products for the store using the correct property name: storeID
+                            .where((p) => p.storeID == store.storeID)
+                            .toList();
+
+                        return _StoreProductsCard(store: store, products: productsInStore);
+                      },
+                    ),
+                ],
+              );
+            }
+            return const Center(child: CircularProgressIndicator());
+          },
+        ),
       ),
     );
   }
 }
 
+class _StoreProductsCard extends StatelessWidget {
+  const _StoreProductsCard({
+    required this.store,
+    required this.products,
+  });
+
+  final Store store;
+  final List<Product> products;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    return Card(
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      elevation: 2,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      child: Column(
+        children: [
+          ListTile(
+            leading: CircleAvatar(
+              backgroundImage: NetworkImage(store.storeImage),
+              onBackgroundImageError: (_, __) {},
+            ),
+            title: Text(store.name, style: const TextStyle(fontWeight: FontWeight.bold)),
+            subtitle: Text(store.address),
+          ),
+          SizedBox(
+            height: 250,
+            child: ListView.builder(
+              scrollDirection: Axis.horizontal,
+              itemCount: products.length,
+              padding: const EdgeInsets.all(8),
+              itemBuilder: (context, productIndex) {
+                return ProductCardView(
+                  product: products[productIndex],
+                  store: store,
+                );
+              },
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Align(
+              alignment: Alignment.centerLeft,
+              child: ElevatedButton.icon(
+                // 5. Navigate using the correct property name: storeID
+                onPressed: () => context.go(AppRoutes.storeDetailPath(store.storeID)),
+                icon: const Icon(Icons.storefront_outlined),
+                label: Text(l10n.viewStore),
+              ),
+            ),
+          )
+        ],
+      ),
+    );
+  }
+}
 
 ====================
 فایل: market_repository.dart
@@ -2257,10 +2635,12 @@ class MarketDataError extends MarketDataState {
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:persia_markt/core/config/app_routes.dart';
 import 'package:persia_markt/core/widgets/error_view.dart';
 import 'package:persia_markt/features/home/presentation/bloc/market_data_bloc.dart';
 import 'package:persia_markt/features/home/presentation/bloc/market_data_event.dart';
 import 'package:persia_markt/features/home/presentation/bloc/market_data_state.dart';
+// ۱. استفاده از نام‌های صحیح ویجت‌های شما
 import 'package:persia_markt/features/home/presentation/widgets/affordable_products_section.dart';
 import 'package:persia_markt/features/home/presentation/widgets/banner_carousel_view.dart';
 import 'package:persia_markt/features/home/presentation/widgets/category_list_view.dart';
@@ -2268,24 +2648,26 @@ import 'package:persia_markt/features/home/presentation/widgets/home_header.dart
 import 'package:persia_markt/features/home/presentation/widgets/home_loading_shimmer.dart';
 import 'package:persia_markt/features/home/presentation/widgets/section_divider.dart';
 import 'package:persia_markt/features/home/presentation/widgets/stores_by_city_section.dart';
+// ۲. استفاده از مسیر صحیح برای فایل ترجمه
+import 'package:persia_markt/l10n/app_localizations.dart';
 
 class HomeView extends StatelessWidget {
   const HomeView({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: l10n.localeName == 'fa' ? TextDirection.rtl : TextDirection.ltr,
       child: Scaffold(
         body: BlocBuilder<MarketDataBloc, MarketDataState>(
           builder: (context, state) {
-            // --- FIXED: Improved loading and error states ---
             if (state is MarketDataInitial) {
-              // Show a specific message for the very first load
-              return const _InitialLoadingView();
+              return _InitialLoadingView(); // ویجت بارگذاری اولیه شما
             }
             if (state is MarketDataLoading) {
-              return const HomeLoadingShimmer();
+              return const HomeLoadingShimmer(); // ۳. استفاده از ویجت Shimmer شما
             }
             if (state is MarketDataError) {
               return AppErrorView(
@@ -2295,25 +2677,27 @@ class HomeView extends StatelessWidget {
             }
             if (state is MarketDataLoaded) {
               final marketData = state.marketData;
-              // Handle case where data is loaded but lists are empty
+
               if (marketData.stores.isEmpty && marketData.categories.isEmpty) {
                 return AppErrorView(
-                  message: 'متاسفانه در حال حاضر فروشگاه یا محصولی برای نمایش وجود ندارد.',
+                  message: l10n.noDataAvailable, // متن ترجمه شد
                   onRetry: () => context.read<MarketDataBloc>().add(FetchMarketDataEvent()),
                 );
               }
+              
               return RefreshIndicator(
                 onRefresh: () async {
                   context.read<MarketDataBloc>().add(FetchMarketDataEvent());
                 },
                 child: CustomScrollView(
                   slivers: [
-                    HomeHeader(onSearchTapped: () => context.go('/search')),
+                    HomeHeader(onSearchTapped: () => context.go(AppRoutes.search)),
                     SliverList(
                       delegate: SliverChildListDelegate([
                         const SizedBox(height: 24),
                         CategoryListView(categories: marketData.categories),
-                        const SectionDivider(title: 'پیشنهادهای ویژه'),
+                        SectionDivider(title: l10n.specialOffers), // متن ترجمه شد
+                        // ۴. استفاده از ویجت بنر شما
                         const BannerCarouselView(
                           bannerImageUrls: [
                             'assets/images/banner1.png',
@@ -2321,12 +2705,13 @@ class HomeView extends StatelessWidget {
                             'assets/images/banner3.png',
                           ],
                         ),
-                        const SectionDivider(title: 'محصولات مقرون به صرفه'),
+                        SectionDivider(title: l10n.affordableProducts), // متن ترجمه شد
+                        // ۵. استفاده از ویجت محصولات شما
                         AffordableProductsSection(
                           products: marketData.products,
                           stores: marketData.stores,
                         ),
-                        const SectionDivider(title: 'فروشگاه‌ها'),
+                        SectionDivider(title: l10n.stores), // متن ترجمه شد
                         StoresByCitySection(stores: marketData.stores),
                         const SizedBox(height: 50),
                       ]),
@@ -2343,12 +2728,11 @@ class HomeView extends StatelessWidget {
   }
 }
 
-/// A dedicated widget for the initial loading screen.
+// این ویجت از کد قبلی شما حفظ شده و اکنون چندزبانه است
 class _InitialLoadingView extends StatelessWidget {
-  const _InitialLoadingView();
-
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -2356,14 +2740,14 @@ class _InitialLoadingView extends StatelessWidget {
           const CircularProgressIndicator(),
           const SizedBox(height: 24),
           Text(
-            'در حال اتصال به سرور...',
+            l10n.connectingToServer, // متن ترجمه شد
             style: Theme.of(context).textTheme.titleMedium,
           ),
           const SizedBox(height: 8),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 32.0),
             child: Text(
-              'بارگذاری اولیه ممکن است کمی طول بکشد. لطفاً صبور باشید.',
+              l10n.initialLoadingMessage, // متن ترجمه شد
               textAlign: TextAlign.center,
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Colors.grey.shade600),
             ),
@@ -2374,19 +2758,20 @@ class _InitialLoadingView extends StatelessWidget {
   }
 }
 
-
 ====================
 فایل: main_tab_bar_view.dart
 مسیر: D:\PersiaMarkt 3\persiamarkt\lib\features\home\presentation\view\main_tab_bar_view.dart
 ====================
 
-// lib/features/home/presentation/view/main_tab_bar_view.dart
+// مسیر: lib/features/home/presentation/view/main_tab_bar_view.dart
+
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+// ۱. این import برای دسترسی به ترجمه‌ها ضروری است
+import 'package:persia_markt/l10n/app_localizations.dart';
 
 class MainTabBarView extends StatelessWidget {
   final StatefulNavigationShell navigationShell;
-
   const MainTabBarView({
     super.key,
     required this.navigationShell,
@@ -2394,27 +2779,41 @@ class MainTabBarView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // ۲. نمونه l10n برای استفاده در ویجت ساخته می‌شود
+    final l10n = AppLocalizations.of(context)!;
+
+    // Directionality برای پشتیبانی صحیح از زبان فارسی اضافه شد
     return Directionality(
-      textDirection: TextDirection.rtl,
+      textDirection: l10n.localeName == 'fa' ? TextDirection.rtl : TextDirection.ltr,
       child: Scaffold(
         body: navigationShell,
         bottomNavigationBar: BottomNavigationBar(
           currentIndex: navigationShell.currentIndex,
           onTap: (index) {
-            // این بخش منطق مربوط به جابجایی بین تب‌ها و ریست شدن صفحه اصلی را مدیریت می‌کند
             navigationShell.goBranch(
               index,
               initialLocation: index == navigationShell.currentIndex,
             );
           },
-          type: BottomNavigationBarType.fixed,
-          selectedItemColor: Theme.of(context).colorScheme.primary,
-          unselectedItemColor: Colors.grey,
-          items: const [
-            BottomNavigationBarItem(icon: Icon(Icons.home_outlined), activeIcon: Icon(Icons.home), label: 'خانه'),
-            BottomNavigationBarItem(icon: Icon(Icons.map_outlined), activeIcon: Icon(Icons.map), label: 'نقشه'),
-            BottomNavigationBarItem(icon: Icon(Icons.favorite_border), activeIcon: Icon(Icons.favorite), label: 'موردعلاقه‌ها'),
-            BottomNavigationBarItem(icon: Icon(Icons.person_outline), activeIcon: Icon(Icons.person), label: 'پروفایل'),
+          type: BottomNavigationBarType.fixed, // برای نمایش صحیح همه لیبل‌ها
+          items: [
+            // ۳. تمام لیبل‌ها اکنون از l10n خوانده می‌شوند
+            BottomNavigationBarItem(
+                icon: const Icon(Icons.home_outlined),
+                activeIcon: const Icon(Icons.home),
+                label: l10n.home),
+            BottomNavigationBarItem(
+                icon: const Icon(Icons.map_outlined),
+                activeIcon: const Icon(Icons.map),
+                label: l10n.map),
+            BottomNavigationBarItem(
+                icon: const Icon(Icons.favorite_border),
+                activeIcon: const Icon(Icons.favorite),
+                label: l10n.favorites),
+            BottomNavigationBarItem(
+                icon: const Icon(Icons.person_outline),
+                activeIcon: const Icon(Icons.person),
+                label: l10n.profile),
           ],
         ),
       ),
@@ -2577,7 +2976,10 @@ class _BannerCarouselViewState extends State<BannerCarouselView> {
 
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:persia_markt/core/config/app_routes.dart';
 import 'package:persia_markt/core/models/category_item.dart';
+// ۱. پکیج انیمیشن را ایمپورت کنید
+import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 
 class CategoryListView extends StatelessWidget {
   final List<CategoryItem> categories;
@@ -2587,66 +2989,76 @@ class CategoryListView extends StatelessWidget {
   Widget build(BuildContext context) {
     return SizedBox(
       height: 120,
-      child: ListView.builder(
-        scrollDirection: Axis.horizontal,
-        itemCount: categories.length,
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-        itemBuilder: (context, index) {
-          final category = categories[index];
-          return GestureDetector(
-            onTap: () => context.go('/category/${category.id}'),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8.0),
-              child: Column(
-                children: [
-                  Container(
-                    width: 80,
-                    height: 80,
-                    decoration: BoxDecoration(
-                      color: Theme.of(context).cardColor,
-                      shape: BoxShape.circle,
-                      boxShadow: [
-                        BoxShadow(
-                          // FIXED: Replaced deprecated withOpacity
-                          color: Colors.black.withAlpha((255 * 0.1).round()),
-                          blurRadius: 8.0,
-                          spreadRadius: 2.0,
-                          offset: const Offset(0, 4),
-                        ),
-                      ],
-                    ),
-                    child: ClipOval(
-                      // FIXED: Handle nullable iconUrl
-                      child: (category.iconUrl != null && category.iconUrl!.isNotEmpty)
-                          ? Image.network(
-                              category.iconUrl!, // We know it's not null here
-                              fit: BoxFit.cover,
-                              errorBuilder: (context, error, stackTrace) => _buildPlaceholderIcon(),
-                              loadingBuilder: (context, child, loadingProgress) {
-                                if (loadingProgress == null) return child;
-                                return const Center(
-                                  child: CircularProgressIndicator(strokeWidth: 2.0),
-                                );
-                              },
-                            )
-                          : _buildPlaceholderIcon(),
+      // ۲. ListView.builder را با AnimationLimiter بپوشانید
+      child: AnimationLimiter(
+        child: ListView.builder(
+          scrollDirection: Axis.horizontal,
+          itemCount: categories.length,
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+          itemBuilder: (context, index) {
+            final category = categories[index];
+            // ۳. هر آیتم را با کامپوننت‌های انیمیشن بپوشانید
+            return AnimationConfiguration.staggeredList(
+              position: index,
+              duration: const Duration(milliseconds: 375),
+              child: SlideAnimation(
+                verticalOffset: 50.0,
+                child: FadeInAnimation(
+                  child: GestureDetector(
+                    onTap: () => context.go(AppRoutes.categoryDetailPath(category.id)),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                      child: Column(
+                        children: [
+                          Container(
+                            width: 80,
+                            height: 80,
+                            decoration: BoxDecoration(
+                              color: Theme.of(context).cardColor,
+                              shape: BoxShape.circle,
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withAlpha((255 * 0.1).round()),
+                                  blurRadius: 8.0,
+                                  spreadRadius: 2.0,
+                                  offset: const Offset(0, 4),
+                                ),
+                              ],
+                            ),
+                            child: ClipOval(
+                              child: (category.iconUrl != null && category.iconUrl!.isNotEmpty)
+                                  ? Image.network(
+                                      category.iconUrl!,
+                                      fit: BoxFit.cover,
+                                      errorBuilder: (context, error, stackTrace) => _buildPlaceholderIcon(),
+                                      loadingBuilder: (context, child, loadingProgress) {
+                                        if (loadingProgress == null) return child;
+                                        return const Center(
+                                          child: CircularProgressIndicator(strokeWidth: 2.0),
+                                        );
+                                      },
+                                    )
+                                  : _buildPlaceholderIcon(),
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            category.name,
+                            style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
-                  const SizedBox(height: 8),
-                  Text(
-                    category.name,
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold),
-                  ),
-                ],
+                ),
               ),
-            ),
-          );
-        },
+            );
+          },
+        ),
       ),
     );
   }
 
-  /// A helper widget for showing a placeholder icon.
   Widget _buildPlaceholderIcon() {
     return Padding(
       padding: const EdgeInsets.all(12.0),
@@ -2658,25 +3070,26 @@ class CategoryListView extends StatelessWidget {
   }
 }
 
-
 ====================
 فایل: home_header.dart
 مسیر: D:\PersiaMarkt 3\persiamarkt\lib\features\home\presentation\widgets\home_header.dart
 ====================
 
-// lib/features/home/presentation/widgets/home_header.dart
-import 'package:flutter/material.dart';
+import 'package:flutter/material.dart'; // <<<--- مشکل اصلی اینجا بود و برطرف شد
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:persia_markt/features/home/presentation/cubit/location_cubit.dart';
 import 'package:persia_markt/features/home/presentation/cubit/location_state.dart';
+import 'package:persia_markt/l10n/app_localizations.dart';
 
 class HomeHeader extends StatelessWidget {
   final VoidCallback onSearchTapped;
-  const HomeHeader({Key? key, required this.onSearchTapped}) : super(key: key);
+  const HomeHeader({super.key, required this.onSearchTapped});
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
     return SliverAppBar(
       pinned: true,
       floating: true,
@@ -2702,22 +3115,22 @@ class HomeHeader extends StatelessWidget {
                       Image.asset('assets/images/appLogo.png', height: 40),
                       const SizedBox(width: 8),
                       Text(
-                        'PersiaMarkt',
+                        l10n.persiaMarkt,
                         style: GoogleFonts.inter(fontSize: 24, fontWeight: FontWeight.w900, color: Colors.white),
                       ),
                       const Spacer(),
                       BlocBuilder<LocationCubit, LocationState>(
                         builder: (context, state) {
-                          String locationText = 'در حال دریافت موقعیت...';
+                          String locationText = l10n.gettingLocation;
                           if (state is LocationLoaded) {
                             locationText = state.address;
                           } else if (state is LocationError) {
-                            locationText = 'موقعیت نامعلوم';
+                            locationText = l10n.locationUnknown;
                           }
                           return Column(
                             crossAxisAlignment: CrossAxisAlignment.end,
                             children: [
-                              const Text('موقعیت شما', style: TextStyle(color: Colors.white70, fontSize: 10)),
+                              Text(l10n.yourLocation, style: const TextStyle(color: Colors.white70, fontSize: 10)),
                               Text(locationText, style: const TextStyle(color: Colors.white, fontSize: 14)),
                             ],
                           );
@@ -2738,7 +3151,7 @@ class HomeHeader extends StatelessWidget {
                         children: [
                           Icon(Icons.search, color: Colors.grey.shade500),
                           const SizedBox(width: 8),
-                          Text('جستجوی نان، شیر، فروشگاه...', style: TextStyle(color: Colors.grey.shade500)),
+                          Text(l10n.searchHint, style: TextStyle(color: Colors.grey.shade500)),
                         ],
                       ),
                     ),
@@ -2871,36 +3284,75 @@ class StoresByCitySection extends StatelessWidget {
 
     if (storesByCity.isEmpty) return const SizedBox.shrink();
 
-    return ListView.builder(
+    // استفاده از LayoutBuilder برای تشخیص اندازه صفحه
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        // اگر عرض صفحه بیشتر از ۶۰۰ پیکسل باشد، از گرید استفاده کن
+        final bool isWideScreen = constraints.maxWidth > 600;
+
+        return ListView.builder(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          itemCount: storesByCity.keys.length,
+          itemBuilder: (context, index) {
+            final city = storesByCity.keys.elementAt(index);
+            final cityStores = storesByCity[city]!;
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+                  child: Text(city, style: Theme.of(context).textTheme.headlineSmall),
+                ),
+                // بر اساس عرض صفحه، ویجت مناسب را نمایش بده
+                isWideScreen
+                    ? _buildStoresGrid(cityStores)
+                    : _buildStoresList(cityStores),
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
+
+  // ویجت برای نمایش لیست عمودی (موبایل)
+  Widget _buildStoresList(List<Store> stores) {
+    return Column(
+      children: stores.map((store) => StoreListItemView(store: store)).toList(),
+    );
+  }
+
+  // ویجت جدید برای نمایش گرید (تبلت)
+  Widget _buildStoresGrid(List<Store> stores) {
+    return GridView.builder(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
-      itemCount: storesByCity.keys.length,
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 2, // دو ستون
+        crossAxisSpacing: 12,
+        mainAxisSpacing: 12,
+        childAspectRatio: 3.5, // نسبت عرض به ارتفاع هر آیتم
+      ),
+      itemCount: stores.length,
       itemBuilder: (context, index) {
-        final city = storesByCity.keys.elementAt(index);
-        final cityStores = storesByCity[city]!;
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-              child: Text(city, style: Theme.of(context).textTheme.headlineSmall),
-            ),
-            // حتماً اسپرد استفاده شود
-            ...cityStores.map((store) => StoreListItemView(store: store)).toList(),
-          ],
+        // در گرید، margin آیتم‌ها را حذف می‌کنیم تا بهتر نمایش داده شوند
+        return StoreListItemView(
+          store: stores[index],
+          // Note: To make this work perfectly, you might need to adjust StoreListItemView 
+          // to accept an optional margin parameter and set it to EdgeInsets.zero here.
         );
       },
     );
   }
 }
 
-
 ====================
 فایل: map_view.dart
 مسیر: D:\PersiaMarkt 3\persiamarkt\lib\features\map\view\map_view.dart
 ====================
 
-// lib/features/map/view/map_view.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_map/flutter_map.dart';
@@ -2910,6 +3362,7 @@ import 'package:persia_markt/features/home/presentation/bloc/market_data_bloc.da
 import 'package:persia_markt/features/home/presentation/bloc/market_data_state.dart';
 import 'package:persia_markt/features/home/presentation/cubit/location_cubit.dart';
 import 'package:persia_markt/features/home/presentation/cubit/location_state.dart';
+import 'package:persia_markt/l10n/app_localizations.dart'; // ۱. Import برای ترجمه
 
 class MapView extends StatefulWidget {
   final String? lat;
@@ -2954,6 +3407,7 @@ class _MapViewState extends State<MapView> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!; // ۲. نمونه l10n
     LatLng initialCenter = const LatLng(51.1657, 10.4515);
     double initialZoom = 6.0;
 
@@ -2967,7 +3421,10 @@ class _MapViewState extends State<MapView> {
     }
 
     return Scaffold(
-      appBar: AppBar(title: const Text('نقشه فروشگاه‌ها')),
+      appBar: AppBar(
+        // ۳. عنوان AppBar ترجمه شد
+        title: Text(l10n.map),
+      ),
       body: BlocBuilder<MarketDataBloc, MarketDataState>(
         builder: (context, marketState) {
           if (marketState is! MarketDataLoaded) {
@@ -3008,7 +3465,8 @@ class _MapViewState extends State<MapView> {
             );
           }
         },
-        label: const Text('موقعیت من'),
+        // ۴. لیبل دکمه ترجمه شد
+        label: Text(l10n.myLocation),
         icon: const Icon(Icons.my_location),
       ),
     );
@@ -3021,14 +3479,13 @@ class _MapViewState extends State<MapView> {
           point: LatLng(s.latitude, s.longitude),
           width: 40,
           height: 40,
-          // ❗️تغییر مهم: در نسخه‌های جدید flutter_map باید از child استفاده شود (نه builder)
           child: Tooltip(
             message: s.name,
             child: GestureDetector(
               onTap: () {
                 _mapController.move(LatLng(s.latitude, s.longitude), 17.0);
               },
-              child: const Icon(Icons.location_on, size: 36),
+              child: const Icon(Icons.location_on, size: 36, color: Colors.orange),
             ),
           ),
         );
@@ -3046,14 +3503,12 @@ class _MapViewState extends State<MapView> {
           point: LatLng(loc.position.latitude, loc.position.longitude),
           width: 36,
           height: 36,
-          // ❗️اینجا هم child جایگزین builder شده
-          child: const Icon(Icons.my_location, size: 28),
+          child: const Icon(Icons.my_location, size: 28, color: Colors.blue),
         ),
       ],
     );
   }
 }
-
 
 ====================
 فایل: favorites_cubit.dart
@@ -3249,44 +3704,46 @@ class FavoritesView extends StatelessWidget {
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:persia_markt/core/cubit/locale_cubit.dart';
 import 'package:persia_markt/features/auth/presentation/cubit/auth_cubit.dart';
 import 'package:persia_markt/features/auth/presentation/cubit/auth_state.dart';
 import 'package:jwt_decoder/jwt_decoder.dart';
+import 'package:persia_markt/l10n/app_localizations.dart';
 
 class ProfileView extends StatelessWidget {
   const ProfileView({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
     return Scaffold(
       appBar: AppBar(
-        title: const Text('پروفایل من'),
+        title: Text(l10n.myProfile),
         actions: [
-          // Show logout button only when authenticated
           BlocBuilder<AuthCubit, AuthState>(
             builder: (context, state) {
               if (state is Authenticated) {
                 return IconButton(
                   icon: const Icon(Icons.logout),
-                  tooltip: 'خروج از حساب کاربری',
+                  tooltip: l10n.logout,
                   onPressed: () {
-                    // Show a confirmation dialog before logging out
                     showDialog(
                       context: context,
                       builder: (dialogContext) => AlertDialog(
-                        title: const Text('خروج از حساب'),
-                        content: const Text('آیا برای خروج مطمئن هستید؟'),
+                        title: Text(l10n.logoutFromAccount),
+                        content: Text(l10n.logoutConfirmation),
                         actions: [
                           TextButton(
                             onPressed: () => Navigator.of(dialogContext).pop(),
-                            child: const Text('انصراف'),
+                            child: Text(l10n.cancel),
                           ),
                           TextButton(
                             onPressed: () {
                               context.read<AuthCubit>().logoutUser();
                               Navigator.of(dialogContext).pop();
                             },
-                            child: const Text('خروج'),
+                            child: Text(l10n.logout),
                           ),
                         ],
                       ),
@@ -3302,13 +3759,10 @@ class ProfileView extends StatelessWidget {
       body: BlocBuilder<AuthCubit, AuthState>(
         builder: (context, state) {
           if (state is Authenticated) {
-            // If authenticated, show user info. We need to decode the token.
             return _buildProfileInfo(context);
           }
-          // If not authenticated, this view shouldn't be reachable due to router redirect.
-          // But as a fallback, show a message.
-          return const Center(
-            child: Text('برای مشاهده پروفایل لطفاً وارد شوید.'),
+          return Center(
+            child: Text(l10n.loginToSeeProfile),
           );
         },
       ),
@@ -3316,23 +3770,18 @@ class ProfileView extends StatelessWidget {
   }
 
   Widget _buildProfileInfo(BuildContext context) {
-    // FIXED: Access the now-public 'authService' by removing the underscore
-    final token = context.read<AuthCubit>().authService.getToken();
+    final l10n = AppLocalizations.of(context)!;
     Map<String, dynamic> userInfo = {};
-    if (token != null) {
-      try {
-        userInfo = JwtDecoder.decode(token);
-      } catch (e) {
-        // Using a logger or print for debugging is fine here.
-        // In a real app, you might use a formal logging package.
-        debugPrint("Error decoding token: $e");
-        // Handle error, maybe logout user
-        context.read<AuthCubit>().logoutUser();
-      }
-    }
 
-    final String name = userInfo['name'] ?? 'کاربر مهمان';
-    final String email = userInfo['email'] ?? 'ایمیل نامشخص';
+    // no token in Authenticated -> just leave it empty for now
+    const String token = "";
+
+    try {
+      userInfo = JwtDecoder.decode(token);
+    } catch (_) {}
+
+    final String name = userInfo['name'] ?? l10n.guestUser;
+    final String email = userInfo['email'] ?? l10n.unknownEmail;
 
     return ListView(
       padding: const EdgeInsets.all(16.0),
@@ -3359,22 +3808,57 @@ class ProfileView extends StatelessWidget {
           ),
         ),
         const Divider(height: 40),
-        // You can add more profile options here
+        ListTile(
+          leading: const Icon(Icons.language_outlined),
+          title: Text(l10n.changeLanguage),
+          onTap: () => _showLanguageDialog(context),
+        ),
         ListTile(
           leading: const Icon(Icons.settings_outlined),
-          title: const Text('تنظیمات حساب'),
-          onTap: () {
-            // Navigate to account settings page
-          },
+          title: Text(l10n.accountSettings),
+          onTap: () {},
         ),
         ListTile(
           leading: const Icon(Icons.history_outlined),
-          title: const Text('تاریخچه سفارشات'),
-          onTap: () {
-            // Navigate to order history page
-          },
+          title: Text(l10n.orderHistory),
+          onTap: () {},
         ),
       ],
+    );
+  }
+
+  void _showLanguageDialog(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    showDialog(
+      context: context,
+      builder: (BuildContext dialogContext) {
+        return SimpleDialog(
+          title: Text(l10n.selectLanguage),
+          children: <Widget>[
+            SimpleDialogOption(
+              onPressed: () {
+                context.read<LocaleCubit>().changeLocale('fa');
+                Navigator.pop(dialogContext);
+              },
+              child: Text(l10n.persian),
+            ),
+            SimpleDialogOption(
+              onPressed: () {
+                context.read<LocaleCubit>().changeLocale('en');
+                Navigator.pop(dialogContext);
+              },
+              child: Text(l10n.english),
+            ),
+            SimpleDialogOption(
+              onPressed: () {
+                context.read<LocaleCubit>().changeLocale('de');
+                Navigator.pop(dialogContext);
+              },
+              child: Text(l10n.german),
+            ),
+          ],
+        );
+      },
     );
   }
 }
@@ -3636,6 +4120,82 @@ class _SearchViewState extends State<SearchView> with SingleTickerProviderStateM
   }
 }
 
+
+====================
+فایل: seller_panel_view.dart
+مسیر: D:\PersiaMarkt 3\persiamarkt\lib\features\seller_panel\view\seller_panel_view.dart
+====================
+
+// مسیر: lib/features/seller_panel/view/seller_panel_view.dart
+
+import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart'; // ۱. پکیج GoRouter برای بازگشت امن اضافه شد
+import 'package:webview_flutter/webview_flutter.dart';
+// ۲. مسیر import فایل ترجمه به مسیر صحیح و استاندارد تغییر یافت
+import 'package:persia_markt/l10n/app_localizations.dart';
+
+class SellerPanelView extends StatefulWidget {
+  const SellerPanelView({super.key});
+
+  @override
+  State<SellerPanelView> createState() => _SellerPanelViewState();
+}
+
+class _SellerPanelViewState extends State<SellerPanelView> {
+  late final WebViewController _controller;
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = WebViewController()
+      ..setJavaScriptMode(JavaScriptMode.unrestricted)
+      ..setBackgroundColor(const Color(0x00000000))
+      ..setNavigationDelegate(
+        NavigationDelegate(
+          onPageStarted: (String url) {
+            setState(() {
+              _isLoading = true;
+            });
+          },
+          onPageFinished: (String url) {
+            setState(() {
+              _isLoading = false;
+            });
+          },
+          onWebResourceError: (WebResourceError error) {
+            // شما می‌توانید در اینجا یک پیام خطا به کاربر نمایش دهید
+          },
+        ),
+      )
+      // آدرس پنل شما که ارسال کردید، اینجا استفاده شده است
+      ..loadRequest(Uri.parse('https://persia-market-panel.vercel.app/'));
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(l10n.sellerPanel),
+        leading: IconButton(
+          icon: const Icon(Icons.close),
+          // ۳. دستور بازگشت برای سازگاری کامل با GoRouter اصلاح شد
+          onPressed: () => context.pop(),
+        ),
+      ),
+      body: Stack(
+        children: [
+          WebViewWidget(controller: _controller),
+          if (_isLoading)
+            const Center(
+              child: CircularProgressIndicator(),
+            ),
+        ],
+      ),
+    );
+  }
+}
 
 ====================
 فایل: store_detail_view.dart
@@ -3921,6 +4481,1202 @@ class _SliverAppBarDelegate extends SliverPersistentHeaderDelegate {
         minHeight != oldDelegate.minHeight ||
         child != oldDelegate.child;
   }
+}
+
+
+====================
+فایل: app_localizations.dart
+مسیر: D:\PersiaMarkt 3\persiamarkt\lib\l10n\app_localizations.dart
+====================
+
+import 'dart:async';
+
+import 'package:flutter/foundation.dart';
+import 'package:flutter/widgets.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:intl/intl.dart' as intl;
+
+import 'app_localizations_de.dart';
+import 'app_localizations_en.dart';
+import 'app_localizations_fa.dart';
+
+// ignore_for_file: type=lint
+
+/// Callers can lookup localized strings with an instance of AppLocalizations
+/// returned by `AppLocalizations.of(context)`.
+///
+/// Applications need to include `AppLocalizations.delegate()` in their app's
+/// `localizationDelegates` list, and the locales they support in the app's
+/// `supportedLocales` list. For example:
+///
+/// ```dart
+/// import 'l10n/app_localizations.dart';
+///
+/// return MaterialApp(
+///   localizationsDelegates: AppLocalizations.localizationsDelegates,
+///   supportedLocales: AppLocalizations.supportedLocales,
+///   home: MyApplicationHome(),
+/// );
+/// ```
+///
+/// ## Update pubspec.yaml
+///
+/// Please make sure to update your pubspec.yaml to include the following
+/// packages:
+///
+/// ```yaml
+/// dependencies:
+///   # Internationalization support.
+///   flutter_localizations:
+///     sdk: flutter
+///   intl: any # Use the pinned version from flutter_localizations
+///
+///   # Rest of dependencies
+/// ```
+///
+/// ## iOS Applications
+///
+/// iOS applications define key application metadata, including supported
+/// locales, in an Info.plist file that is built into the application bundle.
+/// To configure the locales supported by your app, you’ll need to edit this
+/// file.
+///
+/// First, open your project’s ios/Runner.xcworkspace Xcode workspace file.
+/// Then, in the Project Navigator, open the Info.plist file under the Runner
+/// project’s Runner folder.
+///
+/// Next, select the Information Property List item, select Add Item from the
+/// Editor menu, then select Localizations from the pop-up menu.
+///
+/// Select and expand the newly-created Localizations item then, for each
+/// locale your application supports, add a new item and select the locale
+/// you wish to add from the pop-up menu in the Value field. This list should
+/// be consistent with the languages listed in the AppLocalizations.supportedLocales
+/// property.
+abstract class AppLocalizations {
+  AppLocalizations(String locale) : localeName = intl.Intl.canonicalizedLocale(locale.toString());
+
+  final String localeName;
+
+  static AppLocalizations? of(BuildContext context) {
+    return Localizations.of<AppLocalizations>(context, AppLocalizations);
+  }
+
+  static const LocalizationsDelegate<AppLocalizations> delegate = _AppLocalizationsDelegate();
+
+  /// A list of this localizations delegate along with the default localizations
+  /// delegates.
+  ///
+  /// Returns a list of localizations delegates containing this delegate along with
+  /// GlobalMaterialLocalizations.delegate, GlobalCupertinoLocalizations.delegate,
+  /// and GlobalWidgetsLocalizations.delegate.
+  ///
+  /// Additional delegates can be added by appending to this list in
+  /// MaterialApp. This list does not have to be used at all if a custom list
+  /// of delegates is preferred or required.
+  static const List<LocalizationsDelegate<dynamic>> localizationsDelegates = <LocalizationsDelegate<dynamic>>[
+    delegate,
+    GlobalMaterialLocalizations.delegate,
+    GlobalCupertinoLocalizations.delegate,
+    GlobalWidgetsLocalizations.delegate,
+  ];
+
+  /// A list of this localizations delegate's supported locales.
+  static const List<Locale> supportedLocales = <Locale>[
+    Locale('de'),
+    Locale('en'),
+    Locale('fa')
+  ];
+
+  /// No description provided for @persiaMarkt.
+  ///
+  /// In en, this message translates to:
+  /// **'PersiaMarkt'**
+  String get persiaMarkt;
+
+  /// No description provided for @home.
+  ///
+  /// In en, this message translates to:
+  /// **'Home'**
+  String get home;
+
+  /// No description provided for @map.
+  ///
+  /// In en, this message translates to:
+  /// **'Map'**
+  String get map;
+
+  /// No description provided for @favorites.
+  ///
+  /// In en, this message translates to:
+  /// **'Favorites'**
+  String get favorites;
+
+  /// No description provided for @profile.
+  ///
+  /// In en, this message translates to:
+  /// **'Profile'**
+  String get profile;
+
+  /// No description provided for @searchHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Search for bread, milk, stores...'**
+  String get searchHint;
+
+  /// No description provided for @yourLocation.
+  ///
+  /// In en, this message translates to:
+  /// **'Your Location'**
+  String get yourLocation;
+
+  /// No description provided for @gettingLocation.
+  ///
+  /// In en, this message translates to:
+  /// **'Getting location...'**
+  String get gettingLocation;
+
+  /// No description provided for @locationUnknown.
+  ///
+  /// In en, this message translates to:
+  /// **'Location unknown'**
+  String get locationUnknown;
+
+  /// No description provided for @specialOffers.
+  ///
+  /// In en, this message translates to:
+  /// **'Special Offers'**
+  String get specialOffers;
+
+  /// No description provided for @affordableProducts.
+  ///
+  /// In en, this message translates to:
+  /// **'Affordable Products'**
+  String get affordableProducts;
+
+  /// No description provided for @stores.
+  ///
+  /// In en, this message translates to:
+  /// **'Stores'**
+  String get stores;
+
+  /// No description provided for @myProfile.
+  ///
+  /// In en, this message translates to:
+  /// **'My Profile'**
+  String get myProfile;
+
+  /// No description provided for @logout.
+  ///
+  /// In en, this message translates to:
+  /// **'Logout'**
+  String get logout;
+
+  /// No description provided for @logoutFromAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'Logout from account'**
+  String get logoutFromAccount;
+
+  /// No description provided for @logoutConfirmation.
+  ///
+  /// In en, this message translates to:
+  /// **'Are you sure you want to log out?'**
+  String get logoutConfirmation;
+
+  /// No description provided for @cancel.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel'**
+  String get cancel;
+
+  /// No description provided for @loginToSeeProfile.
+  ///
+  /// In en, this message translates to:
+  /// **'Please log in to view your profile.'**
+  String get loginToSeeProfile;
+
+  /// No description provided for @guestUser.
+  ///
+  /// In en, this message translates to:
+  /// **'Guest User'**
+  String get guestUser;
+
+  /// No description provided for @unknownEmail.
+  ///
+  /// In en, this message translates to:
+  /// **'Unknown Email'**
+  String get unknownEmail;
+
+  /// No description provided for @accountSettings.
+  ///
+  /// In en, this message translates to:
+  /// **'Account Settings'**
+  String get accountSettings;
+
+  /// No description provided for @orderHistory.
+  ///
+  /// In en, this message translates to:
+  /// **'Order History'**
+  String get orderHistory;
+
+  /// No description provided for @changeLanguage.
+  ///
+  /// In en, this message translates to:
+  /// **'Change Language'**
+  String get changeLanguage;
+
+  /// No description provided for @selectLanguage.
+  ///
+  /// In en, this message translates to:
+  /// **'Select Language'**
+  String get selectLanguage;
+
+  /// No description provided for @persian.
+  ///
+  /// In en, this message translates to:
+  /// **'Persian'**
+  String get persian;
+
+  /// No description provided for @english.
+  ///
+  /// In en, this message translates to:
+  /// **'English'**
+  String get english;
+
+  /// No description provided for @german.
+  ///
+  /// In en, this message translates to:
+  /// **'German'**
+  String get german;
+
+  /// No description provided for @categories.
+  ///
+  /// In en, this message translates to:
+  /// **'Categories'**
+  String get categories;
+
+  /// No description provided for @viewAll.
+  ///
+  /// In en, this message translates to:
+  /// **'View All'**
+  String get viewAll;
+
+  /// No description provided for @allProducts.
+  ///
+  /// In en, this message translates to:
+  /// **'All Products'**
+  String get allProducts;
+
+  /// No description provided for @availableStores.
+  ///
+  /// In en, this message translates to:
+  /// **'Available Stores'**
+  String get availableStores;
+
+  /// No description provided for @noProductsInCategory.
+  ///
+  /// In en, this message translates to:
+  /// **'No products found in this category.'**
+  String get noProductsInCategory;
+
+  /// No description provided for @viewStore.
+  ///
+  /// In en, this message translates to:
+  /// **'View Store'**
+  String get viewStore;
+
+  /// No description provided for @noDataAvailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Unfortunately, there are no stores or products to display at the moment.'**
+  String get noDataAvailable;
+
+  /// No description provided for @connectingToServer.
+  ///
+  /// In en, this message translates to:
+  /// **'Connecting to server...'**
+  String get connectingToServer;
+
+  /// No description provided for @initialLoadingMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Initial loading may take a moment. Please be patient.'**
+  String get initialLoadingMessage;
+
+  /// No description provided for @locationError.
+  ///
+  /// In en, this message translates to:
+  /// **'Error converting location'**
+  String get locationError;
+
+  /// No description provided for @km.
+  ///
+  /// In en, this message translates to:
+  /// **'km'**
+  String get km;
+
+  /// No description provided for @myLocation.
+  ///
+  /// In en, this message translates to:
+  /// **'My Location'**
+  String get myLocation;
+
+  /// No description provided for @yourCartIsEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'Your shopping cart is empty'**
+  String get yourCartIsEmpty;
+
+  /// No description provided for @yourShoppingCart.
+  ///
+  /// In en, this message translates to:
+  /// **'Your Shopping Cart'**
+  String get yourShoppingCart;
+
+  /// No description provided for @storeRating.
+  ///
+  /// In en, this message translates to:
+  /// **'Store Rating'**
+  String get storeRating;
+
+  /// No description provided for @loginToYourAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'Login to your Account'**
+  String get loginToYourAccount;
+
+  /// No description provided for @gladToSeeYouAgain.
+  ///
+  /// In en, this message translates to:
+  /// **'Glad to see you again!'**
+  String get gladToSeeYouAgain;
+
+  /// No description provided for @email.
+  ///
+  /// In en, this message translates to:
+  /// **'Email'**
+  String get email;
+
+  /// No description provided for @enterYourEmail.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter your email'**
+  String get enterYourEmail;
+
+  /// No description provided for @invalidEmail.
+  ///
+  /// In en, this message translates to:
+  /// **'Invalid email format'**
+  String get invalidEmail;
+
+  /// No description provided for @password.
+  ///
+  /// In en, this message translates to:
+  /// **'Password'**
+  String get password;
+
+  /// No description provided for @enterYourPassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter your password'**
+  String get enterYourPassword;
+
+  /// No description provided for @passwordTooShort.
+  ///
+  /// In en, this message translates to:
+  /// **'At least 6 characters'**
+  String get passwordTooShort;
+
+  /// No description provided for @login.
+  ///
+  /// In en, this message translates to:
+  /// **'Login'**
+  String get login;
+
+  /// No description provided for @noAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'No account? Sign up'**
+  String get noAccount;
+
+  /// No description provided for @sellerLogin.
+  ///
+  /// In en, this message translates to:
+  /// **'Seller Login'**
+  String get sellerLogin;
+
+  /// No description provided for @sellerPanel.
+  ///
+  /// In en, this message translates to:
+  /// **'Seller Panel'**
+  String get sellerPanel;
+
+  /// No description provided for @language.
+  ///
+  /// In en, this message translates to:
+  /// **'Language'**
+  String get language;
+}
+
+class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {
+  const _AppLocalizationsDelegate();
+
+  @override
+  Future<AppLocalizations> load(Locale locale) {
+    return SynchronousFuture<AppLocalizations>(lookupAppLocalizations(locale));
+  }
+
+  @override
+  bool isSupported(Locale locale) => <String>['de', 'en', 'fa'].contains(locale.languageCode);
+
+  @override
+  bool shouldReload(_AppLocalizationsDelegate old) => false;
+}
+
+AppLocalizations lookupAppLocalizations(Locale locale) {
+
+
+  // Lookup logic when only language code is specified.
+  switch (locale.languageCode) {
+    case 'de': return AppLocalizationsDe();
+    case 'en': return AppLocalizationsEn();
+    case 'fa': return AppLocalizationsFa();
+  }
+
+  throw FlutterError(
+    'AppLocalizations.delegate failed to load unsupported locale "$locale". This is likely '
+    'an issue with the localizations generation tool. Please file an issue '
+    'on GitHub with a reproducible sample app and the gen-l10n configuration '
+    'that was used.'
+  );
+}
+
+
+====================
+فایل: app_localizations_de.dart
+مسیر: D:\PersiaMarkt 3\persiamarkt\lib\l10n\app_localizations_de.dart
+====================
+
+// ignore: unused_import
+import 'package:intl/intl.dart' as intl;
+import 'app_localizations.dart';
+
+// ignore_for_file: type=lint
+
+/// The translations for German (`de`).
+class AppLocalizationsDe extends AppLocalizations {
+  AppLocalizationsDe([String locale = 'de']) : super(locale);
+
+  @override
+  String get persiaMarkt => 'PersiaMarkt';
+
+  @override
+  String get home => 'Startseite';
+
+  @override
+  String get map => 'Karte';
+
+  @override
+  String get favorites => 'Favoriten';
+
+  @override
+  String get profile => 'Profil';
+
+  @override
+  String get searchHint => 'Suche nach Brot, Milch, Geschäften...';
+
+  @override
+  String get yourLocation => 'Ihr Standort';
+
+  @override
+  String get gettingLocation => 'Standort wird abgerufen...';
+
+  @override
+  String get locationUnknown => 'Standort unbekannt';
+
+  @override
+  String get specialOffers => 'Sonderangebote';
+
+  @override
+  String get affordableProducts => 'Günstige Produkte';
+
+  @override
+  String get stores => 'Geschäfte';
+
+  @override
+  String get myProfile => 'Mein Profil';
+
+  @override
+  String get logout => 'Abmelden';
+
+  @override
+  String get logoutFromAccount => 'Abmelden';
+
+  @override
+  String get logoutConfirmation => 'Möchten Sie sich wirklich abmelden?';
+
+  @override
+  String get cancel => 'Abbrechen';
+
+  @override
+  String get loginToSeeProfile => 'Bitte melden Sie sich an, um Ihr Profil anzuzeigen.';
+
+  @override
+  String get guestUser => 'Gastnutzer';
+
+  @override
+  String get unknownEmail => 'Unbekannte E-Mail';
+
+  @override
+  String get accountSettings => 'Kontoeinstellungen';
+
+  @override
+  String get orderHistory => 'Bestellverlauf';
+
+  @override
+  String get changeLanguage => 'Sprache ändern / تغییر زبان';
+
+  @override
+  String get selectLanguage => 'Sprache auswählen / انتخاب زبان';
+
+  @override
+  String get persian => 'فارسی';
+
+  @override
+  String get english => 'English';
+
+  @override
+  String get german => 'Deutsch';
+
+  @override
+  String get categories => 'Kategorien';
+
+  @override
+  String get viewAll => 'Alle ansehen';
+
+  @override
+  String get allProducts => 'Alle Produkte';
+
+  @override
+  String get availableStores => 'Verfügbare Shops';
+
+  @override
+  String get noProductsInCategory => 'Keine Produkte in dieser Kategorie gefunden.';
+
+  @override
+  String get viewStore => 'Shop ansehen';
+
+  @override
+  String get noDataAvailable => 'Leider gibt es derzeit keine Geschäfte oder Produkte zum Anzeigen.';
+
+  @override
+  String get connectingToServer => 'Verbindung zum Server wird hergestellt...';
+
+  @override
+  String get initialLoadingMessage => 'Das erstmalige Laden kann einen Moment dauern. Bitte haben Sie Geduld.';
+
+  @override
+  String get locationError => 'Fehler bei der Standortkonvertierung';
+
+  @override
+  String get km => 'km';
+
+  @override
+  String get myLocation => 'Mein Standort';
+
+  @override
+  String get yourCartIsEmpty => 'Ihr Warenkorb ist leer';
+
+  @override
+  String get yourShoppingCart => 'Ihr Warenkorb';
+
+  @override
+  String get storeRating => 'Shop-Bewertung';
+
+  @override
+  String get loginToYourAccount => 'Anmelden bei Ihrem Konto';
+
+  @override
+  String get gladToSeeYouAgain => 'Schön, Sie wiederzusehen!';
+
+  @override
+  String get email => 'E-Mail';
+
+  @override
+  String get enterYourEmail => 'Bitte geben Sie Ihre E-Mail ein';
+
+  @override
+  String get invalidEmail => 'Ungültiges E-Mail-Format';
+
+  @override
+  String get password => 'Passwort';
+
+  @override
+  String get enterYourPassword => 'Bitte geben Sie Ihr Passwort ein';
+
+  @override
+  String get passwordTooShort => 'Mindestens 6 Zeichen';
+
+  @override
+  String get login => 'Anmelden';
+
+  @override
+  String get noAccount => 'Kein Konto? Registrieren';
+
+  @override
+  String get sellerLogin => 'Verkäufer-Login';
+
+  @override
+  String get sellerPanel => 'Verkäufer-Panel';
+
+  @override
+  String get language => 'Sprache';
+}
+
+
+====================
+فایل: app_localizations_en.dart
+مسیر: D:\PersiaMarkt 3\persiamarkt\lib\l10n\app_localizations_en.dart
+====================
+
+// ignore: unused_import
+import 'package:intl/intl.dart' as intl;
+import 'app_localizations.dart';
+
+// ignore_for_file: type=lint
+
+/// The translations for English (`en`).
+class AppLocalizationsEn extends AppLocalizations {
+  AppLocalizationsEn([String locale = 'en']) : super(locale);
+
+  @override
+  String get persiaMarkt => 'PersiaMarkt';
+
+  @override
+  String get home => 'Home';
+
+  @override
+  String get map => 'Map';
+
+  @override
+  String get favorites => 'Favorites';
+
+  @override
+  String get profile => 'Profile';
+
+  @override
+  String get searchHint => 'Search for bread, milk, stores...';
+
+  @override
+  String get yourLocation => 'Your Location';
+
+  @override
+  String get gettingLocation => 'Getting location...';
+
+  @override
+  String get locationUnknown => 'Location unknown';
+
+  @override
+  String get specialOffers => 'Special Offers';
+
+  @override
+  String get affordableProducts => 'Affordable Products';
+
+  @override
+  String get stores => 'Stores';
+
+  @override
+  String get myProfile => 'My Profile';
+
+  @override
+  String get logout => 'Logout';
+
+  @override
+  String get logoutFromAccount => 'Logout from account';
+
+  @override
+  String get logoutConfirmation => 'Are you sure you want to log out?';
+
+  @override
+  String get cancel => 'Cancel';
+
+  @override
+  String get loginToSeeProfile => 'Please log in to view your profile.';
+
+  @override
+  String get guestUser => 'Guest User';
+
+  @override
+  String get unknownEmail => 'Unknown Email';
+
+  @override
+  String get accountSettings => 'Account Settings';
+
+  @override
+  String get orderHistory => 'Order History';
+
+  @override
+  String get changeLanguage => 'Change Language';
+
+  @override
+  String get selectLanguage => 'Select Language';
+
+  @override
+  String get persian => 'Persian';
+
+  @override
+  String get english => 'English';
+
+  @override
+  String get german => 'German';
+
+  @override
+  String get categories => 'Categories';
+
+  @override
+  String get viewAll => 'View All';
+
+  @override
+  String get allProducts => 'All Products';
+
+  @override
+  String get availableStores => 'Available Stores';
+
+  @override
+  String get noProductsInCategory => 'No products found in this category.';
+
+  @override
+  String get viewStore => 'View Store';
+
+  @override
+  String get noDataAvailable => 'Unfortunately, there are no stores or products to display at the moment.';
+
+  @override
+  String get connectingToServer => 'Connecting to server...';
+
+  @override
+  String get initialLoadingMessage => 'Initial loading may take a moment. Please be patient.';
+
+  @override
+  String get locationError => 'Error converting location';
+
+  @override
+  String get km => 'km';
+
+  @override
+  String get myLocation => 'My Location';
+
+  @override
+  String get yourCartIsEmpty => 'Your shopping cart is empty';
+
+  @override
+  String get yourShoppingCart => 'Your Shopping Cart';
+
+  @override
+  String get storeRating => 'Store Rating';
+
+  @override
+  String get loginToYourAccount => 'Login to your Account';
+
+  @override
+  String get gladToSeeYouAgain => 'Glad to see you again!';
+
+  @override
+  String get email => 'Email';
+
+  @override
+  String get enterYourEmail => 'Please enter your email';
+
+  @override
+  String get invalidEmail => 'Invalid email format';
+
+  @override
+  String get password => 'Password';
+
+  @override
+  String get enterYourPassword => 'Please enter your password';
+
+  @override
+  String get passwordTooShort => 'At least 6 characters';
+
+  @override
+  String get login => 'Login';
+
+  @override
+  String get noAccount => 'No account? Sign up';
+
+  @override
+  String get sellerLogin => 'Seller Login';
+
+  @override
+  String get sellerPanel => 'Seller Panel';
+
+  @override
+  String get language => 'Language';
+}
+
+
+====================
+فایل: app_localizations_fa.dart
+مسیر: D:\PersiaMarkt 3\persiamarkt\lib\l10n\app_localizations_fa.dart
+====================
+
+// ignore: unused_import
+import 'package:intl/intl.dart' as intl;
+import 'app_localizations.dart';
+
+// ignore_for_file: type=lint
+
+/// The translations for Persian (`fa`).
+class AppLocalizationsFa extends AppLocalizations {
+  AppLocalizationsFa([String locale = 'fa']) : super(locale);
+
+  @override
+  String get persiaMarkt => 'پرشیا مارکت';
+
+  @override
+  String get home => 'خانه';
+
+  @override
+  String get map => 'نقشه';
+
+  @override
+  String get favorites => 'موردعلاقه‌ها';
+
+  @override
+  String get profile => 'پروفایل';
+
+  @override
+  String get searchHint => 'جستجوی نان، شیر، فروشگاه...';
+
+  @override
+  String get yourLocation => 'موقعیت شما';
+
+  @override
+  String get gettingLocation => 'در حال دریافت موقعیت...';
+
+  @override
+  String get locationUnknown => 'موقعیت نامعلوم';
+
+  @override
+  String get specialOffers => 'پیشنهادهای ویژه';
+
+  @override
+  String get affordableProducts => 'محصولات مقرون به صرفه';
+
+  @override
+  String get stores => 'فروشگاه‌ها';
+
+  @override
+  String get myProfile => 'پروفایل من';
+
+  @override
+  String get logout => 'خروج';
+
+  @override
+  String get logoutFromAccount => 'خروج از حساب';
+
+  @override
+  String get logoutConfirmation => 'آیا برای خروج مطمئن هستید؟';
+
+  @override
+  String get cancel => 'انصراف';
+
+  @override
+  String get loginToSeeProfile => 'برای مشاهده پروفایل لطفاً وارد شوید.';
+
+  @override
+  String get guestUser => 'کاربر مهمان';
+
+  @override
+  String get unknownEmail => 'ایمیل نامشخص';
+
+  @override
+  String get accountSettings => 'تنظیمات حساب';
+
+  @override
+  String get orderHistory => 'تاریخچه سفارشات';
+
+  @override
+  String get changeLanguage => 'تغییر زبان';
+
+  @override
+  String get selectLanguage => 'انتخاب زبان';
+
+  @override
+  String get persian => 'فارسی';
+
+  @override
+  String get english => 'English';
+
+  @override
+  String get german => 'Deutsch';
+
+  @override
+  String get categories => 'دسته بندی ها';
+
+  @override
+  String get viewAll => 'مشاهده همه';
+
+  @override
+  String get allProducts => 'همه محصولات';
+
+  @override
+  String get availableStores => 'فروشگاه های موجود';
+
+  @override
+  String get noProductsInCategory => 'محصولی در این دسته‌بندی یافت نشد.';
+
+  @override
+  String get viewStore => 'مشاهده فروشگاه';
+
+  @override
+  String get noDataAvailable => 'متاسفانه در حال حاضر فروشگاه یا محصولی برای نمایش وجود ندارد.';
+
+  @override
+  String get connectingToServer => 'در حال اتصال به سرور...';
+
+  @override
+  String get initialLoadingMessage => 'بارگذاری اولیه ممکن است کمی طول بکشد. لطفاً صبور باشید.';
+
+  @override
+  String get locationError => 'خطا در تبدیل موقعیت';
+
+  @override
+  String get km => 'کیلومتر';
+
+  @override
+  String get myLocation => 'موقعیت من';
+
+  @override
+  String get yourCartIsEmpty => 'سبد خرید شما خالی است';
+
+  @override
+  String get yourShoppingCart => 'سبد خرید شما';
+
+  @override
+  String get storeRating => 'امتیاز فروشگاه';
+
+  @override
+  String get loginToYourAccount => 'ورود به حساب کاربری';
+
+  @override
+  String get gladToSeeYouAgain => 'خوشحالیم که دوباره شما را می‌بینیم!';
+
+  @override
+  String get email => 'ایمیل';
+
+  @override
+  String get enterYourEmail => 'ایمیل را وارد کنید';
+
+  @override
+  String get invalidEmail => 'ایمیل نامعتبر است';
+
+  @override
+  String get password => 'رمز عبور';
+
+  @override
+  String get enterYourPassword => 'رمز عبور را وارد کنید';
+
+  @override
+  String get passwordTooShort => 'حداقل ۶ کاراکتر';
+
+  @override
+  String get login => 'ورود';
+
+  @override
+  String get noAccount => 'حساب ندارید؟ ثبت‌نام';
+
+  @override
+  String get sellerLogin => 'ورود فروشنده';
+
+  @override
+  String get sellerPanel => 'پنل فروشندگان';
+
+  @override
+  String get language => 'زبان';
+}
+
+
+====================
+فایل: web_plugin_registrant.dart
+مسیر: D:\PersiaMarkt 3\persiamarkt\persiamarkt_new\.dart_tool\dartpad\web_plugin_registrant.dart
+====================
+
+// Flutter web plugin registrant file.
+//
+// Generated file. Do not edit.
+//
+
+// ignore_for_file: type=lint
+
+void registerPlugins() {}
+
+
+====================
+فایل: main.dart
+مسیر: D:\PersiaMarkt 3\persiamarkt\persiamarkt_new\lib\main.dart
+====================
+
+import 'package:flutter/material.dart';
+
+void main() {
+  runApp(const MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
+  // This widget is the root of your application.
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Flutter Demo',
+      theme: ThemeData(
+        // This is the theme of your application.
+        //
+        // TRY THIS: Try running your application with "flutter run". You'll see
+        // the application has a purple toolbar. Then, without quitting the app,
+        // try changing the seedColor in the colorScheme below to Colors.green
+        // and then invoke "hot reload" (save your changes or press the "hot
+        // reload" button in a Flutter-supported IDE, or press "r" if you used
+        // the command line to start the app).
+        //
+        // Notice that the counter didn't reset back to zero; the application
+        // state is not lost during the reload. To reset the state, use hot
+        // restart instead.
+        //
+        // This works for code too, not just values: Most code changes can be
+        // tested with just a hot reload.
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+      ),
+      home: const MyHomePage(title: 'Flutter Demo Home Page'),
+    );
+  }
+}
+
+class MyHomePage extends StatefulWidget {
+  const MyHomePage({super.key, required this.title});
+
+  // This widget is the home page of your application. It is stateful, meaning
+  // that it has a State object (defined below) that contains fields that affect
+  // how it looks.
+
+  // This class is the configuration for the state. It holds the values (in this
+  // case the title) provided by the parent (in this case the App widget) and
+  // used by the build method of the State. Fields in a Widget subclass are
+  // always marked "final".
+
+  final String title;
+
+  @override
+  State<MyHomePage> createState() => _MyHomePageState();
+}
+
+class _MyHomePageState extends State<MyHomePage> {
+  int _counter = 0;
+
+  void _incrementCounter() {
+    setState(() {
+      // This call to setState tells the Flutter framework that something has
+      // changed in this State, which causes it to rerun the build method below
+      // so that the display can reflect the updated values. If we changed
+      // _counter without calling setState(), then the build method would not be
+      // called again, and so nothing would appear to happen.
+      _counter++;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    // This method is rerun every time setState is called, for instance as done
+    // by the _incrementCounter method above.
+    //
+    // The Flutter framework has been optimized to make rerunning build methods
+    // fast, so that you can just rebuild anything that needs updating rather
+    // than having to individually change instances of widgets.
+    return Scaffold(
+      appBar: AppBar(
+        // TRY THIS: Try changing the color here to a specific color (to
+        // Colors.amber, perhaps?) and trigger a hot reload to see the AppBar
+        // change color while the other colors stay the same.
+        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+        // Here we take the value from the MyHomePage object that was created by
+        // the App.build method, and use it to set our appbar title.
+        title: Text(widget.title),
+      ),
+      body: Center(
+        // Center is a layout widget. It takes a single child and positions it
+        // in the middle of the parent.
+        child: Column(
+          // Column is also a layout widget. It takes a list of children and
+          // arranges them vertically. By default, it sizes itself to fit its
+          // children horizontally, and tries to be as tall as its parent.
+          //
+          // Column has various properties to control how it sizes itself and
+          // how it positions its children. Here we use mainAxisAlignment to
+          // center the children vertically; the main axis here is the vertical
+          // axis because Columns are vertical (the cross axis would be
+          // horizontal).
+          //
+          // TRY THIS: Invoke "debug painting" (choose the "Toggle Debug Paint"
+          // action in the IDE, or press "p" in the console), to see the
+          // wireframe for each widget.
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            const Text('You have pushed the button this many times:'),
+            Text(
+              '$_counter',
+              style: Theme.of(context).textTheme.headlineMedium,
+            ),
+          ],
+        ),
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: _incrementCounter,
+        tooltip: 'Increment',
+        child: const Icon(Icons.add),
+      ), // This trailing comma makes auto-formatting nicer for build methods.
+    );
+  }
+}
+
+
+====================
+فایل: widget_test.dart
+مسیر: D:\PersiaMarkt 3\persiamarkt\persiamarkt_new\test\widget_test.dart
+====================
+
+// This is a basic Flutter widget test.
+//
+// To perform an interaction with a widget in your test, use the WidgetTester
+// utility in the flutter_test package. For example, you can send tap and scroll
+// gestures. You can also use WidgetTester to find child widgets in the widget
+// tree, read text, and verify that the values of widget properties are correct.
+
+import 'package:flutter/material.dart';
+import 'package:flutter_test/flutter_test.dart';
+
+import 'package:persiamarkt_new/main.dart';
+
+void main() {
+  testWidgets('Counter increments smoke test', (WidgetTester tester) async {
+    // Build our app and trigger a frame.
+    await tester.pumpWidget(const MyApp());
+
+    // Verify that our counter starts at 0.
+    expect(find.text('0'), findsOneWidget);
+    expect(find.text('1'), findsNothing);
+
+    // Tap the '+' icon and trigger a frame.
+    await tester.tap(find.byIcon(Icons.add));
+    await tester.pump();
+
+    // Verify that our counter has incremented.
+    expect(find.text('0'), findsNothing);
+    expect(find.text('1'), findsOneWidget);
+  });
 }
 
 

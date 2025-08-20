@@ -1,7 +1,7 @@
 // مسیر: lib/core/config/app_router.dart
 
 import 'dart:async';
-import 'package:flutter/material.dart'; // <<< مشکل اصلی اینجا بود و برطرف شد
+import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:persia_markt/core/config/service_locator.dart';
@@ -18,13 +18,17 @@ import 'package:persia_markt/features/profile/presentation/view/profile_view.dar
 import 'package:persia_markt/features/search/presentation/view/search_view.dart';
 import 'package:persia_markt/features/seller_panel/view/seller_panel_view.dart';
 import 'package:persia_markt/features/store/presentation/view/store_detail_view.dart';
+// ۸. ایمپورت کردن صفحه جدید تنظیمات
+import 'package:persia_markt/features/settings/view/settings_view.dart';
 import 'app_routes.dart';
 
 final _rootNavigatorKey = GlobalKey<NavigatorState>();
 final _shellNavigatorHomeKey = GlobalKey<NavigatorState>(debugLabel: 'shellHome');
 final _shellNavigatorMapKey = GlobalKey<NavigatorState>(debugLabel: 'shellMap');
-final _shellNavigatorFavoritesKey = GlobalKey<NavigatorState>(debugLabel: 'shellFavorites');
-final _shellNavigatorProfileKey = GlobalKey<NavigatorState>(debugLabel: 'shellProfile');
+final _shellNavigatorFavoritesKey =
+    GlobalKey<NavigatorState>(debugLabel: 'shellFavorites');
+final _shellNavigatorProfileKey =
+    GlobalKey<NavigatorState>(debugLabel: 'shellProfile');
 
 class AppRouter {
   static final router = GoRouter(
@@ -34,14 +38,20 @@ class AppRouter {
     redirect: (BuildContext context, GoRouterState state) {
       final authState = context.read<AuthCubit>().state;
       final isLoggedIn = authState is Authenticated;
-      
-      final authRelatedRoutes = [AppRoutes.login, AppRoutes.register, AppRoutes.sellerPanel];
+
+      final authRelatedRoutes = [
+        AppRoutes.login,
+        AppRoutes.register,
+        AppRoutes.sellerPanel
+      ];
       final onAuthRoutes = authRelatedRoutes.contains(state.matchedLocation);
 
       if (!isLoggedIn && !onAuthRoutes) {
+        // اگر کاربر لاگین نکرده و در صفحات عمومی نیست، به صفحه لاگین برو
         return AppRoutes.login;
       }
-      if (isLoggedIn && onAuthRoutes) {
+      if (isLoggedIn && (state.matchedLocation == AppRoutes.login || state.matchedLocation == AppRoutes.register)) {
+        // اگر کاربر لاگین کرده و سعی در دسترسی به صفحات لاگین/ثبت‌نام دارد، به خانه برو
         return AppRoutes.home;
       }
       return null;
@@ -66,7 +76,8 @@ class AppRouter {
                     path: AppRoutes.storeDetail,
                     pageBuilder: (context, state) {
                       final storeId = state.pathParameters['storeId']!;
-                      final initialProductId = state.uri.queryParameters['productId'];
+                      final initialProductId =
+                          state.uri.queryParameters['productId'];
                       return _buildPageWithTransition(
                         key: state.pageKey,
                         child: StoreDetailView(
@@ -163,6 +174,15 @@ class AppRouter {
         pageBuilder: (context, state) => const MaterialPage(
           fullscreenDialog: true,
           child: SellerPanelView(),
+        ),
+      ),
+      // ۸. افزودن مسیر جدید برای صفحه تنظیمات
+      GoRoute(
+        path: AppRoutes.settings,
+        parentNavigatorKey: _rootNavigatorKey,
+        pageBuilder: (context, state) => _buildPageWithTransition(
+          key: state.pageKey,
+          child: const SettingsView(),
         ),
       ),
     ],

@@ -1,13 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_map/flutter_map.dart';
+import 'package:go_router/go_router.dart';
 import 'package:latlong2/latlong.dart';
+import 'package:persia_markt/core/config/app_routes.dart';
 import 'package:persia_markt/core/models/store.dart';
 import 'package:persia_markt/features/home/presentation/bloc/market_data_bloc.dart';
 import 'package:persia_markt/features/home/presentation/bloc/market_data_state.dart';
 import 'package:persia_markt/features/home/presentation/cubit/location_cubit.dart';
 import 'package:persia_markt/features/home/presentation/cubit/location_state.dart';
-import 'package:persia_markt/l10n/app_localizations.dart'; // ۱. Import برای ترجمه
+import 'package:persia_markt/l10n/app_localizations.dart';
 
 class MapView extends StatefulWidget {
   final String? lat;
@@ -22,7 +24,9 @@ class MapView extends StatefulWidget {
 
 class _MapViewState extends State<MapView> {
   late final MapController _mapController;
-  bool _hasFocused = false;
+  // ۷. رفع مشکل عدم فوکوس مجدد
+  // این متغیر برای جلوگیری از زوم ناخواسته هنگام بازگشت به نقشه استفاده می‌شود
+  String? _lastFocusedStoreId;
 
   @override
   void initState() {
@@ -37,23 +41,26 @@ class _MapViewState extends State<MapView> {
   }
 
   void _tryFocusStore(List<Store> stores) {
-    if (_hasFocused) return;
-    if (widget.focus != null && widget.focus!.isNotEmpty) {
+    // اگر فروشگاهی برای فوکوس وجود دارد و قبلاً روی آن فوکوس نکرده‌ایم
+    if (widget.focus != null &&
+        widget.focus!.isNotEmpty &&
+        widget.focus != _lastFocusedStoreId) {
       final store = stores.firstWhere(
         (s) => s.storeID == widget.focus,
         orElse: () => Store.empty(),
       );
       if (store.storeID.isNotEmpty) {
+        // انیمیشن плавный برای حرکت به سمت فروشگاه
         _mapController.move(LatLng(store.latitude, store.longitude), 17.0);
-        _hasFocused = true;
+        _lastFocusedStoreId = widget.focus;
       }
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!; // ۲. نمونه l10n
-    LatLng initialCenter = const LatLng(51.1657, 10.4515);
+    final l10n = AppLocalizations.of(context)!;
+    LatLng initialCenter = const LatLng(51.1657, 10.4515); // مرکز آلمان
     double initialZoom = 6.0;
 
     if (widget.lat != null && widget.lng != null) {
@@ -67,7 +74,6 @@ class _MapViewState extends State<MapView> {
 
     return Scaffold(
       appBar: AppBar(
-        // ۳. عنوان AppBar ترجمه شد
         title: Text(l10n.map),
       ),
       body: BlocBuilder<MarketDataBloc, MarketDataState>(
@@ -78,6 +84,7 @@ class _MapViewState extends State<MapView> {
 
           final stores = marketState.marketData.stores;
 
+          // این تابع بعد از ساخت ویجت‌ها، فوکوس را انجام می‌دهد
           WidgetsBinding.instance.addPostFrameCallback((_) {
             _tryFocusStore(stores);
           });
@@ -94,7 +101,7 @@ class _MapViewState extends State<MapView> {
                 urlTemplate: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
                 subdomains: const ['a', 'b', 'c'],
               ),
-              _buildStoreMarkers(stores),
+              _buildStoreMarkers(stores, context), // context به متد پاس داده شد
               _buildUserLocationMarker(context),
             ],
           );
@@ -105,32 +112,50 @@ class _MapViewState extends State<MapView> {
           final locationState = context.read<LocationCubit>().state;
           if (locationState is LocationLoaded) {
             _mapController.move(
-              LatLng(locationState.position.latitude, locationState.position.longitude),
+              LatLng(locationState.position.latitude,
+                  locationState.position.longitude),
               15.0,
             );
           }
         },
-        // ۴. لیبل دکمه ترجمه شد
         label: Text(l10n.myLocation),
         icon: const Icon(Icons.my_location),
       ),
     );
   }
 
-  Widget _buildStoreMarkers(List<Store> stores) {
+  // ۵. بهبود پین‌های نقشه
+  Widget _buildStoreMarkers(List<Store> stores, BuildContext context) {
     return MarkerLayer(
       markers: stores.map((s) {
         return Marker(
           point: LatLng(s.latitude, s.longitude),
-          width: 40,
-          height: 40,
-          child: Tooltip(
-            message: s.name,
-            child: GestureDetector(
-              onTap: () {
-                _mapController.move(LatLng(s.latitude, s.longitude), 17.0);
-              },
-              child: const Icon(Icons.location_on, size: 36, color: Colors.orange),
+          width: 150, // عرض بیشتر برای نمایش نام
+          height: 80,
+          child: GestureDetector(
+            onTap: () => context.go(AppRoutes.storeDetailPath(s.storeID)),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // آیکون پین
+                const Icon(Icons.location_on, size: 40, color: Colors.orange),
+                // کادر نام فروشگاه
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+                  decoration: BoxDecoration(
+                    color: Colors.black.withOpacity(0.6),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Text(
+                    s.name,
+                    textAlign: TextAlign.center,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(color: Colors.white, fontSize: 12),
+                  ),
+                ),
+              ],
             ),
           ),
         );

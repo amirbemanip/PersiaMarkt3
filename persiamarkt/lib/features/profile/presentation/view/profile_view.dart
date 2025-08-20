@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
+import 'package:persia_markt/core/config/app_routes.dart';
 import 'package:persia_markt/core/cubit/locale_cubit.dart';
 import 'package:persia_markt/features/auth/presentation/cubit/auth_cubit.dart';
 import 'package:persia_markt/features/auth/presentation/cubit/auth_state.dart';
@@ -36,8 +38,15 @@ class ProfileView extends StatelessWidget {
                           ),
                           TextButton(
                             onPressed: () {
-                              context.read<AuthCubit>().logoutUser();
+                              // ۳. رفع مشکل خروج از حساب
+                              // ابتدا از دیالوگ خارج می‌شویم
                               Navigator.of(dialogContext).pop();
+                              // سپس عملیات خروج را انجام می‌دهیم
+                              context.read<AuthCubit>().logoutUser();
+                              // در نهایت به صفحه لاگین هدایت می‌کنیم
+                              // این کار توسط redirect در GoRouter هم انجام می‌شود،
+                              // اما برای اطمینان بیشتر اینجا هم اضافه شده است.
+                              context.go(AppRoutes.login);
                             },
                             child: Text(l10n.logout),
                           ),
@@ -58,7 +67,17 @@ class ProfileView extends StatelessWidget {
             return _buildProfileInfo(context);
           }
           return Center(
-            child: Text(l10n.loginToSeeProfile),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(l10n.loginToSeeProfile),
+                const SizedBox(height: 16),
+                ElevatedButton(
+                  onPressed: () => context.go(AppRoutes.login),
+                  child: Text(l10n.login),
+                )
+              ],
+            ),
           );
         },
       ),
@@ -69,12 +88,18 @@ class ProfileView extends StatelessWidget {
     final l10n = AppLocalizations.of(context)!;
     Map<String, dynamic> userInfo = {};
 
-    // no token in Authenticated -> just leave it empty for now
-    const String token = "";
+    // ۹. رفع مشکل نمایش ایمیل
+    // توکن کاربر از سرویس احراز هویت خوانده می‌شود
+    final token = context.read<AuthCubit>().authService.getToken();
 
-    try {
-      userInfo = JwtDecoder.decode(token);
-    } catch (_) {}
+    if (token != null) {
+      try {
+        userInfo = JwtDecoder.decode(token);
+      } catch (e) {
+        // اگر توکن نامعتبر بود، اطلاعات پیش‌فرض نمایش داده می‌شود
+        print("Error decoding JWT: $e");
+      }
+    }
 
     final String name = userInfo['name'] ?? l10n.guestUser;
     final String email = userInfo['email'] ?? l10n.unknownEmail;
@@ -84,9 +109,12 @@ class ProfileView extends StatelessWidget {
       children: [
         CircleAvatar(
           radius: 50,
+          backgroundColor: Theme.of(context).colorScheme.primaryContainer,
           child: Text(
             name.isNotEmpty ? name[0].toUpperCase() : 'P',
-            style: Theme.of(context).textTheme.headlineLarge,
+            style: Theme.of(context).textTheme.headlineLarge?.copyWith(
+                  color: Theme.of(context).colorScheme.onPrimaryContainer,
+                ),
           ),
         ),
         const SizedBox(height: 16),
@@ -109,15 +137,21 @@ class ProfileView extends StatelessWidget {
           title: Text(l10n.changeLanguage),
           onTap: () => _showLanguageDialog(context),
         ),
+        // ۸. فعال‌سازی دکمه تنظیمات حساب کاربری
         ListTile(
           leading: const Icon(Icons.settings_outlined),
           title: Text(l10n.accountSettings),
-          onTap: () {},
+          onTap: () {
+            // این مسیر در فایل app_router.dart اضافه خواهد شد
+            context.go(AppRoutes.settings);
+          },
         ),
         ListTile(
           leading: const Icon(Icons.history_outlined),
           title: Text(l10n.orderHistory),
-          onTap: () {},
+          onTap: () {
+            // TODO: Navigate to order history page
+          },
         ),
       ],
     );
