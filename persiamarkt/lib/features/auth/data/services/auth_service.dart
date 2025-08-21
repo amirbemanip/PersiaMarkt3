@@ -1,9 +1,15 @@
+// مسیر: lib/features/auth/data/services/auth_service.dart
+
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
 class AuthService {
+  // ==================== اصلاح اصلی اینجاست ====================
+  // آدرس پایه به آدرس اصلی سرور بدون هیچ پیشوند اضافی تغییر کرد.
   final String _baseUrl = 'https://persia-market-panel.onrender.com';
+  // ==========================================================
+
   final http.Client _client;
   final SharedPreferences _prefs;
 
@@ -20,8 +26,9 @@ class AuthService {
     required String password,
     String? city,
   }) async {
+    // مسیر کامل و صحیح برای ثبت‌نام کاربر
     final response = await _client.post(
-      Uri.parse('$_baseUrl/auth/user/register'), // آدرس صحیح برای ثبت‌نام کاربر
+      Uri.parse('$_baseUrl/auth/user/register'), // <<<--- اصلاح شد
       headers: {'Content-Type': 'application/json'},
       body: json.encode({
         'name': name,
@@ -40,10 +47,9 @@ class AuthService {
   }
 
   Future<String> login({required String email, required String password}) async {
+    // مسیر کامل و صحیح برای ورود کاربر
     final response = await _client.post(
-      // --- مشکل اینجا بود ---
-      // آدرس ورود از /auth/login به /auth/user/login اصلاح شد
-      Uri.parse('$_baseUrl/auth/user/login'),
+      Uri.parse('$_baseUrl/auth/user/login'), // <<<--- اصلاح شد
       headers: {'Content-Type': 'application/json'},
       body: json.encode({'email': email, 'password': password}),
     );

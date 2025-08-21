@@ -5,7 +5,7 @@ import 'dart:async'; // For timeout
 /// A service class for handling all network requests to the PersiaMarkt API.
 /// It is optimized to fetch initial data concurrently and handles server cold starts.
 class ApiService {
-  final String _baseUrl = 'https://persia-market-panel.onrender.com';
+  final String _baseUrl = 'https://persia-market-panel.onrender.com/api/v1/public';
   final http.Client _client;
   // Increased timeout to handle server cold starts on free hosting tiers.
   final _timeoutDuration = const Duration(seconds: 90);
