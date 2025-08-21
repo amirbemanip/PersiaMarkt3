@@ -8,6 +8,10 @@ import 'package:persia_markt/core/models/store.dart';
 import 'package:persia_markt/core/widgets/product_list_item_view.dart';
 import 'package:persia_markt/features/home/presentation/bloc/market_data_bloc.dart';
 import 'package:persia_markt/features/home/presentation/bloc/market_data_state.dart';
+// ==================== اصلاح اول اینجاست ====================
+// پکیج مورد نیاز برای اسکرول قابل اطمینان وارد شد.
+import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
+// ==========================================================
 
 class StoreDetailView extends StatefulWidget {
   final String storeId;
@@ -24,34 +28,32 @@ class StoreDetailView extends StatefulWidget {
 }
 
 class _StoreDetailViewState extends State<StoreDetailView> {
-  final Map<String, GlobalKey> _categoryKeys = {};
-  final ScrollController _pageScrollController = ScrollController();
+  // ==================== اصلاح دوم اینجاست ====================
+  // کنترلرهای جدید برای مدیریت اسکرول با پکیج جدید
+  final ItemScrollController _itemScrollController = ItemScrollController();
+  final ItemPositionsListener _itemPositionsListener = ItemPositionsListener.create();
+  // این متغیر، نقشه دسته‌بندی‌ها به ایندکس لیست را نگه می‌دارد
+  final Map<String, int> _categoryIndexMap = {};
+  // ==========================================================
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _pageScrollController.jumpTo(0.0);
       if (widget.initialProductId != null) {
         _scrollToInitialProduct();
       }
     });
   }
 
-  @override
-  void dispose() {
-    _pageScrollController.dispose();
-    super.dispose();
-  }
-
+  // تابع جدید برای اسکرول کردن با کنترلر جدید
   void _scrollToCategory(String categoryId) {
-    final key = _categoryKeys[categoryId];
-    if (key != null && key.currentContext != null) {
-      Scrollable.ensureVisible(
-        key.currentContext!,
-        duration: const Duration(milliseconds: 450),
-        curve: Curves.easeInOut,
-        alignment: 0.08,
+    final index = _categoryIndexMap[categoryId];
+    if (index != null && _itemScrollController.isAttached) {
+      _itemScrollController.scrollTo(
+        index: index,
+        duration: const Duration(milliseconds: 500),
+        curve: Curves.easeInOutCubic,
       );
     }
   }
@@ -63,7 +65,10 @@ class _StoreDetailViewState extends State<StoreDetailView> {
         (p) => p.id == widget.initialProductId,
         orElse: () => marketState.marketData.products.first,
       );
-      _scrollToCategory(product.categoryID);
+      // کمی تاخیر می‌دهیم تا لیست ساخته شود و سپس اسکرول می‌کنیم
+      Future.delayed(const Duration(milliseconds: 100), () {
+         _scrollToCategory(product.categoryID);
+      });
     }
   }
 
@@ -107,44 +112,73 @@ class _StoreDetailViewState extends State<StoreDetailView> {
           return const Scaffold(body: Center(child: Text('Store not found.')));
         }
 
-        final allProducts = state.marketData.products
-            .where((p) => p.storeID == store.storeID)
+        final allProductsInStore = state.marketData.products
+            .where((p) => p.storeID == widget.storeId)
             .toList();
-
-        // فقط دسته‌هایی که در این فروشگاه محصول دارند
-        final Set<String> categoryIdsInStore =
-            allProducts.map((p) => p.categoryID).toSet();
+        
+        final categoryIdsInStore = allProductsInStore.map((p) => p.categoryID).toSet();
         final categories = state.marketData.categories
             .where((c) => categoryIdsInStore.contains(c.id))
             .toList();
 
-        // کلیدها را قبل از ساخت ویجت‌ها تضمین می‌کنیم
-        for (final c in categories) {
-          _categoryKeys.putIfAbsent(c.id, () => GlobalKey());
+        // ==================== اصلاح سوم اینجاست ====================
+        // یک لیست یکپارچه از تمام آیتم‌ها (هدر، دسته‌بندی، محصولات) می‌سازیم
+        final List<dynamic> items = [];
+        items.add(store); // آیتم اول: اطلاعات فروشگاه برای هدر
+        items.add(categories); // آیتم دوم: لیست دسته‌بندی‌ها برای نوار افقی
+
+        int currentIndex = 2; // شمارنده ایندکس برای نقشه
+        _categoryIndexMap.clear();
+
+        for (var category in categories) {
+          _categoryIndexMap[category.id] = currentIndex;
+          items.add(category); // اضافه کردن خود دسته‌بندی به عنوان عنوان
+          currentIndex++;
+          final productsInCategory = allProductsInStore.where((p) => p.categoryID == category.id).toList();
+          items.addAll(productsInCategory);
+          currentIndex += productsInCategory.length;
         }
+        // ==========================================================
 
         return Scaffold(
-          body: CustomScrollView(
-            controller: _pageScrollController,
-            slivers: [
-              // هدر فروشگاه
-              SliverAppBar(
-                pinned: true,
-                expandedHeight: 140,
-                elevation: 0,
-                flexibleSpace: FlexibleSpaceBar(
-                  titlePadding: const EdgeInsetsDirectional.only(start: 16, bottom: 12, end: 16),
-                  title: Text(store.name, overflow: TextOverflow.ellipsis),
+          // AppBar ساده برای دکمه بازگشت
+          appBar: AppBar(
+            title: Text(store.name),
+          ),
+          body: Column(
+            children: [
+              // نوار دسته‌بندی افقی
+              _buildCategoryHeader(context, categories),
+              // لیست اصلی محصولات با قابلیت اسکرول
+              Expanded(
+                child: ScrollablePositionedList.builder(
+                  itemCount: items.length,
+                  itemScrollController: _itemScrollController,
+                  itemPositionsListener: _itemPositionsListener,
+                  itemBuilder: (context, index) {
+                    final item = items[index];
+
+                    if (index == 0 && item is Store) {
+                      return _buildStoreHeader(context, item);
+                    }
+                    if (index == 1) {
+                      // این آیتم توسط نوار دسته‌بندی بالا نمایش داده می‌شود، پس اینجا چیزی نمی‌سازیم
+                      return const SizedBox.shrink();
+                    }
+                    if (item is CategoryItem) {
+                      return _buildCategoryTitle(context, item);
+                    }
+                    if (item is Product) {
+                      return ProductListItemView(
+                        product: item,
+                        store: store,
+                        onImageTap: () => _showImageDialog(context, item.primaryImageUrl),
+                      );
+                    }
+                    return const SizedBox.shrink();
+                  },
                 ),
               ),
-
-              SliverToBoxAdapter(child: _buildStoreHeader(context, store)),
-
-              // نوار دسته‌بندی افقی (پین‌شونده)
-              _buildCategoryHeader(context, categories),
-
-              // لیست محصولات گروه‌بندی‌شده بر اساس دسته
-              ..._buildProductSlivers(categories, allProducts, store),
             ],
           ),
         );
@@ -154,18 +188,10 @@ class _StoreDetailViewState extends State<StoreDetailView> {
 
   Widget _buildStoreHeader(BuildContext context, Store store) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+      padding: const EdgeInsets.fromLTRB(16, 0, 16, 16), // Padding بالا حذف شد
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            store.name,
-            style: Theme.of(context)
-                .textTheme
-                .headlineMedium
-                ?.copyWith(fontWeight: FontWeight.bold),
-          ),
-          const SizedBox(height: 8),
           Row(
             children: [
               Icon(Icons.location_on_outlined, size: 16, color: Colors.grey.shade700),
@@ -174,7 +200,6 @@ class _StoreDetailViewState extends State<StoreDetailView> {
               IconButton(
                 icon: Icon(Icons.map_outlined, color: Theme.of(context).colorScheme.primary),
                 tooltip: 'نمایش در نقشه',
-                // به‌جای فقط focus، lat/lng را هم پاس می‌دهیم تا حتماً فوکوس شود
                 onPressed: () => context.go(
                   '/map?lat=${store.latitude}&lng=${store.longitude}&focus=${store.storeID}',
                 ),
@@ -188,93 +213,38 @@ class _StoreDetailViewState extends State<StoreDetailView> {
               Text('امتیاز: ${store.rating}', style: const TextStyle(fontSize: 16)),
             ],
           ),
+          const Divider(height: 24),
         ],
       ),
     );
   }
 
-  SliverPersistentHeader _buildCategoryHeader(
-      BuildContext context, List<CategoryItem> categories) {
-    return SliverPersistentHeader(
-      pinned: true,
-      delegate: _SliverAppBarDelegate(
-        minHeight: 60.0,
-        maxHeight: 60.0,
-        child: Container(
-          color: Theme.of(context).scaffoldBackgroundColor.withAlpha(240),
-          child: ListView.builder(
-            scrollDirection: Axis.horizontal,
-            itemCount: categories.length,
-            padding: const EdgeInsets.symmetric(horizontal: 12),
-            itemBuilder: (context, index) => Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 4.0, vertical: 10),
-              child: ElevatedButton(
-                onPressed: () => _scrollToCategory(categories[index].id),
-                child: Text(categories[index].name),
-              ),
-            ),
+  Widget _buildCategoryHeader(BuildContext context, List<CategoryItem> categories) {
+    return Container(
+      height: 60.0,
+      color: Theme.of(context).scaffoldBackgroundColor,
+      child: ListView.builder(
+        scrollDirection: Axis.horizontal,
+        itemCount: categories.length,
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+        itemBuilder: (context, index) => Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 4.0),
+          child: ElevatedButton(
+            onPressed: () => _scrollToCategory(categories[index].id),
+            child: Text(categories[index].name),
           ),
         ),
       ),
     );
   }
 
-  List<Widget> _buildProductSlivers(
-      List<CategoryItem> categories, List<Product> allProducts, Store store) {
-    return categories.map((category) {
-      final productsInCategory =
-          allProducts.where((p) => p.categoryID == category.id).toList();
-
-      return SliverList(
-        delegate: SliverChildListDelegate([
-          // سکشن‌هدری که کلید روی آن ست می‌شود تا ensureVisible کار کند
-          Container(
-            key: _categoryKeys[category.id],
-            padding: const EdgeInsets.fromLTRB(16, 24, 16, 8),
-            child: Text(
-              category.name,
-              style: Theme.of(context).textTheme.headlineSmall,
-            ),
-          ),
-          const Divider(indent: 16, endIndent: 16, height: 1),
-          ...productsInCategory.map(
-            (product) => ProductListItemView(
-              product: product,
-              store: store,
-              onImageTap: () => _showImageDialog(context, product.primaryImageUrl),
-            ),
-          ),
-        ]),
-      );
-    }).toList();
-  }
-}
-
-class _SliverAppBarDelegate extends SliverPersistentHeaderDelegate {
-  final double minHeight;
-  final double maxHeight;
-  final Widget child;
-
-  _SliverAppBarDelegate({
-    required this.minHeight,
-    required this.maxHeight,
-    required this.child,
-  });
-
-  @override
-  double get minExtent => minHeight;
-  @override
-  double get maxExtent => maxHeight;
-
-  @override
-  Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) {
-    return SizedBox.expand(child: child);
-  }
-
-  @override
-  bool shouldRebuild(_SliverAppBarDelegate oldDelegate) {
-    return maxHeight != oldDelegate.maxHeight ||
-        minHeight != oldDelegate.minHeight ||
-        child != oldDelegate.child;
+  Widget _buildCategoryTitle(BuildContext context, CategoryItem category) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 24, 16, 8),
+      child: Text(
+        category.name,
+        style: Theme.of(context).textTheme.headlineSmall,
+      ),
+    );
   }
 }
