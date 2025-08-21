@@ -38,8 +38,13 @@ class ProfileView extends StatelessWidget {
                           ),
                           TextButton(
                             onPressed: () {
+                              // ابتدا دیالوگ را می‌بندیم
                               Navigator.of(dialogContext).pop();
+                              // ==================== اصلاح اصلی اینجاست ====================
+                              // فقط دستور خروج را اجرا می‌کنیم.
+                              // روتر به صورت خودکار به تغییر وضعیت گوش می‌دهد و به صفحه لاگین هدایت می‌کند.
                               context.read<AuthCubit>().logoutUser();
+                              // ==========================================================
                             },
                             child: Text(l10n.logout),
                           ),
@@ -131,7 +136,7 @@ class ProfileView extends StatelessWidget {
           leading: const Icon(Icons.settings_outlined),
           title: Text(l10n.accountSettings),
           onTap: () {
-            context.go(AppRoutes.settings);
+            context.push(AppRoutes.settings);
           },
         ),
         ListTile(
@@ -146,7 +151,7 @@ class ProfileView extends StatelessWidget {
           leading: const Icon(Icons.support_agent_outlined),
           title: Text(l10n.support),
           onTap: () {
-            context.go(AppRoutes.userSupport);
+            context.push(AppRoutes.userSupport);
           },
         ),
       ],

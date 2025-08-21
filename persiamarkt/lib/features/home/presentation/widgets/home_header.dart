@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart'; // <<<--- مشکل اصلی اینجا بود و برطرف شد
+import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:persia_markt/features/home/presentation/cubit/location_cubit.dart';
@@ -37,27 +37,46 @@ class HomeHeader extends StatelessWidget {
                     children: [
                       Image.asset('assets/images/appLogo.png', height: 40),
                       const SizedBox(width: 8),
-                      Text(
-                        l10n.persiaMarkt,
-                        style: GoogleFonts.inter(fontSize: 24, fontWeight: FontWeight.w900, color: Colors.white),
+                      // ==================== اصلاح اصلی اینجاست ====================
+                      // ۱. ویجت عنوان با Flexible پوشانده شد تا در صورت کمبود جا، کوچک شود.
+                      Flexible(
+                        child: Material(
+                          type: MaterialType.transparency,
+                          child: Text(
+                            l10n.persiaMarkt,
+                            style: GoogleFonts.inter(fontSize: 24, fontWeight: FontWeight.w900, color: Colors.white),
+                            overflow: TextOverflow.ellipsis, // متن اضافی را با ... نمایش می‌دهد
+                            maxLines: 1,
+                          ),
+                        ),
                       ),
+                      // ==========================================================
                       const Spacer(),
-                      BlocBuilder<LocationCubit, LocationState>(
-                        builder: (context, state) {
-                          String locationText = l10n.gettingLocation;
-                          if (state is LocationLoaded) {
-                            locationText = state.address;
-                          } else if (state is LocationError) {
-                            locationText = l10n.locationUnknown;
-                          }
-                          return Column(
-                            crossAxisAlignment: CrossAxisAlignment.end,
-                            children: [
-                              Text(l10n.yourLocation, style: const TextStyle(color: Colors.white70, fontSize: 10)),
-                              Text(locationText, style: const TextStyle(color: Colors.white, fontSize: 14)),
-                            ],
-                          );
-                        },
+                      // ۲. ویجت موقعیت مکانی هم با Flexible پوشانده شد.
+                      Flexible(
+                        child: BlocBuilder<LocationCubit, LocationState>(
+                          builder: (context, state) {
+                            String locationText = l10n.gettingLocation;
+                            if (state is LocationLoaded) {
+                              locationText = state.address;
+                            } else if (state is LocationError) {
+                              locationText = l10n.locationUnknown;
+                            }
+                            return Column(
+                              crossAxisAlignment: CrossAxisAlignment.end,
+                              children: [
+                                Text(l10n.yourLocation, style: const TextStyle(color: Colors.white70, fontSize: 10)),
+                                Text(
+                                  locationText, 
+                                  style: const TextStyle(color: Colors.white, fontSize: 14),
+                                  overflow: TextOverflow.ellipsis, // متن اضافی را با ... نمایش می‌دهد
+                                  maxLines: 1,
+                                  textAlign: TextAlign.end,
+                                ),
+                              ],
+                            );
+                          },
+                        ),
                       ),
                     ],
                   ),

@@ -1,4 +1,9 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
+import 'package:http/http.dart' as http;
+import 'package:persia_markt/features/auth/presentation/cubit/auth_cubit.dart';
 import 'package:persia_markt/l10n/app_localizations.dart';
 
 class UserSupportView extends StatefulWidget {
@@ -21,15 +26,63 @@ class _UserSupportViewState extends State<UserSupportView> {
     super.dispose();
   }
 
-  void _submitTicket() {
-    if (_formKey.currentState?.validate() ?? false) {
-      // TODO: Implement support ticket submission logic
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('پیام شما با موفقیت ارسال شد.')),
+  // ==================== اصلاح اصلی اینجاست ====================
+  Future<void> _submitTicket() async {
+    // ۱. ابتدا فرم را اعتبارسنجی می‌کنیم
+    if (!(_formKey.currentState?.validate() ?? false)) {
+      return;
+    }
+
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      // ۲. توکن احراز هویت کاربر را از AuthCubit می‌گیریم
+      final authCubit = context.read<AuthCubit>();
+      final token = authCubit.authService.getToken();
+
+      if (token == null) {
+        throw Exception('User not authenticated');
+      }
+
+      // ۳. درخواست HTTP POST را به اندپوینت صحیح در بک‌اند ارسال می‌کنیم
+      final response = await http.post(
+        Uri.parse('https://persia-market-panel.onrender.com/support/user/tickets'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token', // توکن را در هدر قرار می‌دهیم
+        },
+        body: json.encode({
+          'subject': _subjectController.text,
+          'message': _messageController.text,
+        }),
       );
-      Navigator.of(context).pop();
+
+      // ۴. پاسخ سرور را بررسی می‌کنیم
+      if (response.statusCode >= 200 && response.statusCode < 300) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('پیام شما با موفقیت ارسال شد.')),
+        );
+        // ۵. از دستور صحیح context.pop() برای بازگشت استفاده می‌کنیم
+        if (mounted) context.pop();
+      } else {
+        final error = json.decode(response.body);
+        throw Exception(error['message'] ?? 'Failed to send message');
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('خطا در ارسال پیام: ${e.toString()}')),
+      );
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
     }
   }
+  // ==========================================================
 
   @override
   Widget build(BuildContext context) {
@@ -38,6 +91,10 @@ class _UserSupportViewState extends State<UserSupportView> {
 
     return Scaffold(
       appBar: AppBar(
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () => context.pop(),
+        ),
         title: Text(l10n.support),
       ),
       body: SingleChildScrollView(

@@ -60,18 +60,17 @@ class _SearchViewState extends State<SearchView>
       builder: (context, marketState) {
         return Scaffold(
           appBar: AppBar(
-            // ۶. افزودن دکمه انصراف
-            // این دکمه به صورت خودکار در سمت چپ یا راست (بسته به زبان) قرار می‌گیرد
+            // ==================== اصلاح اصلی اینجاست ====================
+            // دکمه بازگشت اضافه شده و قبل از خروج، نتایج جستجو را پاک می‌کند.
             leading: IconButton(
               icon: const Icon(Icons.arrow_back),
               tooltip: l10n.cancel,
               onPressed: () {
-                // پاک کردن نتایج جستجو قبل از خروج
                 context.read<SearchCubit>().clearSearch();
-                // بازگشت به صفحه قبلی
                 context.pop();
               },
             ),
+            // ==========================================================
             title: TextField(
               controller: _searchController,
               autofocus: true,

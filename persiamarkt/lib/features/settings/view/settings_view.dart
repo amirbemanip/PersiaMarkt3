@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:persia_markt/l10n/app_localizations.dart';
 // بهبود: ایمپورت ویجت فرم آدرس که در ادامه ساخته می‌شود
 // import 'package:persia_markt/core/widgets/address_form.dart';
@@ -38,9 +39,14 @@ class _SettingsViewState extends State<SettingsView> {
     final theme = Theme.of(context);
 
     return Scaffold(
-      // ۱. رفع مشکل دکمه بازگشت
-      // AppBar به صورت خودکار دکمه بازگشت را اضافه می‌کند
       appBar: AppBar(
+        // ==================== اصلاح اصلی اینجاست ====================
+        // دکمه بازگشت به صورت دستی اضافه شد تا همیشه نمایش داده شود.
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () => context.pop(),
+        ),
+        // ==========================================================
         title: Text(l10n.accountSettings),
         elevation: 0,
         scrolledUnderElevation: 1,
