@@ -1,9 +1,10 @@
 import 'package:get_it/get_it.dart';
 import 'package:http/http.dart' as http;
+import 'package:persia_markt/core/cubit/locale_cubit.dart';
 import 'package:persia_markt/core/services/api_service.dart';
 import 'package:persia_markt/core/services/location_service.dart';
-import 'package:persia_markt/features/auth/data/services/auth_service.dart'; // <-- ۱. سرویس جدید اضافه شد
-import 'package:persia_markt/features/auth/presentation/cubit/auth_cubit.dart'; // <-- ۲. کیوبیت جدید اضافه شد
+import 'package:persia_markt/features/auth/data/services/auth_service.dart';
+import 'package:persia_markt/features/auth/presentation/cubit/auth_cubit.dart';
 import 'package:persia_markt/features/home/data/repositories/market_repository_impl.dart';
 import 'package:persia_markt/features/home/domain/repositories/market_repository.dart';
 import 'package:persia_markt/features/home/presentation/bloc/market_data_bloc.dart';
@@ -20,10 +21,14 @@ Future<void> setupServiceLocator() async {
   sl.registerLazySingleton(() => sharedPreferences);
   sl.registerLazySingleton(() => http.Client());
 
+  // ==================== اصلاح اصلی اینجاست ====================
+  // سرویس زبان به عنوان یک سرویس عمومی و سراسری ثبت می‌شود.
+  sl.registerLazySingleton(() => LocaleCubit());
+  // ==========================================================
+
   // Services
   sl.registerLazySingleton(() => ApiService(client: sl()));
   sl.registerLazySingleton(() => LocationService());
-  // ۳. سرویس احراز هویت ثبت شد
   sl.registerLazySingleton(() => AuthService(client: sl(), prefs: sl()));
 
   // Repositories
@@ -34,6 +39,5 @@ Future<void> setupServiceLocator() async {
   sl.registerFactory(() => LocationCubit(locationService: sl()));
   sl.registerFactory(() => FavoritesCubit(sharedPreferences: sl()));
   sl.registerFactory(() => SearchCubit());
-  // ۴. کیوبیت احراز هویت ثبت شد
   sl.registerFactory(() => AuthCubit(authService: sl()));
 }

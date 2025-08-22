@@ -26,36 +26,45 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiBlocProvider(
       providers: [
-        BlocProvider(create: (_) => LocaleCubit()),
+        // از نمونه عمومی LocaleCubit که در service_locator ثبت شده استفاده می‌کنیم
+        BlocProvider(create: (_) => sl<LocaleCubit>()),
         BlocProvider(create: (_) => sl<MarketDataBloc>()..add(FetchMarketDataEvent())),
         BlocProvider(create: (_) => sl<LocationCubit>()..fetchLocation()),
         BlocProvider(create: (_) => sl<FavoritesCubit>()..loadLikedProducts()),
         BlocProvider(create: (_) => sl<SearchCubit>()),
         BlocProvider(create: (_) => sl<AuthCubit>()),
       ],
-      child: BlocBuilder<LocaleCubit, Locale>(
-        builder: (context, locale) {
-          return MaterialApp.router(
-            onGenerateTitle: (context) => AppLocalizations.of(context)!.persiaMarkt,
-            debugShowCheckedModeBanner: false,
-            routerConfig: AppRouter.router,
-            locale: locale,
-            localizationsDelegates: const [
-              AppLocalizations.delegate,
-              GlobalMaterialLocalizations.delegate,
-              GlobalWidgetsLocalizations.delegate,
-              GlobalCupertinoLocalizations.delegate,
-            ],
-            supportedLocales: const [
-              Locale('fa'),
-              Locale('en'),
-              Locale('de'),
-            ],
-            theme: _buildTheme(Brightness.light),
-            darkTheme: _buildTheme(Brightness.dark),
-            themeMode: ThemeMode.system,
-          );
+      // BlocListener به تغییرات زبان گوش می‌دهد
+      child: BlocListener<LocaleCubit, Locale>(
+        // این تابع هر بار که زبان عوض شود، اجرا می‌شود
+        listener: (context, state) {
+          // به MarketDataBloc دستور می‌دهد تا اطلاعات را دوباره با زبان جدید دریافت کند
+          context.read<MarketDataBloc>().add(FetchMarketDataEvent());
         },
+        child: BlocBuilder<LocaleCubit, Locale>(
+          builder: (context, locale) {
+            return MaterialApp.router(
+              onGenerateTitle: (context) => AppLocalizations.of(context)!.persiaMarkt,
+              debugShowCheckedModeBanner: false,
+              routerConfig: AppRouter.router,
+              locale: locale,
+              localizationsDelegates: const [
+                AppLocalizations.delegate,
+                GlobalMaterialLocalizations.delegate,
+                GlobalWidgetsLocalizations.delegate,
+                GlobalCupertinoLocalizations.delegate,
+              ],
+              supportedLocales: const [
+                Locale('fa'),
+                Locale('en'),
+                Locale('de'),
+              ],
+              theme: _buildTheme(Brightness.light),
+              darkTheme: _buildTheme(Brightness.dark),
+              themeMode: ThemeMode.system,
+            );
+          },
+        ),
       ),
     );
   }
