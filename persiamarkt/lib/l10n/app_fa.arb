@@ -72,5 +72,7 @@
     "register": "ثبت نام",
     "haveAccount": "حساب کاربری دارید؟",
     "registrationSuccess": "ثبت‌نام با موفقیت انجام شد! لطفاً وارد شوید.",
-    "support": "پشتیبانی"
+    "support": "پشتیبانی",
+    "yourShoppingCart": "سبد خرید شما",
+    "yourCartIsEmpty": "سبد خرید شما خالی است."
 }

@@ -334,7 +334,7 @@ abstract class AppLocalizations {
   /// No description provided for @yourCartIsEmpty.
   ///
   /// In en, this message translates to:
-  /// **'Your cart is empty'**
+  /// **'Your shopping cart is empty.'**
   String get yourCartIsEmpty;
 
   /// No description provided for @yourShoppingCart.

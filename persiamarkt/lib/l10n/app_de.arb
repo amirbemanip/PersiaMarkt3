@@ -72,5 +72,7 @@
     "register": "Registrieren",
     "haveAccount": "Haben Sie bereits ein Konto?",
     "registrationSuccess": "Registrierung erfolgreich! Bitte anmelden.",
-    "support": "Support"
+    "support": "Support",
+    "yourShoppingCart": "Ihr Warenkorb",
+    "yourCartIsEmpty": "Ihr Warenkorb ist leer."
 }

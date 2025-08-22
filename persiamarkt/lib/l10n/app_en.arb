@@ -72,5 +72,8 @@
     "register": "Register",
     "haveAccount": "Already have an account?",
     "registrationSuccess": "Registration successful! Please log in.",
-    "support": "Support"
+    "support": "Support",
+    "yourShoppingCart": "Your Shopping Cart",
+    "yourCartIsEmpty": "Your shopping cart is empty."
+
 }

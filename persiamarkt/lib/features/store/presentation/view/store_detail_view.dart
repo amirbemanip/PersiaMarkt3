@@ -2,16 +2,14 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:persia_markt/core/config/app_routes.dart';
 import 'package:persia_markt/core/models/category_item.dart';
 import 'package:persia_markt/core/models/product.dart';
 import 'package:persia_markt/core/models/store.dart';
 import 'package:persia_markt/core/widgets/product_list_item_view.dart';
 import 'package:persia_markt/features/home/presentation/bloc/market_data_bloc.dart';
 import 'package:persia_markt/features/home/presentation/bloc/market_data_state.dart';
-// ==================== اصلاح اول اینجاست ====================
-// پکیج مورد نیاز برای اسکرول قابل اطمینان وارد شد.
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
-// ==========================================================
 
 class StoreDetailView extends StatefulWidget {
   final String storeId;
@@ -28,13 +26,9 @@ class StoreDetailView extends StatefulWidget {
 }
 
 class _StoreDetailViewState extends State<StoreDetailView> {
-  // ==================== اصلاح دوم اینجاست ====================
-  // کنترلرهای جدید برای مدیریت اسکرول با پکیج جدید
   final ItemScrollController _itemScrollController = ItemScrollController();
   final ItemPositionsListener _itemPositionsListener = ItemPositionsListener.create();
-  // این متغیر، نقشه دسته‌بندی‌ها به ایندکس لیست را نگه می‌دارد
   final Map<String, int> _categoryIndexMap = {};
-  // ==========================================================
 
   @override
   void initState() {
@@ -46,7 +40,6 @@ class _StoreDetailViewState extends State<StoreDetailView> {
     });
   }
 
-  // تابع جدید برای اسکرول کردن با کنترلر جدید
   void _scrollToCategory(String categoryId) {
     final index = _categoryIndexMap[categoryId];
     if (index != null && _itemScrollController.isAttached) {
@@ -65,9 +58,8 @@ class _StoreDetailViewState extends State<StoreDetailView> {
         (p) => p.id == widget.initialProductId,
         orElse: () => marketState.marketData.products.first,
       );
-      // کمی تاخیر می‌دهیم تا لیست ساخته شود و سپس اسکرول می‌کنیم
       Future.delayed(const Duration(milliseconds: 100), () {
-         _scrollToCategory(product.categoryID);
+        _scrollToCategory(product.categoryID);
       });
     }
   }
@@ -121,13 +113,11 @@ class _StoreDetailViewState extends State<StoreDetailView> {
             .where((c) => categoryIdsInStore.contains(c.id))
             .toList();
 
-        // ==================== اصلاح سوم اینجاست ====================
-        // یک لیست یکپارچه از تمام آیتم‌ها (هدر، دسته‌بندی، محصولات) می‌سازیم
+        // ساخت لیست یکپارچه از تمام آیتم‌ها برای نمایش در ScrollablePositionedList
         final List<dynamic> items = [];
         items.add(store); // آیتم اول: اطلاعات فروشگاه برای هدر
-        items.add(categories); // آیتم دوم: لیست دسته‌بندی‌ها برای نوار افقی
-
-        int currentIndex = 2; // شمارنده ایندکس برای نقشه
+        
+        int currentIndex = 1; // شمارنده ایندکس برای نقشه
         _categoryIndexMap.clear();
 
         for (var category in categories) {
@@ -138,10 +128,8 @@ class _StoreDetailViewState extends State<StoreDetailView> {
           items.addAll(productsInCategory);
           currentIndex += productsInCategory.length;
         }
-        // ==========================================================
 
         return Scaffold(
-          // AppBar ساده برای دکمه بازگشت
           appBar: AppBar(
             title: Text(store.name),
           ),
@@ -149,6 +137,7 @@ class _StoreDetailViewState extends State<StoreDetailView> {
             children: [
               // نوار دسته‌بندی افقی
               _buildCategoryHeader(context, categories),
+              
               // لیست اصلی محصولات با قابلیت اسکرول
               Expanded(
                 child: ScrollablePositionedList.builder(
@@ -160,10 +149,6 @@ class _StoreDetailViewState extends State<StoreDetailView> {
 
                     if (index == 0 && item is Store) {
                       return _buildStoreHeader(context, item);
-                    }
-                    if (index == 1) {
-                      // این آیتم توسط نوار دسته‌بندی بالا نمایش داده می‌شود، پس اینجا چیزی نمی‌سازیم
-                      return const SizedBox.shrink();
                     }
                     if (item is CategoryItem) {
                       return _buildCategoryTitle(context, item);
@@ -187,35 +172,52 @@ class _StoreDetailViewState extends State<StoreDetailView> {
   }
 
   Widget _buildStoreHeader(BuildContext context, Store store) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 0, 16, 16), // Padding بالا حذف شد
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
+    return Column(
+      children: [
+        // ==================== اصلاح اصلی اینجاست ====================
+        // ویجت بنر عکس فروشگاه به بالای هدر اضافه شد.
+        SizedBox(
+          height: 200,
+          width: double.infinity,
+          child: Image.network(
+            store.storeImage,
+            fit: BoxFit.cover,
+            errorBuilder: (context, error, stackTrace) => 
+              Image.asset('assets/images/supermarket.png', fit: BoxFit.cover),
+          ),
+        ),
+        // ==========================================================
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Icon(Icons.location_on_outlined, size: 16, color: Colors.grey.shade700),
-              const SizedBox(width: 4),
-              Expanded(child: Text(store.address, style: const TextStyle(fontSize: 16))),
-              IconButton(
-                icon: Icon(Icons.map_outlined, color: Theme.of(context).colorScheme.primary),
-                tooltip: 'نمایش در نقشه',
-                onPressed: () => context.go(
-                  '/map?lat=${store.latitude}&lng=${store.longitude}&focus=${store.storeID}',
-                ),
+              Row(
+                children: [
+                  Icon(Icons.location_on_outlined, size: 16, color: Colors.grey.shade700),
+                  const SizedBox(width: 4),
+                  Expanded(child: Text(store.address, style: const TextStyle(fontSize: 16))),
+                  IconButton(
+                    icon: Icon(Icons.map_outlined, color: Theme.of(context).colorScheme.primary),
+                    tooltip: 'نمایش در نقشه',
+                    onPressed: () => context.go(
+                      '/map?lat=${store.latitude}&lng=${store.longitude}&focus=${store.storeID}',
+                    ),
+                  ),
+                ],
               ),
+              Row(
+                children: [
+                  Icon(Icons.star_border, size: 16, color: Colors.grey.shade700),
+                  const SizedBox(width: 4),
+                  Text('امتیاز: ${store.rating}', style: const TextStyle(fontSize: 16)),
+                ],
+              ),
+              const Divider(height: 24),
             ],
           ),
-          Row(
-            children: [
-              Icon(Icons.star_border, size: 16, color: Colors.grey.shade700),
-              const SizedBox(width: 4),
-              Text('امتیاز: ${store.rating}', style: const TextStyle(fontSize: 16)),
-            ],
-          ),
-          const Divider(height: 24),
-        ],
-      ),
+        ),
+      ],
     );
   }
 
@@ -240,7 +242,7 @@ class _StoreDetailViewState extends State<StoreDetailView> {
 
   Widget _buildCategoryTitle(BuildContext context, CategoryItem category) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 24, 16, 8),
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
       child: Text(
         category.name,
         style: Theme.of(context).textTheme.headlineSmall,

@@ -95,7 +95,7 @@ class MyApp extends StatelessWidget {
         iconTheme: IconThemeData(color: colorScheme.onSurface),
         titleTextStyle: GoogleFonts.lalezar(
           color: colorScheme.onSurface,
-          fontSize: 22,
+          fontSize: 20, // اندازه فونت برای جلوگیری از Overflow کاهش یافت
         ),
       ),
       textTheme: GoogleFonts.vazirmatnTextTheme(baseTheme.textTheme).copyWith(

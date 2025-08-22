@@ -3,19 +3,21 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:persia_markt/core/models/product.dart';
 import 'package:persia_markt/core/widgets/product_list_item_view.dart';
-// اصلاح شد: 'packagepackage:' به 'package:' تغییر یافت.
 import 'package:persia_markt/features/home/presentation/bloc/market_data_bloc.dart';
 import 'package:persia_markt/features/home/presentation/bloc/market_data_state.dart';
 import 'package:persia_markt/features/profile/presentation/cubit/favorites_cubit.dart';
 import 'package:persia_markt/features/profile/presentation/cubit/favorites_state.dart';
+import 'package:persia_markt/l10n/app_localizations.dart'; // ایمپورت برای ترجمه
 
 class FavoritesView extends StatelessWidget {
   const FavoritesView({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!; // نمونه l10n
+
     return Scaffold(
-      appBar: AppBar(title: const Text('سبد خرید شما')),
+      appBar: AppBar(title: Text(l10n.yourShoppingCart)), // استفاده از ترجمه
       body: BlocBuilder<MarketDataBloc, MarketDataState>(
         builder: (context, marketState) {
           if (marketState is MarketDataLoaded) {
@@ -26,10 +28,9 @@ class FavoritesView extends StatelessWidget {
                     .toList();
                 
                 if (favoriteProducts.isEmpty) {
-                  return const Center(child: Text('سبد خرید شما خالی است.'));
+                  return Center(child: Text(l10n.yourCartIsEmpty)); // استفاده از ترجمه
                 }
 
-                // اصلاح شده: گروه‌بندی محصولات بر اساس فروشگاه
                 final Map<String, List<Product>> productsByStore = {};
                 for (var product in favoriteProducts) {
                   productsByStore.putIfAbsent(product.storeID, () => []).add(product);
@@ -39,7 +40,6 @@ class FavoritesView extends StatelessWidget {
 
                 return Column(
                   children: [
-                    // اصلاح شده: بنر تبلیغاتی
                     Container(
                       height: 100,
                       margin: const EdgeInsets.all(16),
@@ -71,7 +71,6 @@ class FavoritesView extends StatelessWidget {
                                 ),
                                 const Divider(height: 1),
                                 ...productsInStore.map((p) => ProductListItemView(product: p, store: store)),
-                                // نمایش مجموع قیمت هر فروشگاه
                                 Padding(
                                   padding: const EdgeInsets.all(12.0),
                                   child: Align(
@@ -88,7 +87,6 @@ class FavoritesView extends StatelessWidget {
                         },
                       ),
                     ),
-                    // نمایش مجموع کل
                     Padding(
                       padding: const EdgeInsets.all(16.0),
                       child: Text(
@@ -96,7 +94,6 @@ class FavoritesView extends StatelessWidget {
                         style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
                       ),
                     ),
-                    // اصلاح شده: کادر نهایی
                     Container(
                       width: double.infinity,
                       margin: const EdgeInsets.fromLTRB(16, 0, 16, 16),

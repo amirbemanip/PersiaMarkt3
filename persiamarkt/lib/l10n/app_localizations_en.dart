@@ -126,7 +126,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get myLocation => 'My Location';
 
   @override
-  String get yourCartIsEmpty => 'Your cart is empty';
+  String get yourCartIsEmpty => 'Your shopping cart is empty.';
 
   @override
   String get yourShoppingCart => 'Your Shopping Cart';

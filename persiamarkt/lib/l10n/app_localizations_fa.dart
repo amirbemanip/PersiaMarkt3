@@ -126,7 +126,7 @@ class AppLocalizationsFa extends AppLocalizations {
   String get myLocation => 'موقعیت من';
 
   @override
-  String get yourCartIsEmpty => 'سبد خرید شما خالی است';
+  String get yourCartIsEmpty => 'سبد خرید شما خالی است.';
 
   @override
   String get yourShoppingCart => 'سبد خرید شما';

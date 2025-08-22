@@ -16,7 +16,11 @@ class ApiService {
 
   /// Fetches all market data (stores, products, categories) in a single API call.
   Future<Map<String, dynamic>> fetchMarketDataAsJson() async {
-    final Uri url = Uri.parse('$_baseUrl/api/v1/public/market-data');
+    // ==================== اصلاح اصلی اینجاست ====================
+    // یک پارامتر تصادفی برای جلوگیری از کش شدن درخواست در iOS اضافه شد
+    final cacheBuster = DateTime.now().millisecondsSinceEpoch;
+    final Uri url = Uri.parse('$_baseUrl/api/v1/public/market-data?v=$cacheBuster');
+    // ==========================================================
     
     try {
       // ۱. زبان فعلی از LocaleCubit خوانده می‌شود.
