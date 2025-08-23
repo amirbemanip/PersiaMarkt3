@@ -1,3 +1,4 @@
+// lib/core/config/app_router.dart
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -7,9 +8,9 @@ import 'package:persia_markt/features/auth/presentation/cubit/auth_cubit.dart';
 import 'package:persia_markt/features/auth/presentation/cubit/auth_state.dart';
 import 'package:persia_markt/features/auth/presentation/view/login_view.dart';
 import 'package:persia_markt/features/auth/presentation/view/register_view.dart';
-// <<< مسیر ایمپورت اصلاح شد
 import 'package:persia_markt/features/cart/presentation/view/cart_view.dart';
 import 'package:persia_markt/features/category/view/category_detail_view.dart';
+import 'package:persia_markt/features/checkout/presentation/view/checkout_view.dart';
 import 'package:persia_markt/features/home/presentation/view/home_view.dart';
 import 'package:persia_markt/features/home/presentation/view/main_tab_bar_view.dart';
 import 'package:persia_markt/features/map/view/map_view.dart';
@@ -17,8 +18,8 @@ import 'package:persia_markt/features/profile/presentation/view/favorites_view.d
 import 'package:persia_markt/features/profile/presentation/view/profile_view.dart';
 import 'package:persia_markt/features/search/presentation/view/search_view.dart';
 import 'package:persia_markt/features/seller_panel/view/seller_panel_view.dart';
-import 'package:persia_markt/features/store/presentation/view/store_detail_view.dart';
 import 'package:persia_markt/features/settings/view/settings_view.dart';
+import 'package:persia_markt/features/store/presentation/view/store_detail_view.dart';
 import 'package:persia_markt/features/support/view/user_support_view.dart';
 import 'app_routes.dart';
 
@@ -197,6 +198,14 @@ class AppRouter {
         pageBuilder: (context, state) => _buildPageWithTransition(
           key: state.pageKey,
           child: const FavoritesView(),
+        ),
+      ),
+      GoRoute(
+        path: AppRoutes.checkout,
+        parentNavigatorKey: _rootNavigatorKey,
+        pageBuilder: (context, state) => _buildPageWithTransition(
+          key: state.pageKey,
+          child: const CheckoutView(),
         ),
       ),
     ],

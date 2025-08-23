@@ -1,3 +1,4 @@
+// lib/main.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -7,6 +8,7 @@ import 'package:persia_markt/core/config/service_locator.dart';
 import 'package:persia_markt/core/cubit/locale_cubit.dart';
 import 'package:persia_markt/features/auth/presentation/cubit/auth_cubit.dart';
 import 'package:persia_markt/features/cart/presentation/cubit/cart_cubit.dart';
+import 'package:persia_markt/features/checkout/presentation/cubit/checkout_cubit.dart';
 import 'package:persia_markt/features/home/presentation/bloc/market_data_bloc.dart';
 import 'package:persia_markt/features/home/presentation/bloc/market_data_event.dart';
 import 'package:persia_markt/features/home/presentation/cubit/location_cubit.dart';
@@ -28,12 +30,14 @@ class MyApp extends StatelessWidget {
     return MultiBlocProvider(
       providers: [
         BlocProvider(create: (_) => sl<LocaleCubit>()),
-        BlocProvider(create: (_) => sl<MarketDataBloc>()..add(FetchMarketDataEvent())),
+        BlocProvider(
+            create: (_) => sl<MarketDataBloc>()..add(FetchMarketDataEvent())),
         BlocProvider(create: (_) => sl<LocationCubit>()..fetchLocation()),
         BlocProvider(create: (_) => sl<CartCubit>()..loadCartProducts()),
         BlocProvider(create: (_) => sl<FavoritesCubit>()..loadLikedProducts()),
         BlocProvider(create: (_) => sl<SearchCubit>()),
         BlocProvider(create: (_) => sl<AuthCubit>()),
+        BlocProvider(create: (_) => sl<CheckoutCubit>()),
       ],
       child: BlocListener<LocaleCubit, Locale>(
         listener: (context, state) {
@@ -42,7 +46,8 @@ class MyApp extends StatelessWidget {
         child: BlocBuilder<LocaleCubit, Locale>(
           builder: (context, locale) {
             return MaterialApp.router(
-              onGenerateTitle: (context) => AppLocalizations.of(context)!.persiaMarkt,
+              onGenerateTitle: (context) =>
+                  AppLocalizations.of(context)!.persiaMarkt,
               debugShowCheckedModeBanner: false,
               routerConfig: AppRouter.router,
               locale: locale,
@@ -70,7 +75,8 @@ class MyApp extends StatelessWidget {
   ThemeData _buildTheme(Brightness brightness) {
     final isLight = brightness == Brightness.light;
     final surfaceColor = isLight ? Colors.white : const Color(0xFF1E1E1E);
-    final scaffoldColor = isLight ? const Color(0xFFF5F5F5) : const Color(0xFF121212);
+    final scaffoldColor =
+        isLight ? const Color(0xFFF5F5F5) : const Color(0xFF121212);
     final colorScheme = ColorScheme.fromSeed(
       seedColor: const Color(0xFFF57C00),
       brightness: brightness,
@@ -96,18 +102,20 @@ class MyApp extends StatelessWidget {
           fontSize: 20,
         ),
       ),
-      textTheme: GoogleFonts.vazirmatnTextTheme(baseTheme.textTheme).copyWith(
-        headlineMedium: GoogleFonts.vazirmatn(
-            fontWeight: FontWeight.bold, color: colorScheme.onSurface),
-        titleLarge: GoogleFonts.vazirmatn(
-            fontWeight: FontWeight.bold, color: colorScheme.onSurface),
-        bodyMedium:
-            GoogleFonts.vazirmatn(fontSize: 15, color: colorScheme.onSurface),
-        labelLarge: GoogleFonts.vazirmatn(fontWeight: FontWeight.bold),
-      ).apply(
-        bodyColor: colorScheme.onSurface,
-        displayColor: colorScheme.onSurface,
-      ),
+      textTheme: GoogleFonts.vazirmatnTextTheme(baseTheme.textTheme)
+          .copyWith(
+            headlineMedium: GoogleFonts.vazirmatn(
+                fontWeight: FontWeight.bold, color: colorScheme.onSurface),
+            titleLarge: GoogleFonts.vazirmatn(
+                fontWeight: FontWeight.bold, color: colorScheme.onSurface),
+            bodyMedium: GoogleFonts.vazirmatn(
+                fontSize: 15, color: colorScheme.onSurface),
+            labelLarge: GoogleFonts.vazirmatn(fontWeight: FontWeight.bold),
+          )
+          .apply(
+            bodyColor: colorScheme.onSurface,
+            displayColor: colorScheme.onSurface,
+          ),
       cardTheme: CardThemeData(
         elevation: 0,
         shape: RoundedRectangleBorder(
@@ -126,8 +134,7 @@ class MyApp extends StatelessWidget {
           ),
           backgroundColor: colorScheme.primary,
           foregroundColor: colorScheme.onPrimary,
-          padding:
-              const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
         ),
       ),
       inputDecorationTheme: InputDecorationTheme(

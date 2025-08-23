@@ -1,6 +1,8 @@
 // lib/features/cart/presentation/view/cart_view.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
+import 'package:persia_markt/core/config/app_routes.dart';
 import 'package:persia_markt/core/models/product.dart';
 import 'package:persia_markt/features/home/presentation/bloc/market_data_bloc.dart';
 import 'package:persia_markt/features/home/presentation/bloc/market_data_state.dart';
@@ -166,10 +168,7 @@ class CartView extends StatelessWidget {
           const SizedBox(height: 16),
           ElevatedButton(
             onPressed: grandTotal > 0 ? () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                    content: Text('قابلیت پرداخت به زودی اضافه خواهد شد.')),
-              );
+              context.push(AppRoutes.checkout);
             } : null,
             style: ElevatedButton.styleFrom(
               minimumSize: const Size(double.infinity, 50),

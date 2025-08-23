@@ -15,6 +15,7 @@ class AppRoutes {
   static const String settings = '/settings';
   static const String userSupport = '/support';
   static const String favorites = '/favorites';
+  static const String checkout = '/checkout'; // <<< مسیر جدید اضافه شد
 
   // مسیرهای داینامیک (فرزندان مسیر خانه)
   static const String storeDetail = 'store/:storeId';
