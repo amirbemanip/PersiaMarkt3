@@ -1,12 +1,11 @@
 // lib/features/cart/presentation/cubit/cart_cubit.dart
 import 'dart:convert';
-import 'package:flutter_bloc/flutter_bloc.dart'; // <<< اصلاح شد: از ":" به جای "." استفاده شد
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'cart_state.dart';
 
 class CartCubit extends Cubit<CartState> {
   final SharedPreferences _sharedPreferences;
-  // <<< اصلاح شد: نام متغیرها به درستی تعریف و استفاده شد
   static const _itemsKey = 'cart_items_map';
   static const _selectedStoresKey = 'cart_selected_stores';
 
@@ -84,5 +83,11 @@ class CartCubit extends Cubit<CartState> {
     }
     emit(CartState(items: state.items, selectedStoreIds: newSelectedStores));
     _saveState();
+  }
+
+  // <<< متد کاملاً جدید برای خالی کردن کامل سبد خرید
+  Future<void> clearCart() async {
+    emit(const CartState(items: {}, selectedStoreIds: []));
+    await _saveState();
   }
 }

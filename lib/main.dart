@@ -12,6 +12,7 @@ import 'package:persia_markt/features/checkout/presentation/cubit/checkout_cubit
 import 'package:persia_markt/features/home/presentation/bloc/market_data_bloc.dart';
 import 'package:persia_markt/features/home/presentation/bloc/market_data_event.dart';
 import 'package:persia_markt/features/home/presentation/cubit/location_cubit.dart';
+import 'package:persia_markt/features/order_history/presentation/cubit/order_history_cubit.dart';
 import 'package:persia_markt/features/profile/presentation/cubit/favorites_cubit.dart';
 import 'package:persia_markt/features/search/presentation/cubit/search_cubit.dart';
 import 'package:persia_markt/l10n/app_localizations.dart';
@@ -38,6 +39,7 @@ class MyApp extends StatelessWidget {
         BlocProvider(create: (_) => sl<SearchCubit>()),
         BlocProvider(create: (_) => sl<AuthCubit>()),
         BlocProvider(create: (_) => sl<CheckoutCubit>()),
+        BlocProvider(create: (_) => sl<OrderHistoryCubit>()),
       ],
       child: BlocListener<LocaleCubit, Locale>(
         listener: (context, state) {

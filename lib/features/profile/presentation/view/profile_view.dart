@@ -1,11 +1,12 @@
+// lib/features/profile/presentation/view/profile_view.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:jwt_decoder/jwt_decoder.dart';
 import 'package:persia_markt/core/config/app_routes.dart';
 import 'package:persia_markt/core/cubit/locale_cubit.dart';
 import 'package:persia_markt/features/auth/presentation/cubit/auth_cubit.dart';
 import 'package:persia_markt/features/auth/presentation/cubit/auth_state.dart';
-import 'package:jwt_decoder/jwt_decoder.dart';
 import 'package:persia_markt/l10n/app_localizations.dart';
 
 class ProfileView extends StatelessWidget {
@@ -118,7 +119,8 @@ class ProfileView extends StatelessWidget {
         Center(
           child: Text(
             email,
-            style: Theme.of(context).textTheme.bodyLarge?.copyWith(color: Colors.grey),
+            style:
+                Theme.of(context).textTheme.bodyLarge?.copyWith(color: Colors.grey),
           ),
         ),
         const Divider(height: 40),
@@ -127,6 +129,13 @@ class ProfileView extends StatelessWidget {
           title: Text(l10n.favoritesTitle),
           onTap: () {
             context.push(AppRoutes.favorites);
+          },
+        ),
+        ListTile(
+          leading: const Icon(Icons.history_outlined),
+          title: Text(l10n.orderHistory),
+          onTap: () {
+            context.push(AppRoutes.orderHistory);
           },
         ),
         ListTile(
@@ -139,13 +148,6 @@ class ProfileView extends StatelessWidget {
           title: Text(l10n.accountSettings),
           onTap: () {
             context.push(AppRoutes.settings);
-          },
-        ),
-        ListTile(
-          leading: const Icon(Icons.history_outlined),
-          title: Text(l10n.orderHistory),
-          onTap: () {
-            // TODO: Navigate to order history page
           },
         ),
         const Divider(),

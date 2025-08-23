@@ -14,6 +14,7 @@ import 'package:persia_markt/features/checkout/presentation/view/checkout_view.d
 import 'package:persia_markt/features/home/presentation/view/home_view.dart';
 import 'package:persia_markt/features/home/presentation/view/main_tab_bar_view.dart';
 import 'package:persia_markt/features/map/view/map_view.dart';
+import 'package:persia_markt/features/order_history/presentation/view/order_history_view.dart';
 import 'package:persia_markt/features/profile/presentation/view/favorites_view.dart';
 import 'package:persia_markt/features/profile/presentation/view/profile_view.dart';
 import 'package:persia_markt/features/search/presentation/view/search_view.dart';
@@ -39,16 +40,25 @@ class AppRouter {
       final authState = context.read<AuthCubit>().state;
       final isLoggedIn = authState is Authenticated;
 
-      final authRelatedRoutes = [
+      // لیست مسیرهایی که نیاز به لاگین ندارند
+      final publicRoutes = [
         AppRoutes.login,
         AppRoutes.register,
-        AppRoutes.sellerPanel
+        AppRoutes.sellerPanel,
+        // فرض می‌کنیم صفحه اصلی و نقشه برای کاربران مهمان هم قابل مشاهده است
+        AppRoutes.home,
+        AppRoutes.map,
+        AppRoutes.search,
       ];
-      final onAuthRoutes = authRelatedRoutes.contains(state.matchedLocation);
 
-      if (!isLoggedIn && !onAuthRoutes) {
+      final isGoingToPublicRoute = publicRoutes.any((route) => state.matchedLocation.startsWith(route));
+      
+      // اگر کاربر لاگین نکرده و می‌خواهد به صفحه‌ای غیرعمومی برود، او را به صفحه لاگین بفرست
+      if (!isLoggedIn && !isGoingToPublicRoute) {
         return AppRoutes.login;
       }
+      
+      // اگر کاربر لاگین کرده و می‌خواهد به صفحه لاگین یا ثبت‌نام برود، او را به صفحه اصلی بفرست
       if (isLoggedIn &&
           (state.matchedLocation == AppRoutes.login ||
               state.matchedLocation == AppRoutes.register)) {
@@ -206,6 +216,14 @@ class AppRouter {
         pageBuilder: (context, state) => _buildPageWithTransition(
           key: state.pageKey,
           child: const CheckoutView(),
+        ),
+      ),
+      GoRoute(
+        path: AppRoutes.orderHistory,
+        parentNavigatorKey: _rootNavigatorKey,
+        pageBuilder: (context, state) => _buildPageWithTransition(
+          key: state.pageKey,
+          child: const OrderHistoryView(),
         ),
       ),
     ],

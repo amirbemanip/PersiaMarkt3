@@ -13,6 +13,8 @@ import 'package:persia_markt/features/home/data/repositories/market_repository_i
 import 'package:persia_markt/features/home/domain/repositories/market_repository.dart';
 import 'package:persia_markt/features/home/presentation/bloc/market_data_bloc.dart';
 import 'package:persia_markt/features/home/presentation/cubit/location_cubit.dart';
+import 'package:persia_markt/features/order_history/data/services/order_history_service.dart';
+import 'package:persia_markt/features/order_history/presentation/cubit/order_history_cubit.dart';
 import 'package:persia_markt/features/profile/presentation/cubit/favorites_cubit.dart';
 import 'package:persia_markt/features/search/presentation/cubit/search_cubit.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -33,6 +35,7 @@ Future<void> setupServiceLocator() async {
   sl.registerLazySingleton(() => LocationService());
   sl.registerLazySingleton(() => AuthService(client: sl(), prefs: sl()));
   sl.registerLazySingleton(() => CheckoutService(client: sl(), authService: sl()));
+  sl.registerLazySingleton(() => OrderHistoryService(client: sl(), authService: sl()));
 
   // Repositories
   sl.registerLazySingleton<MarketRepository>(
@@ -41,9 +44,11 @@ Future<void> setupServiceLocator() async {
   // Feature Cubits & Blocs
   sl.registerFactory(() => MarketDataBloc(marketRepository: sl()));
   sl.registerFactory(() => LocationCubit(locationService: sl()));
+  // <<< اصلاح اصلی: CartCubit به یک نمونه واحد و پایدار تبدیل شد
   sl.registerLazySingleton(() => CartCubit(sharedPreferences: sl()));
   sl.registerFactory(() => FavoritesCubit(sharedPreferences: sl()));
   sl.registerFactory(() => SearchCubit());
   sl.registerFactory(() => AuthCubit(authService: sl()));
-  sl.registerFactory(() => CheckoutCubit(checkoutService: sl(), cartCubit: sl()));
+  sl.registerFactory(() => CheckoutCubit(checkoutService: sl(), cartCubit: sl(), orderHistoryCubit: sl()));
+  sl.registerLazySingleton(() => OrderHistoryCubit(orderHistoryService: sl()));
 }

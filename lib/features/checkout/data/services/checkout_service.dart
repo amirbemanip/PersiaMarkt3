@@ -1,6 +1,7 @@
 // lib/features/checkout/data/services/checkout_service.dart
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:persia_markt/core/models/order.dart';
 import 'package:persia_markt/features/auth/data/services/auth_service.dart';
 
 class CheckoutService {
@@ -12,7 +13,8 @@ class CheckoutService {
       : _client = client,
         _authService = authService;
 
-  Future<void> placeOrder({
+  // <<< اصلاح شد: این متد حالا لیستی از سفارشات ایجاد شده را برمی‌گرداند
+  Future<List<Order>> placeOrder({
     required Map<String, String> address,
     required List<Map<String, dynamic>> items,
   }) async {
@@ -34,7 +36,8 @@ class CheckoutService {
     );
 
     if (response.statusCode >= 200 && response.statusCode < 300) {
-      return; // Order placed successfully
+      final List<dynamic> data = json.decode(utf8.decode(response.bodyBytes));
+      return data.map((json) => Order.fromJson(json)).toList();
     } else {
       final errorBody = json.decode(response.body);
       throw Exception(errorBody['message'] ?? 'خطا در ثبت سفارش');
