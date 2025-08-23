@@ -4,11 +4,11 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:persia_markt/core/config/app_routes.dart';
 import 'package:persia_markt/core/widgets/address_form.dart';
+import 'package:persia_markt/features/cart/presentation/cubit/cart_cubit.dart';
 import 'package:persia_markt/features/checkout/presentation/cubit/checkout_cubit.dart';
 import 'package:persia_markt/features/checkout/presentation/cubit/checkout_state.dart';
 import 'package:persia_markt/features/home/presentation/bloc/market_data_bloc.dart';
 import 'package:persia_markt/features/home/presentation/bloc/market_data_state.dart';
-import 'package:persia_markt/features/cart/presentation/cubit/cart_cubit.dart';
 
 class CheckoutView extends StatefulWidget {
   const CheckoutView({super.key});
@@ -84,7 +84,12 @@ class _CheckoutViewState extends State<CheckoutView> {
       body: BlocListener<CheckoutCubit, CheckoutState>(
         listener: (context, state) {
           if (state is CheckoutSuccess) {
-            context.go(AppRoutes.orderHistory);
+            // <<< اصلاح اصلی اینجاست
+            // 1. ابتدا به صفحه اصلی برمی‌گردیم تا مسیر پاک شود
+            context.go(AppRoutes.home);
+            // 2. سپس صفحه تاریخچه را روی آن باز می‌کنیم تا دکمه بازگشت داشته باشد
+            context.push(AppRoutes.orderHistory);
+            
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(
                   content: Text(
