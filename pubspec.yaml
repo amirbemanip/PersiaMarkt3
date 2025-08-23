@@ -1,0 +1,84 @@
+name: persia_markt
+description: A mobile application for Persian products and stores in Germany.
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.0.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+
+  # CORE UTILITIES
+  cupertino_icons: ^1.0.2
+  google_fonts: ^6.2.1
+  equatable: ^2.0.5
+  get_it: ^7.7.0
+  fpdart: ^1.1.0
+  intl: ^0.20.2 
+
+  # STATE MANAGEMENT
+  flutter_bloc: ^8.1.5
+
+  # ROUTING
+  go_router: ^14.1.0
+
+  # NETWORKING & DATA
+  http: ^1.2.1
+  shared_preferences: ^2.2.3
+
+  # LOCATION & MAPS
+  geolocator: ^12.0.0
+  geocoding: ^3.0.0
+  flutter_map: ^7.0.0
+  latlong2: ^0.9.1
+
+  # UI & UX
+  shimmer: ^3.0.0
+  scrollable_positioned_list: ^0.3.8
+  jwt_decoder: ^2.0.1
+  flutter_staggered_animations: ^1.1.1 
+  webview_flutter: ^4.8.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^3.0.0
+  
+  # ۱. پکیج جدید برای ساخت آیکون اضافه شد
+  flutter_launcher_icons: ^0.13.1
+
+  # TESTING LIBRARIES
+  bloc_test: ^9.1.7
+  mocktail: ^1.0.3
+
+# ۲. تنظیمات مربوط به پکیج آیکون اینجا اضافه شد
+flutter_launcher_icons:
+  android: "launcher_icon"
+  ios: true
+  image_path: "assets/images/icon.png" # <<< اگر نام فایل شما متفاوت است، اینجا تغییر دهید
+  min_sdk_android: 21 # To support adaptive icons, the minimum SDK version must be 26.
+  web:
+    generate: true
+  windows:
+    generate: true
+  macos:
+    generate: true
+
+
+flutter:
+  generate: true 
+
+  uses-material-design: true
+  
+  assets:
+    - assets/images/appLogo.png
+    - assets/images/supermarket.png
+    - assets/images/banner1.png
+    - assets/images/banner2.png
+    - assets/images/banner3.png
+    - assets/images/banner4.png
+    - assets/images/icon.png # <<< فایل آیکون جدید به لیست دارایی‌ها اضافه شد
