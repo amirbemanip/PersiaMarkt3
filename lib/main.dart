@@ -16,9 +16,11 @@ import 'package:persia_markt/features/order_history/presentation/cubit/order_his
 import 'package:persia_markt/features/profile/presentation/cubit/favorites_cubit.dart';
 import 'package:persia_markt/features/search/presentation/cubit/search_cubit.dart';
 import 'package:persia_markt/l10n/app_localizations.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await dotenv.load();
   await setupServiceLocator();
   runApp(const MyApp());
 }

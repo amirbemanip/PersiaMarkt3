@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
 import 'dart:async'; // For timeout
 import 'package:persia_markt/core/config/service_locator.dart';
@@ -7,7 +8,8 @@ import 'package:persia_markt/core/cubit/locale_cubit.dart';
 /// A service class for handling all network requests to the PersiaMarkt API.
 /// It is optimized to fetch initial data with a single, efficient request.
 class ApiService {
-  final String _baseUrl = 'https://persia-market-panel.onrender.com';
+  final String _baseUrl = dotenv.env['API_BASE_URL'] ?? 'https://persia-market-panel.onrender.com';
+  final String _apiVersion = dotenv.env['API_VERSION'] ?? 'v1';
   
   final http.Client _client;
   final _timeoutDuration = const Duration(seconds: 90);
@@ -18,8 +20,8 @@ class ApiService {
   Future<Map<String, dynamic>> fetchMarketDataAsJson() async {
     // ==================== اصلاح اصلی اینجاست ====================
     // یک پارامتر تصادفی برای جلوگیری از کش شدن درخواست در iOS اضافه شد
-    final cacheBuster = DateTime.now().millisecondsSinceEpoch;
-    final Uri url = Uri.parse('$_baseUrl/api/v1/public/market-data?v=$cacheBuster');
+  final cacheBuster = DateTime.now().millisecondsSinceEpoch;
+  final Uri url = Uri.parse('$_baseUrl/api/$_apiVersion/public/market-data?v=$cacheBuster');
     // ==========================================================
     
     try {
