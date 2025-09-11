@@ -8,7 +8,7 @@ import 'package:persia_markt/core/cubit/locale_cubit.dart';
 /// A service class for handling all network requests to the PersiaMarkt API.
 /// It is optimized to fetch initial data with a single, efficient request.
 class ApiService {
-  final String _baseUrl = dotenv.env['API_BASE_URL'] ?? 'https://persia-market-panel.onrender.com';
+  final String _baseUrl = dotenv.env['API_BASE_URL'] ?? 'https://persia-market-panel.onrender.com/api/v1';
   final String _apiVersion = dotenv.env['API_VERSION'] ?? 'v1';
   
   final http.Client _client;

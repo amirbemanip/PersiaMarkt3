@@ -6,8 +6,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 class AuthService {
   // ==================== اصلاح اصلی اینجاست ====================
-  // آدرس پایه به آدرس اصلی سرور بدون هیچ پیشوند اضافی تغییر کرد.
-  final String _baseUrl = 'https://persia-market-panel.onrender.com';
+  // آدرس پایه به آدرس اصلی سرور با پیشوند api/v1 تغییر کرد.
+  final String _baseUrl = 'https://persia-market-panel.onrender.com/api/v1';
   // ==========================================================
 
   final http.Client _client;

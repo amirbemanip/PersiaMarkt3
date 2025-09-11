@@ -5,7 +5,7 @@ import 'package:persia_markt/core/models/order.dart';
 import 'package:persia_markt/features/auth/data/services/auth_service.dart';
 
 class OrderHistoryService {
-  final String _baseUrl = 'https://persia-market-panel.onrender.com';
+  final String _baseUrl = 'https://persia-market-panel.onrender.com/api/v1';
   final http.Client _client;
   final AuthService _authService;
 
