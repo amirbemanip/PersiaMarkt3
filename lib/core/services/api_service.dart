@@ -8,13 +8,20 @@ import 'package:persia_markt/core/cubit/locale_cubit.dart';
 /// A service class for handling all network requests to the PersiaMarkt API.
 /// It is optimized to fetch initial data with a single, efficient request.
 class ApiService {
-  final String _baseUrl = dotenv.env['API_BASE_URL'] ?? 'https://persia-market-panel.onrender.com/api/v1';
+  late final String _baseUrl;
   final String _apiVersion = dotenv.env['API_VERSION'] ?? 'v1';
   
   final http.Client _client;
   final _timeoutDuration = const Duration(seconds: 90);
 
-  ApiService({required http.Client client}) : _client = client;
+  ApiService({required http.Client client}) : _client = client {
+    // Ensure the base URL always includes /api/v1
+    String envUrl = dotenv.env['API_BASE_URL'] ?? 'https://persia-market-panel.onrender.com';
+    if (!envUrl.endsWith('/api/v1')) {
+      envUrl = '$envUrl/api/v1';
+    }
+    _baseUrl = envUrl;
+  }
 
   /// Fetches all market data (stores, products, categories) in a single API call.
   Future<Map<String, dynamic>> fetchMarketDataAsJson() async {
@@ -22,10 +29,6 @@ class ApiService {
     // یک پارامتر تصادفی برای جلوگیری از کش شدن درخواست در iOS اضافه شد
   final cacheBuster = DateTime.now().millisecondsSinceEpoch;
   final Uri url = Uri.parse('$_baseUrl/public/market-data?v=$cacheBuster');
-    
-    // Debug: Print the constructed URL to see what's happening
-    print('Base URL: $_baseUrl');
-    print('Constructed URL: $url');
     // ==========================================================
     
     try {
