@@ -21,7 +21,7 @@ class ApiService {
     // ==================== اصلاح اصلی اینجاست ====================
     // یک پارامتر تصادفی برای جلوگیری از کش شدن درخواست در iOS اضافه شد
   final cacheBuster = DateTime.now().millisecondsSinceEpoch;
-  final Uri url = Uri.parse('$_baseUrl/api/$_apiVersion/public/market-data?v=$cacheBuster');
+  final Uri url = Uri.parse('$_baseUrl/public/market-data?v=$cacheBuster');
     // ==========================================================
     
     try {

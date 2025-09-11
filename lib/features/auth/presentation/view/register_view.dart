@@ -144,10 +144,14 @@ class _RegisterViewState extends State<RegisterView> {
                       const SizedBox(height: 16),
                       DropdownButtonFormField<String>(
                         value: _selectedCity,
+                        isExpanded: true,
                         items: _germanCities.map((String city) {
                           return DropdownMenuItem<String>(
                             value: city,
-                            child: Text(city),
+                            child: Text(
+                              city,
+                              overflow: TextOverflow.ellipsis,
+                            ),
                           );
                         }).toList(),
                         onChanged: (newValue) {
