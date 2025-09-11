@@ -71,10 +71,8 @@ flutter_launcher_icons:
 
 
 flutter:
-  generate: true 
-
+  generate: true
   uses-material-design: true
-  
   assets:
     - assets/images/appLogo.png
     - assets/images/supermarket.png
@@ -82,4 +80,5 @@ flutter:
     - assets/images/banner2.png
     - assets/images/banner3.png
     - assets/images/banner4.png
-    - assets/images/icon.png # <<< فایل آیکون جدید به لیست دارایی‌ها اضافه شد
+    - assets/images/icon.png
+    - .env
