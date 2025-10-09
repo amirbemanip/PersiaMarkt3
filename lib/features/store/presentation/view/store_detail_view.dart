@@ -1,8 +1,10 @@
 // lib/features/store/presentation/view/store_detail_view.dart
 import 'dart:async';
 import 'dart:ui';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:shimmer/shimmer.dart';
 import 'package:go_router/go_router.dart';
 import 'package:persia_markt/core/models/category_item.dart';
 import 'package:persia_markt/core/models/product.dart';
@@ -119,10 +121,14 @@ class _StoreDetailViewState extends State<StoreDetailView>
             child: GestureDetector(
               onTap: () => Navigator.of(context).pop(),
               child: InteractiveViewer(
-                child: Image.network(
-                  imageUrl,
-                  errorBuilder: (_, __, ___) => const Icon(Icons.broken_image,
-                      color: Colors.white, size: 48),
+                child: CachedNetworkImage(
+                  imageUrl: imageUrl,
+                  placeholder: (context, url) =>
+                      const CircularProgressIndicator(),
+                  errorWidget: (context, url, error) => const Icon(
+                      Icons.broken_image,
+                      color: Colors.white,
+                      size: 48),
                 ),
               ),
             ),
@@ -228,12 +234,18 @@ class _StoreDetailViewState extends State<StoreDetailView>
         background: Stack(
           fit: StackFit.expand,
           children: [
-            Image.network(
-              store.storeImage,
+            CachedNetworkImage(
+              imageUrl: store.storeImage,
               fit: BoxFit.cover,
-              errorBuilder: (context, error, stackTrace) =>
-                  Image.asset('assets/images/supermarket.png',
-                      fit: BoxFit.cover),
+              placeholder: (context, url) => Shimmer.fromColors(
+                baseColor: Colors.grey.shade300,
+                highlightColor: Colors.grey.shade100,
+                child: Container(color: Colors.white),
+              ),
+              errorWidget: (context, url, error) => Image.asset(
+                'assets/images/supermarket.png',
+                fit: BoxFit.cover,
+              ),
             ),
             const DecoratedBox(
               decoration: BoxDecoration(

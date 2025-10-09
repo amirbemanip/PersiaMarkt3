@@ -1,6 +1,8 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:persia_markt/core/config/app_routes.dart';
+import 'package:shimmer/shimmer.dart';
 import 'package:persia_markt/core/models/category_item.dart';
 // ۱. پکیج انیمیشن را ایمپورت کنید
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
@@ -50,17 +52,19 @@ class CategoryListView extends StatelessWidget {
                               ],
                             ),
                             child: ClipOval(
-                              child: (category.iconUrl != null && category.iconUrl!.isNotEmpty)
-                                  ? Image.network(
-                                      category.iconUrl!,
+                              child: (category.iconUrl != null &&
+                                      category.iconUrl!.isNotEmpty)
+                                  ? CachedNetworkImage(
+                                      imageUrl: category.iconUrl!,
                                       fit: BoxFit.cover,
-                                      errorBuilder: (context, error, stackTrace) => _buildPlaceholderIcon(),
-                                      loadingBuilder: (context, child, loadingProgress) {
-                                        if (loadingProgress == null) return child;
-                                        return const Center(
-                                          child: CircularProgressIndicator(strokeWidth: 2.0),
-                                        );
-                                      },
+                                      placeholder: (context, url) =>
+                                          Shimmer.fromColors(
+                                        baseColor: Colors.grey.shade300,
+                                        highlightColor: Colors.grey.shade100,
+                                        child: Container(color: Colors.white),
+                                      ),
+                                      errorWidget: (context, url, error) =>
+                                          _buildPlaceholderIcon(),
                                     )
                                   : _buildPlaceholderIcon(),
                             ),

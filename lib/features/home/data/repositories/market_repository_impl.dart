@@ -1,4 +1,5 @@
 import 'package:fpdart/fpdart.dart';
+import 'package:persia_markt/core/error/exceptions.dart';
 import 'package:persia_markt/core/error/failures.dart';
 import 'package:persia_markt/core/models/market_data.dart';
 import 'package:persia_markt/core/services/api_service.dart';
@@ -13,19 +14,20 @@ class MarketRepositoryImpl implements MarketRepository {
   @override
   Future<Either<Failure, MarketData>> getMarketData() async {
     try {
-      // 1. Fetch the raw JSON data from the optimized ApiService.
       final Map<String, dynamic> marketDataJson =
           await _apiService.fetchMarketDataAsJson();
-
-      // 2. Parse the JSON into a strongly-typed MarketData model.
       final marketData = MarketData.fromJson(marketDataJson);
-
-      // 3. Return the successful result wrapped in a Right.
       return Right(marketData);
-    } on Exception catch (e) {
-      // 4. On any exception from the service layer, catch it and return
-      //    a standardized ServerFailure with a user-friendly message.
-      return Left(ServerFailure(e.toString().replaceAll('Exception: ', '')));
+    } on ServerException catch (e) {
+      return Left(ServerFailure(message: e.message));
+    } on NetworkException {
+      return const Left(NetworkFailure());
+    } on TimeoutException {
+      return const Left(TimeoutFailure());
+    } on ParsingException {
+      return const Left(UnexpectedFailure()); // Parsing errors are unexpected
+    } catch (_) {
+      return const Left(UnexpectedFailure());
     }
   }
 }

@@ -29,6 +29,7 @@ dependencies:
   # NETWORKING & DATA
   http: ^1.2.1
   shared_preferences: ^2.2.3
+  flutter_secure_storage: ^9.2.2 # For secure storage of auth tokens
   flutter_dotenv: ^5.1.0
 
   # LOCATION & MAPS
@@ -38,6 +39,7 @@ dependencies:
   latlong2: ^0.9.1
 
   # UI & UX
+  cached_network_image: ^3.3.1 # For caching network images
   shimmer: ^3.0.0
   scrollable_positioned_list: ^0.3.8
   jwt_decoder: ^2.0.1

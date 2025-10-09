@@ -24,7 +24,8 @@ class AuthCubit extends Cubit<AuthState> {
   void checkAuthentication() async {
     // A small delay to ensure the splash screen is visible for a moment.
     await Future.delayed(const Duration(milliseconds: 500));
-    if (authService.isLoggedIn()) {
+    // authService.isLoggedIn() now returns a Future, so we must await it.
+    if (await authService.isLoggedIn()) {
       emit(const Authenticated());
     } else {
       emit(Unauthenticated());

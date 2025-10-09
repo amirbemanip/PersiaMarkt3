@@ -1,4 +1,5 @@
 // lib/core/config/service_locator.dart
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:get_it/get_it.dart';
 import 'package:http/http.dart' as http;
 import 'package:persia_markt/core/cubit/locale_cubit.dart';
@@ -26,6 +27,7 @@ Future<void> setupServiceLocator() async {
   final sharedPreferences = await SharedPreferences.getInstance();
   sl.registerLazySingleton(() => sharedPreferences);
   sl.registerLazySingleton(() => http.Client());
+  sl.registerLazySingleton(() => const FlutterSecureStorage());
 
   // Core Cubits
   sl.registerLazySingleton(() => LocaleCubit());
@@ -33,7 +35,7 @@ Future<void> setupServiceLocator() async {
   // Services
   sl.registerLazySingleton(() => ApiService(client: sl()));
   sl.registerLazySingleton(() => LocationService());
-  sl.registerLazySingleton(() => AuthService(client: sl(), prefs: sl()));
+  sl.registerLazySingleton(() => AuthService(client: sl(), secureStorage: sl()));
   sl.registerLazySingleton(() => CheckoutService(client: sl(), authService: sl()));
   sl.registerLazySingleton(() => OrderHistoryService(client: sl(), authService: sl()));
 
@@ -42,22 +44,23 @@ Future<void> setupServiceLocator() async {
       () => MarketRepositoryImpl(apiService: sl()));
 
   // Feature Cubits & Blocs
-  sl.registerFactory(() => MarketDataBloc(marketRepository: sl()));
-  sl.registerFactory(() => LocationCubit(locationService: sl()));
-  // Cubits should be singletons to maintain state across the app.
+  // All Blocs and Cubits that hold state should be registered as singletons
+  // to ensure a single source of truth throughout the app.
+  sl.registerLazySingleton(() => MarketDataBloc(marketRepository: sl()));
+  sl.registerLazySingleton(() => LocationCubit(locationService: sl()));
   sl.registerLazySingleton(() => CartCubit(sharedPreferences: sl()));
   sl.registerLazySingleton(() => FavoritesCubit(sharedPreferences: sl()));
   sl.registerLazySingleton(() => OrderHistoryCubit(orderHistoryService: sl()));
-
-  // AuthCubit now depends on other cubits to reset them on logout.
+  sl.registerLazySingleton(() => SearchCubit());
+  sl.registerLazySingleton(() => CheckoutCubit(
+        checkoutService: sl(),
+        cartCubit: sl(),
+        orderHistoryCubit: sl(),
+      ));
   sl.registerLazySingleton(() => AuthCubit(
         authService: sl(),
         cartCubit: sl(),
         favoritesCubit: sl(),
         orderHistoryCubit: sl(),
       ));
-
-  sl.registerFactory(() => SearchCubit());
-  sl.registerFactory(() =>
-      CheckoutCubit(checkoutService: sl(), cartCubit: sl(), orderHistoryCubit: sl()));
 }

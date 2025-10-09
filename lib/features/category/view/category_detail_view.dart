@@ -1,7 +1,9 @@
 // lib/features/category/view/category_detail_view.dart
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:shimmer/shimmer.dart';
 import 'package:persia_markt/core/models/product.dart';
 import 'package:persia_markt/core/models/store.dart';
 import 'package:persia_markt/core/widgets/product_card_view.dart';
@@ -107,11 +109,18 @@ class _StoreProductsCard extends StatelessWidget {
           ListTile(
             leading: ClipRRect(
               borderRadius: BorderRadius.circular(8),
-              child: Image.network(
-                store.storeImage,
+              child: CachedNetworkImage(
+                imageUrl: store.storeImage,
                 width: 50,
                 height: 50,
                 fit: BoxFit.cover,
+                placeholder: (context, url) => Shimmer.fromColors(
+                  baseColor: Colors.grey.shade300,
+                  highlightColor: Colors.grey.shade100,
+                  child: Container(color: Colors.white),
+                ),
+                errorWidget: (context, url, error) =>
+                    const Icon(Icons.storefront),
               ),
             ),
             title: Text(store.name,

@@ -1,6 +1,8 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:shimmer/shimmer.dart';
 import 'package:persia_markt/core/models/product.dart';
 import 'package:persia_markt/core/models/store.dart';
 import 'package:persia_markt/features/cart/presentation/cubit/cart_cubit.dart';
@@ -31,12 +33,17 @@ class ProductListItemView extends StatelessWidget {
           onTap: onImageTap,
           child: ClipRRect(
             borderRadius: BorderRadius.circular(8),
-            child: Image.network(
-              product.primaryImageUrl,
+            child: CachedNetworkImage(
+              imageUrl: product.primaryImageUrl,
               width: 60,
               height: 60,
               fit: BoxFit.cover,
-              errorBuilder: (_, __, ___) => Image.asset(
+              placeholder: (context, url) => Shimmer.fromColors(
+                baseColor: Colors.grey.shade300,
+                highlightColor: Colors.grey.shade100,
+                child: Container(color: Colors.white),
+              ),
+              errorWidget: (context, url, error) => Image.asset(
                 'assets/images/supermarket.png',
                 width: 60,
                 height: 60,

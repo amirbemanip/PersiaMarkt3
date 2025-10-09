@@ -2,9 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:persia_markt/core/config/app_routes.dart';
-// ==================== کد اصلاح شده اینجاست ====================
 import 'package:persia_markt/core/cubit/locale_cubit.dart';
-// ==========================================================
 import 'package:persia_markt/features/auth/presentation/cubit/auth_cubit.dart';
 import 'package:persia_markt/features/auth/presentation/cubit/auth_state.dart';
 import 'package:persia_markt/l10n/app_localizations.dart';
@@ -20,7 +18,6 @@ class _LoginViewState extends State<LoginView> {
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
-  bool _isLoadingUi = false;
   bool _obscureText = true;
 
   @override
@@ -36,13 +33,14 @@ class _LoginViewState extends State<LoginView> {
     });
   }
 
-  Future<void> _login() async {
+  void _login() {
+    // Hide keyboard to prevent it from staying open after login attempt
+    FocusScope.of(context).unfocus();
     if (_formKey.currentState?.validate() ?? false) {
       context.read<AuthCubit>().loginUser(
             email: _emailController.text.trim(),
             password: _passwordController.text,
           );
-      setState(() => _isLoadingUi = true);
     }
   }
 
@@ -94,16 +92,15 @@ class _LoginViewState extends State<LoginView> {
             if (state is Authenticated) {
               context.go(AppRoutes.home);
             } else if (state is AuthError) {
-              setState(() => _isLoadingUi = false);
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text(state.message)),
-              );
-            } else if (state is Unauthenticated || state is AuthInitial) {
-              setState(() => _isLoadingUi = false);
+              ScaffoldMessenger.of(context)
+                ..hideCurrentSnackBar()
+                ..showSnackBar(
+                  SnackBar(content: Text(state.message)),
+                );
             }
           },
           builder: (context, state) {
-            final isLoading = state is AuthLoading || _isLoadingUi;
+            final isLoading = state is AuthLoading;
 
             return Stack(
               children: [
@@ -122,13 +119,15 @@ class _LoginViewState extends State<LoginView> {
                           Text(
                             l10n.loginToYourAccount,
                             textAlign: TextAlign.center,
-                            style: theme.textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.bold),
+                            style: theme.textTheme.headlineMedium
+                                ?.copyWith(fontWeight: FontWeight.bold),
                           ),
                           const SizedBox(height: 8),
                           Text(
                             l10n.gladToSeeYouAgain,
                             textAlign: TextAlign.center,
-                            style: theme.textTheme.titleMedium?.copyWith(color: Colors.grey),
+                            style: theme.textTheme.titleMedium
+                                ?.copyWith(color: Colors.grey),
                           ),
                           const SizedBox(height: 32),
                           _buildTextFormField(
@@ -137,8 +136,12 @@ class _LoginViewState extends State<LoginView> {
                             icon: Icons.email_outlined,
                             keyboardType: TextInputType.emailAddress,
                             validator: (value) {
-                              if (value == null || value.trim().isEmpty) return l10n.enterYourEmail;
-                              if (!value.contains('@') || !value.contains('.')) return l10n.invalidEmail;
+                              if (value == null || value.trim().isEmpty) {
+                                return l10n.enterYourEmail;
+                              }
+                              if (!value.contains('@') || !value.contains('.')) {
+                                return l10n.invalidEmail;
+                              }
                               return null;
                             },
                           ),
@@ -149,12 +152,18 @@ class _LoginViewState extends State<LoginView> {
                             icon: Icons.lock_outline,
                             obscureText: _obscureText,
                             suffixIcon: IconButton(
-                              icon: Icon(_obscureText ? Icons.visibility_off : Icons.visibility),
+                              icon: Icon(_obscureText
+                                  ? Icons.visibility_off
+                                  : Icons.visibility),
                               onPressed: _togglePasswordVisibility,
                             ),
                             validator: (value) {
-                              if (value == null || value.isEmpty) return l10n.enterYourPassword;
-                              if (value.length < 6) return l10n.passwordTooShort(6);
+                              if (value == null || value.isEmpty) {
+                                return l10n.enterYourPassword;
+                              }
+                              if (value.length < 6) {
+                                return l10n.passwordTooShort(6);
+                              }
                               return null;
                             },
                           ),
@@ -162,15 +171,18 @@ class _LoginViewState extends State<LoginView> {
                           isLoading
                               ? const Center(child: CircularProgressIndicator())
                               : ElevatedButton(
-                                  onPressed: _login,
+                                  onPressed: isLoading ? null : _login,
                                   style: ElevatedButton.styleFrom(
-                                    padding: const EdgeInsets.symmetric(vertical: 14),
+                                    padding: const EdgeInsets.symmetric(
+                                        vertical: 14),
                                   ),
                                   child: Text(l10n.login),
                                 ),
                           const SizedBox(height: 12),
                           TextButton(
-                            onPressed: () => context.go(AppRoutes.register),
+                            onPressed: isLoading
+                                ? null
+                                : () => context.go(AppRoutes.register),
                             child: Text(l10n.noAccount),
                           ),
                         ],
@@ -185,7 +197,7 @@ class _LoginViewState extends State<LoginView> {
                   child: TextButton.icon(
                     icon: const Icon(Icons.storefront_outlined, size: 20),
                     label: Text(l10n.sellerLogin),
-                    onPressed: () => context.push(AppRoutes.sellerPanel),
+                    onPressed: isLoading ? null : () => context.push(AppRoutes.sellerPanel),
                     style: _buttonStyle(theme),
                   ),
                 ),
@@ -196,7 +208,7 @@ class _LoginViewState extends State<LoginView> {
                   child: TextButton.icon(
                     icon: const Icon(Icons.language, size: 20),
                     label: Text(l10n.language),
-                    onPressed: () => _showLanguageDialog(context),
+                    onPressed: isLoading ? null : () => _showLanguageDialog(context),
                     style: _buttonStyle(theme),
                   ),
                 ),
@@ -211,9 +223,7 @@ class _LoginViewState extends State<LoginView> {
   ButtonStyle _buttonStyle(ThemeData theme) {
     return TextButton.styleFrom(
       foregroundColor: theme.colorScheme.primary,
-      // ==================== کد اصلاح شده اینجاست ====================
       backgroundColor: theme.colorScheme.surface.withAlpha((255 * 0.9).round()),
-      // ==========================================================
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(20),
       ),

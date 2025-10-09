@@ -1,7 +1,9 @@
 // lib/features/order_history/presentation/view/order_history_view.dart
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
+import 'package:shimmer/shimmer.dart';
 import 'package:persia_markt/core/models/order.dart';
 import 'package:persia_markt/features/order_history/presentation/cubit/order_history_cubit.dart';
 import 'package:persia_markt/features/order_history/presentation/cubit/order_history_state.dart';
@@ -99,12 +101,18 @@ class _OrderCard extends StatelessWidget {
           return ListTile(
             leading: ClipRRect(
               borderRadius: BorderRadius.circular(8),
-              child: Image.network(
-                item.productImageUrl,
+              child: CachedNetworkImage(
+                imageUrl: item.productImageUrl,
                 width: 50,
                 height: 50,
                 fit: BoxFit.cover,
-                errorBuilder: (_, __, ___) => const Icon(Icons.image_not_supported),
+                placeholder: (context, url) => Shimmer.fromColors(
+                  baseColor: Colors.grey.shade300,
+                  highlightColor: Colors.grey.shade100,
+                  child: Container(color: Colors.white),
+                ),
+                errorWidget: (context, url, error) =>
+                    const Icon(Icons.image_not_supported),
               ),
             ),
             title: Text(item.productName),

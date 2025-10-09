@@ -1,7 +1,9 @@
 // lib/features/cart/presentation/view/cart_view.dart
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:shimmer/shimmer.dart';
 import 'package:persia_markt/core/config/app_routes.dart';
 import 'package:persia_markt/core/models/product.dart';
 import 'package:persia_markt/features/home/presentation/bloc/market_data_bloc.dart';
@@ -201,11 +203,17 @@ class _CartItemTile extends StatelessWidget {
     return ListTile(
       leading: ClipRRect(
         borderRadius: BorderRadius.circular(8),
-        child: Image.network(
-          product.primaryImageUrl,
+        child: CachedNetworkImage(
+          imageUrl: product.primaryImageUrl,
           width: 50,
           height: 50,
           fit: BoxFit.cover,
+          placeholder: (context, url) => Shimmer.fromColors(
+            baseColor: Colors.grey.shade300,
+            highlightColor: Colors.grey.shade100,
+            child: Container(color: Colors.white),
+          ),
+          errorWidget: (context, url, error) => const Icon(Icons.error),
         ),
       ),
       title: Text(product.name),

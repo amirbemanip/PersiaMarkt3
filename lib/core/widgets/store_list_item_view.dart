@@ -1,7 +1,9 @@
 // lib/core/widgets/store_list_item_view.dart
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:shimmer/shimmer.dart';
 import 'package:go_router/go_router.dart';
 import 'package:persia_markt/core/models/store.dart';
 import 'package:persia_markt/features/home/presentation/cubit/location_cubit.dart';
@@ -37,12 +39,17 @@ class StoreListItemView extends StatelessWidget {
             children: [
               ClipRRect(
                 borderRadius: BorderRadius.circular(12),
-                child: Image.network(
-                  store.storeImage,
+                child: CachedNetworkImage(
+                  imageUrl: store.storeImage,
                   width: 80,
                   height: 80,
                   fit: BoxFit.cover,
-                  errorBuilder: (context, error, stackTrace) => Image.asset(
+                  placeholder: (context, url) => Shimmer.fromColors(
+                    baseColor: Colors.grey.shade300,
+                    highlightColor: Colors.grey.shade100,
+                    child: Container(color: Colors.white),
+                  ),
+                  errorWidget: (context, url, error) => Image.asset(
                     'assets/images/supermarket.png',
                     width: 80,
                     height: 80,

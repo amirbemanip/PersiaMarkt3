@@ -1,24 +1,28 @@
-// مسیر: lib/features/auth/data/services/auth_service.dart
-
 import 'dart:convert';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart' as http;
-import 'package:shared_preferences/shared_preferences.dart';
 
 class AuthService {
-  // ==================== اصلاح اصلی اینجاست ====================
-  // آدرس پایه به آدرس اصلی سرور با پیشوند api/v1 تغییر کرد.
-  final String _baseUrl = 'https://persia-market-panel.onrender.com/api/v1';
-  // ==========================================================
-
+  late final String _baseUrl;
   final http.Client _client;
-  final SharedPreferences _prefs;
+  final FlutterSecureStorage _secureStorage;
 
-  // Key to store the auth token locally
+  // Key to store the auth token securely
   static const String _tokenKey = 'auth_token';
 
-  AuthService({required http.Client client, required SharedPreferences prefs})
-      : _client = client,
-        _prefs = prefs;
+  AuthService({
+    required http.Client client,
+    required FlutterSecureStorage secureStorage,
+  })  : _client = client,
+        _secureStorage = secureStorage {
+    // Initialize _baseUrl from .env, similar to ApiService
+    String envUrl = dotenv.env['API_BASE_URL'] ?? 'https://persia-market-panel.onrender.com';
+    if (!envUrl.endsWith('/api/v1')) {
+      envUrl = '$envUrl/api/v1';
+    }
+    _baseUrl = envUrl;
+  }
 
   Future<String> register({
     required String name,
@@ -26,9 +30,8 @@ class AuthService {
     required String password,
     String? city,
   }) async {
-    // مسیر کامل و صحیح برای ثبت‌نام کاربر
     final response = await _client.post(
-      Uri.parse('$_baseUrl/auth/user/register'), // <<<--- اصلاح شد
+      Uri.parse('$_baseUrl/auth/user/register'),
       headers: {'Content-Type': 'application/json'},
       body: json.encode({
         'name': name,
@@ -47,9 +50,8 @@ class AuthService {
   }
 
   Future<String> login({required String email, required String password}) async {
-    // مسیر کامل و صحیح برای ورود کاربر
     final response = await _client.post(
-      Uri.parse('$_baseUrl/auth/user/login'), // <<<--- اصلاح شد
+      Uri.parse('$_baseUrl/auth/user/login'),
       headers: {'Content-Type': 'application/json'},
       body: json.encode({'email': email, 'password': password}),
     );
@@ -57,7 +59,7 @@ class AuthService {
     final responseBody = json.decode(response.body);
     if (response.statusCode >= 200 && response.statusCode < 300) {
       final token = responseBody['access_token'];
-      await _prefs.setString(_tokenKey, token);
+      await _secureStorage.write(key: _tokenKey, value: token);
       return token;
     } else {
       throw Exception(responseBody['message'] ?? 'خطا در ورود');
@@ -65,14 +67,15 @@ class AuthService {
   }
 
   Future<void> logout() async {
-    await _prefs.remove(_tokenKey);
+    await _secureStorage.delete(key: _tokenKey);
   }
 
-  String? getToken() {
-    return _prefs.getString(_tokenKey);
+  Future<String?> getToken() async {
+    return await _secureStorage.read(key: _tokenKey);
   }
 
-  bool isLoggedIn() {
-    return _prefs.containsKey(_tokenKey);
+  Future<bool> isLoggedIn() async {
+    final token = await getToken();
+    return token != null;
   }
 }
