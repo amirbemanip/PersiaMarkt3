@@ -1,6 +1,9 @@
 // lib/core/config/app_routes.dart
 
 class AppRoutes {
+  // مسیر اسپلش
+  static const String splash = '/splash';
+
   // مسیرهای اصلی Shell
   static const String home = '/';
   static const String map = '/map';

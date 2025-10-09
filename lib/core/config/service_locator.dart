@@ -44,11 +44,20 @@ Future<void> setupServiceLocator() async {
   // Feature Cubits & Blocs
   sl.registerFactory(() => MarketDataBloc(marketRepository: sl()));
   sl.registerFactory(() => LocationCubit(locationService: sl()));
-  // <<< اصلاح اصلی: CartCubit به یک نمونه واحد و پایدار تبدیل شد
+  // Cubits should be singletons to maintain state across the app.
   sl.registerLazySingleton(() => CartCubit(sharedPreferences: sl()));
-  sl.registerFactory(() => FavoritesCubit(sharedPreferences: sl()));
-  sl.registerFactory(() => SearchCubit());
-  sl.registerFactory(() => AuthCubit(authService: sl()));
-  sl.registerFactory(() => CheckoutCubit(checkoutService: sl(), cartCubit: sl(), orderHistoryCubit: sl()));
+  sl.registerLazySingleton(() => FavoritesCubit(sharedPreferences: sl()));
   sl.registerLazySingleton(() => OrderHistoryCubit(orderHistoryService: sl()));
+
+  // AuthCubit now depends on other cubits to reset them on logout.
+  sl.registerLazySingleton(() => AuthCubit(
+        authService: sl(),
+        cartCubit: sl(),
+        favoritesCubit: sl(),
+        orderHistoryCubit: sl(),
+      ));
+
+  sl.registerFactory(() => SearchCubit());
+  sl.registerFactory(() =>
+      CheckoutCubit(checkoutService: sl(), cartCubit: sl(), orderHistoryCubit: sl()));
 }

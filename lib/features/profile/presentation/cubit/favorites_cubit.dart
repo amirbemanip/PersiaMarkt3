@@ -26,4 +26,9 @@ class FavoritesCubit extends Cubit<FavoritesState> {
     await _sharedPreferences.setStringList(_key, currentIds);
     emit(FavoritesState(productIds: currentIds));
   }
+
+  void reset() {
+    emit(const FavoritesState(productIds: []));
+    _sharedPreferences.remove(_key);
+  }
 }
