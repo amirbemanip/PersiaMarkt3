@@ -8,8 +8,8 @@ abstract class AuthState extends Equatable {
   List<Object> get props => [];
 }
 
-// Initial state, user is not authenticated
-class AuthInitial extends AuthState {}
+// Represents an unknown authentication state, typically during app startup.
+class AuthUnknown extends AuthState {}
 
 // State when an auth process (login/register) is in progress
 class AuthLoading extends AuthState {}

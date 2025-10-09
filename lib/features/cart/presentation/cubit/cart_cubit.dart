@@ -90,4 +90,9 @@ class CartCubit extends Cubit<CartState> {
     emit(const CartState(items: {}, selectedStoreIds: []));
     await _saveState();
   }
+
+  void reset() {
+    emit(const CartState(items: {}, selectedStoreIds: []));
+    _saveState();
+  }
 }

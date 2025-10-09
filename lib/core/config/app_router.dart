@@ -8,6 +8,7 @@ import 'package:persia_markt/features/auth/presentation/cubit/auth_cubit.dart';
 import 'package:persia_markt/features/auth/presentation/cubit/auth_state.dart';
 import 'package:persia_markt/features/auth/presentation/view/login_view.dart';
 import 'package:persia_markt/features/auth/presentation/view/register_view.dart';
+import 'package:persia_markt/features/auth/presentation/view/splash_view.dart';
 import 'package:persia_markt/features/cart/presentation/view/cart_view.dart';
 import 'package:persia_markt/features/category/view/category_detail_view.dart';
 import 'package:persia_markt/features/checkout/presentation/view/checkout_view.dart';
@@ -33,40 +34,54 @@ final _shellNavigatorProfileKey =
 
 class AppRouter {
   static final router = GoRouter(
-    initialLocation: AppRoutes.home,
+    initialLocation: AppRoutes.splash,
     navigatorKey: _rootNavigatorKey,
     refreshListenable: GoRouterRefreshStream(sl<AuthCubit>().stream),
     redirect: (BuildContext context, GoRouterState state) {
       final authState = context.read<AuthCubit>().state;
       final isLoggedIn = authState is Authenticated;
+      final isAuthenticating = authState is AuthUnknown;
 
-      // لیست مسیرهایی که نیاز به لاگین ندارند
+      final location = state.matchedLocation;
+
+      if (isAuthenticating) {
+        return AppRoutes.splash;
+      }
+
+      final isGoingToSplash = location == AppRoutes.splash;
+      if (isGoingToSplash) {
+        return isLoggedIn ? AppRoutes.home : AppRoutes.login;
+      }
+
+      final isGoingToLogin = location == AppRoutes.login;
+      final isGoingToRegister = location == AppRoutes.register;
+
+      if (isLoggedIn && (isGoingToLogin || isGoingToRegister)) {
+        return AppRoutes.home;
+      }
       final publicRoutes = [
         AppRoutes.login,
         AppRoutes.register,
-        AppRoutes.sellerPanel,
-        // فرض می‌کنیم صفحه اصلی و نقشه برای کاربران مهمان هم قابل مشاهده است
+        AppRoutes.splash,
         AppRoutes.home,
         AppRoutes.map,
         AppRoutes.search,
       ];
+      final isGoingToPublic =
+          publicRoutes.any((route) => location.startsWith(route));
 
-      final isGoingToPublicRoute = publicRoutes.any((route) => state.matchedLocation.startsWith(route));
-      
-      // اگر کاربر لاگین نکرده و می‌خواهد به صفحه‌ای غیرعمومی برود، او را به صفحه لاگین بفرست
-      if (!isLoggedIn && !isGoingToPublicRoute) {
+      if (!isLoggedIn && !isGoingToPublic) {
         return AppRoutes.login;
       }
-      
-      // اگر کاربر لاگین کرده و می‌خواهد به صفحه لاگین یا ثبت‌نام برود، او را به صفحه اصلی بفرست
-      if (isLoggedIn &&
-          (state.matchedLocation == AppRoutes.login ||
-              state.matchedLocation == AppRoutes.register)) {
-        return AppRoutes.home;
-      }
+
       return null;
     },
     routes: [
+       GoRoute(
+        path: AppRoutes.splash,
+        parentNavigatorKey: _rootNavigatorKey,
+        builder: (context, state) => const SplashView(),
+      ),
       StatefulShellRoute.indexedStack(
         builder: (context, state, navigationShell) {
           return MainTabBarView(navigationShell: navigationShell);

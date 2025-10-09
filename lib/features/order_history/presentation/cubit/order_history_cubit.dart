@@ -36,4 +36,8 @@ class OrderHistoryCubit extends Cubit<OrderHistoryState> {
       emit(OrderHistoryLoaded(newOrders));
     }
   }
+
+  void reset() {
+    emit(OrderHistoryInitial());
+  }
 }
