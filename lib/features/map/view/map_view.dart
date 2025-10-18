@@ -9,6 +9,8 @@ import 'package:persia_markt/features/home/presentation/bloc/market_data_bloc.da
 import 'package:persia_markt/features/home/presentation/bloc/market_data_state.dart';
 import 'package:persia_markt/features/home/presentation/cubit/location_cubit.dart';
 import 'package:persia_markt/features/home/presentation/cubit/location_state.dart';
+import 'package:persia_markt/features/map/presentation/cubit/map_boundary_cubit.dart';
+import 'package:persia_markt/features/map/presentation/cubit/map_boundary_state.dart';
 import 'package:persia_markt/l10n/app_localizations.dart';
 
 class MapView extends StatefulWidget {
@@ -101,6 +103,7 @@ class _MapViewState extends State<MapView> {
                 urlTemplate: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
                 subdomains: const ['a', 'b', 'c'],
               ),
+              _buildCityBoundaries(context),
               _buildStoreMarkers(stores, context), // context به متد پاس داده شد
               _buildUserLocationMarker(context),
             ],
@@ -121,6 +124,27 @@ class _MapViewState extends State<MapView> {
         label: Text(l10n.myLocation),
         icon: const Icon(Icons.my_location),
       ),
+    );
+  }
+
+  Widget _buildCityBoundaries(BuildContext context) {
+    return BlocBuilder<MapBoundaryCubit, MapBoundaryState>(
+      builder: (context, state) {
+        if (state is MapBoundaryLoaded) {
+          final polygons = state.boundaries.map((boundary) {
+            return Polygon(
+              points: boundary.points,
+              color: Colors.blue.withOpacity(0.2),
+              borderColor: Colors.blue,
+              borderStrokeWidth: 2,
+              isFilled: true,
+            );
+          }).toList();
+
+          return PolygonLayer(polygons: polygons);
+        }
+        return const SizedBox.shrink();
+      },
     );
   }
 

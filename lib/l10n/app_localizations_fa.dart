@@ -197,6 +197,18 @@ class AppLocalizationsFa extends AppLocalizations {
   String get selectCity => 'لطفاً یک شهر انتخاب کنید';
 
   @override
+  String get postalCode => 'کد پستی';
+
+  @override
+  String get enterPostalCode => 'لطفاً کد پستی خود را وارد کنید';
+
+  @override
+  String get address => 'آدرس';
+
+  @override
+  String get enterAddress => 'لطفاً آدرس خود را وارد کنید';
+
+  @override
   String get register => 'ثبت نام';
 
   @override

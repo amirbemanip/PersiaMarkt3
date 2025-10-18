@@ -197,6 +197,18 @@ class AppLocalizationsDe extends AppLocalizations {
   String get selectCity => 'Bitte wählen Sie eine Stadt aus';
 
   @override
+  String get postalCode => 'Postleitzahl';
+
+  @override
+  String get enterPostalCode => 'Bitte geben Sie Ihre Postleitzahl ein';
+
+  @override
+  String get address => 'Adresse';
+
+  @override
+  String get enterAddress => 'Bitte geben Sie Ihre Adresse ein';
+
+  @override
   String get register => 'Registrieren';
 
   @override

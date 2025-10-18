@@ -25,6 +25,8 @@ class AuthService {
     required String email,
     required String password,
     String? city,
+    String? postalCode,
+    String? address,
   }) async {
     // مسیر کامل و صحیح برای ثبت‌نام کاربر
     final response = await _client.post(
@@ -35,6 +37,8 @@ class AuthService {
         'email': email,
         'password': password,
         'city': city ?? '',
+        'postalCode': postalCode ?? '',
+        'address': address ?? '',
       }),
     );
 
