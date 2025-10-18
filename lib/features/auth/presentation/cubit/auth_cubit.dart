@@ -36,6 +36,8 @@ class AuthCubit extends Cubit<AuthState> {
     required String email,
     required String password,
     String? city,
+    String? postalCode,
+    String? address,
   }) async {
     emit(AuthLoading());
     try {
@@ -44,6 +46,8 @@ class AuthCubit extends Cubit<AuthState> {
         email: email,
         password: password,
         city: city,
+        postalCode: postalCode,
+        address: address,
       );
       // After successful registration, move to Unauthenticated to prompt login
       emit(Unauthenticated());

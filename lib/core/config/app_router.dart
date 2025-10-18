@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:persia_markt/core/config/service_locator.dart';
+import 'package:persia_markt/features/map/presentation/cubit/map_boundary_cubit.dart';
 import 'package:persia_markt/features/auth/presentation/cubit/auth_cubit.dart';
 import 'package:persia_markt/features/auth/presentation/cubit/auth_state.dart';
 import 'package:persia_markt/features/auth/presentation/view/login_view.dart';
@@ -137,7 +138,11 @@ class AppRouter {
                   final focus = state.uri.queryParameters['focus'];
                   return _buildPageWithTransition(
                     key: state.pageKey,
-                    child: MapView(lat: lat, lng: lng, focus: focus),
+                    child: BlocProvider(
+                      create: (context) =>
+                          sl<MapBoundaryCubit>()..fetchBoundaries(),
+                      child: MapView(lat: lat, lng: lng, focus: focus),
+                    ),
                   );
                 },
               ),

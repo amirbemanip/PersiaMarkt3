@@ -17,6 +17,8 @@ class _RegisterViewState extends State<RegisterView> {
   final _nameController = TextEditingController();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
+  final _postalCodeController = TextEditingController();
+  final _addressController = TextEditingController();
   String? _selectedCity;
   bool _obscureText = true;
 
@@ -32,6 +34,8 @@ class _RegisterViewState extends State<RegisterView> {
     _nameController.dispose();
     _emailController.dispose();
     _passwordController.dispose();
+    _postalCodeController.dispose();
+    _addressController.dispose();
     super.dispose();
   }
 
@@ -48,6 +52,8 @@ class _RegisterViewState extends State<RegisterView> {
             email: _emailController.text,
             password: _passwordController.text,
             city: _selectedCity,
+            postalCode: _postalCodeController.text,
+            address: _addressController.text,
           );
     }
   }
@@ -168,6 +174,25 @@ class _RegisterViewState extends State<RegisterView> {
                         ),
                         validator: (value) =>
                             value == null ? l10n.selectCity : null,
+                      ),
+                      const SizedBox(height: 16),
+                      _buildTextFormField(
+                        controller: _postalCodeController,
+                        labelText: l10n.postalCode,
+                        icon: Icons.markunread_mailbox_outlined,
+                        keyboardType: TextInputType.number,
+                        validator: (value) => (value?.isEmpty ?? true)
+                            ? l10n.enterPostalCode
+                            : null,
+                      ),
+                      const SizedBox(height: 16),
+                      _buildTextFormField(
+                        controller: _addressController,
+                        labelText: l10n.address,
+                        icon: Icons.home_outlined,
+                        validator: (value) => (value?.isEmpty ?? true)
+                            ? l10n.enterAddress
+                            : null,
                       ),
                       const SizedBox(height: 24),
                       isLoading

@@ -469,6 +469,30 @@ abstract class AppLocalizations {
   /// **'Please select a city'**
   String get selectCity;
 
+  /// No description provided for @postalCode.
+  ///
+  /// In en, this message translates to:
+  /// **'Postal Code'**
+  String get postalCode;
+
+  /// No description provided for @enterPostalCode.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter your postal code'**
+  String get enterPostalCode;
+
+  /// No description provided for @address.
+  ///
+  /// In en, this message translates to:
+  /// **'Address'**
+  String get address;
+
+  /// No description provided for @enterAddress.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter your address'**
+  String get enterAddress;
+
   /// No description provided for @register.
   ///
   /// In en, this message translates to:

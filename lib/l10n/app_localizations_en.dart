@@ -197,6 +197,18 @@ class AppLocalizationsEn extends AppLocalizations {
   String get selectCity => 'Please select a city';
 
   @override
+  String get postalCode => 'Postal Code';
+
+  @override
+  String get enterPostalCode => 'Please enter your postal code';
+
+  @override
+  String get address => 'Address';
+
+  @override
+  String get enterAddress => 'Please enter your address';
+
+  @override
   String get register => 'Register';
 
   @override
