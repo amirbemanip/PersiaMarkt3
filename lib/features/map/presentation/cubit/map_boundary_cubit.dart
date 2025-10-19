@@ -12,7 +12,7 @@ class MapBoundaryCubit extends Cubit<MapBoundaryState> {
     emit(MapBoundaryLoading());
     try {
       final boundaries =
-          await _boundaryService.getBoundariesForCities(AppConstants.germanCities);
+          await _boundaryService.getBoundariesForCities(AppConstants.germanCitiesForUI);
       emit(MapBoundaryLoaded(boundaries));
     } catch (e) {
       emit(MapBoundaryError(e.toString()));
