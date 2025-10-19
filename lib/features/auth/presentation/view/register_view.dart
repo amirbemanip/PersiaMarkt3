@@ -145,7 +145,7 @@ class _RegisterViewState extends State<RegisterView> {
                       DropdownButtonFormField<String>(
                         value: _selectedCity,
                         isExpanded: true,
-                        items: AppConstants.germanCities.map((String city) {
+                        items: AppConstants.germanCitiesForUI.map((String city) {
                           return DropdownMenuItem<String>(
                             value: city,
                             child: Text(
