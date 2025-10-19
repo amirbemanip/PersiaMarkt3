@@ -57,24 +57,26 @@ class AppRouter {
       final isGoingToLogin = location == AppRoutes.login;
       final isGoingToRegister = location == AppRoutes.register;
 
-      if (isLoggedIn && (isGoingToLogin || isGoingToRegister)) {
-        return AppRoutes.home;
-      }
-      final publicRoutes = [
+      // Define public routes that do not require authentication
+      const publicRoutes = [
         AppRoutes.login,
         AppRoutes.register,
         AppRoutes.splash,
-        AppRoutes.home,
-        AppRoutes.map,
-        AppRoutes.search,
       ];
-      final isGoingToPublic =
-          publicRoutes.any((route) => location.startsWith(route));
 
-      if (!isLoggedIn && !isGoingToPublic) {
+      final isGoingToPublicRoute = publicRoutes.contains(location);
+
+      // If user is logged in, and tries to access login/register, redirect to home
+      if (isLoggedIn && (isGoingToLogin || isGoingToRegister)) {
+        return AppRoutes.home;
+      }
+
+      // If user is not logged in and not going to a public route, redirect to login
+      if (!isLoggedIn && !isGoingToPublicRoute) {
         return AppRoutes.login;
       }
 
+      // No redirect needed
       return null;
     },
     routes: [

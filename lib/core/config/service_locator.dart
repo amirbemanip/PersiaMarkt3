@@ -5,6 +5,7 @@ import 'package:persia_markt/core/cubit/locale_cubit.dart';
 import 'package:persia_markt/core/services/api_service.dart';
 import 'package:persia_markt/core/services/location_service.dart';
 import 'package:persia_markt/features/auth/data/services/auth_service.dart';
+import 'package:persia_markt/features/auth/data/services/postal_code_service.dart';
 import 'package:persia_markt/features/auth/presentation/cubit/auth_cubit.dart';
 import 'package:persia_markt/features/cart/presentation/cubit/cart_cubit.dart';
 import 'package:persia_markt/features/checkout/data/services/checkout_service.dart';
@@ -36,9 +37,10 @@ Future<void> setupServiceLocator() async {
   sl.registerLazySingleton(() => ApiService(client: sl()));
   sl.registerLazySingleton(() => LocationService());
   sl.registerLazySingleton(() => AuthService(client: sl(), prefs: sl()));
+  sl.registerLazySingleton(() => PostalCodeService(client: sl()));
   sl.registerLazySingleton(() => CheckoutService(client: sl(), authService: sl()));
-  sl.registerLazySingleton(() => OrderHistoryService(client: sl(), authService: sl()));
-  sl.registerLazySingleton(() => MapBoundaryService());
+  sl.registerLazySingleton(() => OrderHistoryService(client:sl(), authService: sl()));
+  sl.registerLazySingleton(() => MapBoundaryService(client: sl()));
 
   // Repositories
   sl.registerLazySingleton<MarketRepository>(
@@ -56,6 +58,7 @@ Future<void> setupServiceLocator() async {
   // AuthCubit now depends on other cubits to reset them on logout.
   sl.registerLazySingleton(() => AuthCubit(
         authService: sl(),
+        postalCodeService: sl(),
         cartCubit: sl(),
         favoritesCubit: sl(),
         orderHistoryCubit: sl(),
