@@ -55,11 +55,13 @@ class AuthCubit extends Cubit<AuthState> {
         }
       }
 
+      final apiCityName = city != null ? AppConstants.getApiCityName(city) : null;
+
       await authService.register(
         name: name,
         email: email,
         password: password,
-        city: city,
+        city: apiCityName,
         postalCode: postalCode,
         address: address,
       );
