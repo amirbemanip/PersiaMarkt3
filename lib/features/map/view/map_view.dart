@@ -131,17 +131,19 @@ class _MapViewState extends State<MapView> {
     return BlocBuilder<MapBoundaryCubit, MapBoundaryState>(
       builder: (context, state) {
         if (state is MapBoundaryLoaded) {
-          final polygons = state.boundaries.map((boundary) {
-            return Polygon(
-              points: boundary.points,
-              color: Colors.blue.withOpacity(0.2),
-              borderColor: Colors.blue,
-              borderStrokeWidth: 2,
-              isFilled: true,
-            );
-          }).toList();
-
-          return PolygonLayer(polygons: polygons);
+          final List<Polygon> allPolygons = [];
+          for (final boundary in state.boundaries) {
+            for (final points in boundary.polygons) {
+              allPolygons.add(Polygon(
+                points: points,
+                color: Colors.blue.withOpacity(0.2),
+                borderColor: Colors.blue,
+                borderStrokeWidth: 2,
+                isFilled: true,
+              ));
+            }
+          }
+          return PolygonLayer(polygons: allPolygons);
         }
         return const SizedBox.shrink();
       },

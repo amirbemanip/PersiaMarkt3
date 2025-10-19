@@ -7,9 +7,10 @@ final Map<String, CityBoundary> _boundaryCache = {};
 
 class CityBoundary {
   final String name;
-  final List<LatLng> points;
+  // A city can be represented by multiple disjoint polygons.
+  final List<List<LatLng>> polygons;
 
-  CityBoundary({required this.name, required this.points});
+  CityBoundary({required this.name, required this.polygons});
 }
 
 class MapBoundaryService {
@@ -32,7 +33,6 @@ class MapBoundaryService {
           _boundaryCache[city] = boundary;
         }
       } catch (e) {
-        // Log error or handle it as needed, but don't block other cities
         print('Could not fetch boundary for $city: $e');
       }
     }
@@ -40,9 +40,10 @@ class MapBoundaryService {
   }
 
   Future<CityBoundary?> _fetchBoundaryForCity(String cityName) async {
-    // 1. Search for the city to get its OSM ID
+    // URL-encode the city name to handle spaces and special characters
+    final encodedCityName = Uri.encodeComponent(cityName);
     final searchUri = Uri.parse(
-        '$_baseUrl/search?q=$cityName, Germany&format=jsonv2&limit=1&featuretype=city');
+        '$_baseUrl/search?q=$encodedCityName, Germany&format=jsonv2&limit=1&featuretype=city');
     final searchResponse = await _client.get(searchUri, headers: {'User-Agent': 'PersiaMarktApp/1.0'});
 
     if (searchResponse.statusCode != 200 || searchResponse.body.isEmpty) return null;
@@ -56,10 +57,8 @@ class MapBoundaryService {
 
     if (osmId == null || osmType == null) return null;
 
-    // The API requires a type prefix (R for relation, W for way, N for node)
     final typePrefix = osmType.toString().toUpperCase()[0];
 
-    // 2. Lookup the OSM ID to get the GeoJSON polygon
     final lookupUri = Uri.parse(
         '$_baseUrl/lookup?osm_ids=$typePrefix$osmId&format=jsonv2&polygon_geojson=1');
     final lookupResponse = await _client.get(lookupUri, headers: {'User-Agent': 'PersiaMarktApp/1.0'});
@@ -70,30 +69,33 @@ class MapBoundaryService {
     if (lookupData.isEmpty || lookupData[0]['geojson'] == null) return null;
 
     final geojson = lookupData[0]['geojson'];
+    final List<List<LatLng>> allPolygons = [];
 
-    // The coordinates can be a Polygon or MultiPolygon
-    final List<LatLng> points = [];
     if (geojson['type'] == 'Polygon') {
       final coordinates = geojson['coordinates'][0] as List;
+      final List<LatLng> points = [];
       for (final coord in coordinates) {
         points.add(LatLng(coord[1], coord[0]));
       }
+      if (points.isNotEmpty) {
+        allPolygons.add(points);
+      }
     } else if (geojson['type'] == 'MultiPolygon') {
-        // For MultiPolygon, we take the largest polygon as a simplification
-        final polygons = geojson['coordinates'] as List;
-        List<dynamic> largestPolygon = [];
-        for (final polygon in polygons) {
-            if(polygon[0].length > largestPolygon.length) {
-                largestPolygon = polygon[0];
-            }
+      final polygons = geojson['coordinates'] as List;
+      for (final polygonCoords in polygons) {
+        final coordinates = polygonCoords[0] as List;
+        final List<LatLng> points = [];
+        for (final coord in coordinates) {
+          points.add(LatLng(coord[1], coord[0]));
         }
-        for (final coord in largestPolygon) {
-            points.add(LatLng(coord[1], coord[0]));
+        if (points.isNotEmpty) {
+          allPolygons.add(points);
         }
+      }
     }
 
-    if (points.isEmpty) return null;
+    if (allPolygons.isEmpty) return null;
 
-    return CityBoundary(name: cityName, points: points);
+    return CityBoundary(name: cityName, polygons: allPolygons);
   }
 }

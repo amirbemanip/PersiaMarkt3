@@ -1,9 +1,10 @@
 class AppConstants {
-  static const List<String> germanCities = [
+  // Using the display name for the UI, and a map for validation/API calls
+  static const List<String> germanCitiesForUI = [
     'Berlin',
     'Hamburg',
-    'Munich', // Simplified name for easier lookup
-    'Cologne', // Simplified name
+    'Munich',
+    'Cologne',
     'Frankfurt am Main',
     'Stuttgart',
     'Düsseldorf',
@@ -12,8 +13,8 @@ class AppConstants {
     'Leipzig',
     'Bremen',
     'Dresden',
-    'Hanover', // Simplified name
-    'Nuremberg', // Simplified name
+    'Hanover',
+    'Nuremberg',
     'Duisburg',
     'Bochum',
     'Wuppertal',
@@ -21,4 +22,17 @@ class AppConstants {
     'Bonn',
     'Münster'
   ];
+
+  static const Map<String, String> cityNameToApiName = {
+    'Munich': 'München',
+    'Cologne': 'Köln',
+    'Hanover': 'Hannover',
+    'Nuremberg': 'Nürnberg',
+    // Add other cities that have different names if necessary
+  };
+
+  // Helper to get the name for API calls
+  static String getApiCityName(String uiCityName) {
+    return cityNameToApiName[uiCityName] ?? uiCityName;
+  }
 }
