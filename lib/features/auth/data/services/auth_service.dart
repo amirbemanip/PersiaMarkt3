@@ -32,14 +32,14 @@ class AuthService {
     final response = await _client.post(
       Uri.parse('$_baseUrl/auth/user/register'), // <<<--- اصلاح شد
       headers: {'Content-Type': 'application/json'},
-      body: json.encode({
-        'name': name,
-        'email': email,
-        'password': password,
-        'city': city ?? '',
-        'postalCode': postalCode ?? '',
-        'address': address ?? '',
-      }),
+      body: json.encode(_createRegisterBody(
+        name: name,
+        email: email,
+        password: password,
+        city: city,
+        postalCode: postalCode,
+        address: address,
+      )),
     );
 
     final responseBody = json.decode(response.body);
@@ -48,6 +48,33 @@ class AuthService {
     } else {
       throw Exception(responseBody['message'] ?? 'خطا در ثبت‌نام');
     }
+  }
+
+  Map<String, dynamic> _createRegisterBody({
+    required String name,
+    required String email,
+    required String password,
+    String? city,
+    String? postalCode,
+    String? address,
+  }) {
+    final Map<String, dynamic> body = {
+      'name': name,
+      'email': email,
+      'password': password,
+    };
+
+    if (city != null && city.isNotEmpty) {
+      body['city'] = city;
+    }
+    if (postalCode != null && postalCode.isNotEmpty) {
+      body['postalCode'] = postalCode;
+    }
+    if (address != null && address.isNotEmpty) {
+      body['address'] = address;
+    }
+
+    return body;
   }
 
   Future<String> login({required String email, required String password}) async {

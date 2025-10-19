@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:persia_markt/core/constants/app_constants.dart';
 import 'package:persia_markt/features/auth/presentation/cubit/auth_cubit.dart';
 import 'package:persia_markt/features/auth/presentation/cubit/auth_state.dart';
 import 'package:persia_markt/l10n/app_localizations.dart';
@@ -21,13 +22,6 @@ class _RegisterViewState extends State<RegisterView> {
   final _addressController = TextEditingController();
   String? _selectedCity;
   bool _obscureText = true;
-
-  final List<String> _germanCities = [
-    'Berlin', 'Hamburg', 'Munich (München)', 'Cologne (Köln)', 'Frankfurt am Main',
-    'Stuttgart', 'Düsseldorf', 'Dortmund', 'Essen', 'Leipzig', 'Bremen', 'Dresden',
-    'Hanover (Hannover)', 'Nuremberg (Nürnberg)', 'Duisburg', 'Bochum', 'Wuppertal',
-    'Bielefeld', 'Bonn', 'Münster'
-  ];
 
   @override
   void dispose() {
@@ -151,7 +145,7 @@ class _RegisterViewState extends State<RegisterView> {
                       DropdownButtonFormField<String>(
                         value: _selectedCity,
                         isExpanded: true,
-                        items: _germanCities.map((String city) {
+                        items: AppConstants.germanCities.map((String city) {
                           return DropdownMenuItem<String>(
                             value: city,
                             child: Text(

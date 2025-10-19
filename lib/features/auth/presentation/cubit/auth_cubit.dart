@@ -1,5 +1,6 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:persia_markt/features/auth/data/services/auth_service.dart';
+import 'package:persia_markt/features/auth/data/services/postal_code_service.dart';
 import 'package:persia_markt/features/cart/presentation/cubit/cart_cubit.dart';
 import 'package:persia_markt/features/order_history/presentation/cubit/order_history_cubit.dart';
 import 'package:persia_markt/features/profile/presentation/cubit/favorites_cubit.dart';
@@ -7,12 +8,14 @@ import 'auth_state.dart';
 
 class AuthCubit extends Cubit<AuthState> {
   final AuthService authService;
+  final PostalCodeService postalCodeService;
   final CartCubit cartCubit;
   final FavoritesCubit favoritesCubit;
   final OrderHistoryCubit orderHistoryCubit;
 
   AuthCubit({
     required this.authService,
+    required this.postalCodeService,
     required this.cartCubit,
     required this.favoritesCubit,
     required this.orderHistoryCubit,
@@ -41,6 +44,15 @@ class AuthCubit extends Cubit<AuthState> {
   }) async {
     emit(AuthLoading());
     try {
+      // First, validate the postal code if both city and postal code are provided
+      if (city != null && city.isNotEmpty && postalCode != null && postalCode.isNotEmpty) {
+        final isValidPostalCode = await postalCodeService.validatePostalCode(postalCode, city);
+        if (!isValidPostalCode) {
+          emit(const AuthError("Postal code does not match the selected city."));
+          return;
+        }
+      }
+
       await authService.register(
         name: name,
         email: email,
