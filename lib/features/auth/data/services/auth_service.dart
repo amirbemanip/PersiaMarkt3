@@ -26,7 +26,8 @@ class AuthService {
     required String password,
     String? city,
     String? postalCode,
-    String? address,
+    String? street,
+    String? houseNumber,
   }) async {
     // مسیر کامل و صحیح برای ثبت‌نام کاربر
     final response = await _client.post(
@@ -38,7 +39,8 @@ class AuthService {
         password: password,
         city: city,
         postalCode: postalCode,
-        address: address,
+        street: street,
+        houseNumber: houseNumber,
       )),
     );
 
@@ -56,7 +58,8 @@ class AuthService {
     required String password,
     String? city,
     String? postalCode,
-    String? address,
+    String? street,
+    String? houseNumber,
   }) {
     final Map<String, dynamic> body = {
       'name': name,
@@ -64,14 +67,23 @@ class AuthService {
       'password': password,
     };
 
+    // Create a nested address object if any address field is present
+    final Map<String, String> addressObject = {};
     if (city != null && city.isNotEmpty) {
-      body['city'] = city;
+      addressObject['city'] = city;
     }
     if (postalCode != null && postalCode.isNotEmpty) {
-      body['postalCode'] = postalCode;
+      addressObject['postalCode'] = postalCode;
     }
-    if (address != null && address.isNotEmpty) {
-      body['address'] = address;
+    if (street != null && street.isNotEmpty) {
+      addressObject['street'] = street;
+    }
+    if (houseNumber != null && houseNumber.isNotEmpty) {
+      addressObject['houseNumber'] = houseNumber;
+    }
+
+    if (addressObject.isNotEmpty) {
+      body['address'] = addressObject;
     }
 
     return body;

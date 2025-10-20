@@ -209,6 +209,18 @@ class AppLocalizationsFa extends AppLocalizations {
   String get enterAddress => 'لطفاً آدرس خود را وارد کنید';
 
   @override
+  String get street => 'خیابان';
+
+  @override
+  String get enterStreet => 'لطفاً خیابان خود را وارد کنید';
+
+  @override
+  String get houseNumber => 'شماره پلاک';
+
+  @override
+  String get enterHouseNumber => 'لطفاً شماره پلاک خود را وارد کنید';
+
+  @override
   String get register => 'ثبت نام';
 
   @override

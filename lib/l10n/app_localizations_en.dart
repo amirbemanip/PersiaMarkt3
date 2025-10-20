@@ -209,6 +209,18 @@ class AppLocalizationsEn extends AppLocalizations {
   String get enterAddress => 'Please enter your address';
 
   @override
+  String get street => 'Street';
+
+  @override
+  String get enterStreet => 'Please enter your street';
+
+  @override
+  String get houseNumber => 'House Number';
+
+  @override
+  String get enterHouseNumber => 'Please enter your house number';
+
+  @override
   String get register => 'Register';
 
   @override
