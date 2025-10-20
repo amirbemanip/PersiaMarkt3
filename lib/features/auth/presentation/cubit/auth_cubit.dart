@@ -5,7 +5,6 @@ import 'package:persia_markt/features/auth/data/services/postal_code_service.dar
 import 'package:persia_markt/features/cart/presentation/cubit/cart_cubit.dart';
 import 'package:persia_markt/features/order_history/presentation/cubit/order_history_cubit.dart';
 import 'package:persia_markt/features/profile/presentation/cubit/favorites_cubit.dart';
-import 'package:persia_markt/features/profile/presentation/cubit/profile_cubit.dart';
 import 'auth_state.dart';
 
 class AuthCubit extends Cubit<AuthState> {
@@ -14,7 +13,6 @@ class AuthCubit extends Cubit<AuthState> {
   final CartCubit cartCubit;
   final FavoritesCubit favoritesCubit;
   final OrderHistoryCubit orderHistoryCubit;
-  final ProfileCubit profileCubit;
 
   AuthCubit({
     required this.authService,
@@ -22,7 +20,6 @@ class AuthCubit extends Cubit<AuthState> {
     required this.cartCubit,
     required this.favoritesCubit,
     required this.orderHistoryCubit,
-    required this.profileCubit,
   }) : super(AuthUnknown()) {
     checkAuthentication();
   }
@@ -84,7 +81,6 @@ class AuthCubit extends Cubit<AuthState> {
     emit(AuthLoading());
     try {
       await authService.login(email: email, password: password);
-      profileCubit.loadUserProfile(); // Load profile after successful login
       emit(const Authenticated());
     } catch (e) {
       emit(AuthError(e.toString().replaceAll('Exception: ', '')));
@@ -98,7 +94,6 @@ class AuthCubit extends Cubit<AuthState> {
     cartCubit.reset();
     favoritesCubit.reset();
     orderHistoryCubit.reset();
-    profileCubit.reset(); // Reset profile on logout
 
     emit(Unauthenticated());
   }
