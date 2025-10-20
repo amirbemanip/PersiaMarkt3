@@ -493,6 +493,30 @@ abstract class AppLocalizations {
   /// **'Please enter your address'**
   String get enterAddress;
 
+  /// No description provided for @street.
+  ///
+  /// In en, this message translates to:
+  /// **'Street'**
+  String get street;
+
+  /// No description provided for @enterStreet.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter your street'**
+  String get enterStreet;
+
+  /// No description provided for @houseNumber.
+  ///
+  /// In en, this message translates to:
+  /// **'House Number'**
+  String get houseNumber;
+
+  /// No description provided for @enterHouseNumber.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter your house number'**
+  String get enterHouseNumber;
+
   /// No description provided for @register.
   ///
   /// In en, this message translates to:

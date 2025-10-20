@@ -19,7 +19,8 @@ class _RegisterViewState extends State<RegisterView> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _postalCodeController = TextEditingController();
-  final _addressController = TextEditingController();
+  final _streetController = TextEditingController();
+  final _houseNumberController = TextEditingController();
   String? _selectedCity;
   bool _obscureText = true;
 
@@ -29,7 +30,8 @@ class _RegisterViewState extends State<RegisterView> {
     _emailController.dispose();
     _passwordController.dispose();
     _postalCodeController.dispose();
-    _addressController.dispose();
+    _streetController.dispose();
+    _houseNumberController.dispose();
     super.dispose();
   }
 
@@ -47,7 +49,8 @@ class _RegisterViewState extends State<RegisterView> {
             password: _passwordController.text,
             city: _selectedCity,
             postalCode: _postalCodeController.text,
-            address: _addressController.text,
+            street: _streetController.text,
+            houseNumber: _houseNumberController.text,
           );
     }
   }
@@ -181,11 +184,20 @@ class _RegisterViewState extends State<RegisterView> {
                       ),
                       const SizedBox(height: 16),
                       _buildTextFormField(
-                        controller: _addressController,
-                        labelText: l10n.address,
+                        controller: _streetController,
+                        labelText: l10n.street,
+                        icon: Icons.signpost_outlined,
+                        validator: (value) => (value?.isEmpty ?? true)
+                            ? l10n.enterStreet
+                            : null,
+                      ),
+                      const SizedBox(height: 16),
+                      _buildTextFormField(
+                        controller: _houseNumberController,
+                        labelText: l10n.houseNumber,
                         icon: Icons.home_outlined,
                         validator: (value) => (value?.isEmpty ?? true)
-                            ? l10n.enterAddress
+                            ? l10n.enterHouseNumber
                             : null,
                       ),
                       const SizedBox(height: 24),
